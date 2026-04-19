@@ -404,12 +404,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p class="modal-disclaimer">No spam, ever. Unsubscribe anytime. By submitting you agree to receive occasional updates from CyberSec Pro Academy.</p>
     </div>
     <div class="modal-success" id="modalSuccess">
-      <div class="success-icon">🎉</div>
-      <h3>You're all set!</h3>
-      <p>Your free guide is ready. Click below to open it — and check your inbox for a copy.</p>
-      <a href="https://drive.google.com/file/d/1iEN2F3ssAGP2WUxwOXP3sPNfkPDPRF4Y/view?usp=sharing" class="btn-download" target="_blank" rel="noopener" id="successDriveLink">
-        Open the Free Guide →
-      </a>
+      <div class="success-icon">📬</div>
+      <h3>Check Your Inbox!</h3>
+      <p>Your free guide is on its way to <strong id="submittedEmail"></strong>. Look for an email from <strong>CyberSec Pro Academy</strong> — it should arrive within a few minutes.</p>
+      <p style="font-size:13px; color:#6b7280; margin-top:8px;">Didn't get it? Check your spam/promotions folder, or <a href="mailto:info@cybersecproacademy.org" style="color:var(--green);">contact us</a>.</p>
     </div>
   </div>
 </div>
@@ -1088,13 +1086,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // Push Meta Pixel Lead event via GTM dataLayer
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: 'guide_form_submitted', form_name: 'free_guide' });
-        // Show success panel with the Drive link
+        // Show "Check Your Inbox" success panel — guide arrives via Mailchimp welcome sequence
+        var submittedEmailEl = document.getElementById('submittedEmail');
+        if (submittedEmailEl) {
+          var emailShown = (form.querySelector('[name="email"]') || {}).value || '';
+          submittedEmailEl.textContent = emailShown;
+        }
         document.getElementById('modalFormArea').style.display = 'none';
         document.getElementById('modalSuccess').style.display = 'block';
       } else {
         btn.textContent = 'Try Again';
         btn.disabled = false;
-        alert('Something went wrong — please try again or email bcapuyan@gmail.com');
+        alert('Something went wrong — please try again or email info@cybersecproacademy.org');
       }
     })
     .catch(function() {
