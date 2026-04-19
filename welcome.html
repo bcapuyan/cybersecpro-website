@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSecPro Academy - Email Subscriber Offer</title>
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<style>
+        :root {
+            --navy: #0a1628;
+            --teal: #0e5f7a;
+            --green: #00c896;
+            --dark: #1a202c;
+            --gray: #f4f6f9;
+            --white: #ffffff;
+            --light-gray: #e8eef7;
+            --accent: #ff6b5b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: var(--dark);
+            background-color: var(--white);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: var(--navy);
+            padding: 1.2rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-pro {
+            color: var(--green);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+            color: var(--white);
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 200, 150, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-price {
+            font-size: 3.5rem;
+            color: var(--green);
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+
+        .hero-price-label {
+            font-size: 1.1rem;
+            color: var(--light-gray);
+            margin-bottom: 2rem;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            color: var(--light-gray);
+            font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-price {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+
+        /* Proof Section */
+        .proof {
+            background-color: var(--gray);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .proof-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .proof h2 {
+            font-size: 2rem;
+            color: var(--navy);
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .earnings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .earning-item {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .earning-item h3 {
+            color: var(--teal);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .earning-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 0.5rem;
+        }
+
+        .earning-item p {
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .earnings-total {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .earnings-total h3 {
+            font-size: 1rem;
+            color: var(--light-gray);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .earnings-total .amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .proof-note {
+            color: var(--teal);
+            font-size: 0.95rem;
+            margin-top: 2rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .proof h2 {
+                font-size: 1.5rem;
+            }
+
+            .earning-amount {
+                font-size: 1.5rem;
+            }
+
+            .earnings-total .amount {
+                font-size: 2rem;
+            }
+        }
+
+        /* Value Stack Section */
+        .value-stack {
+            padding: 4rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .value-stack h2 {
+            font-size: 2rem;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .value-stack-subtitle {
+            text-align: center;
+            color: var(--teal);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .value-items {
+            background-color: var(--gray);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .value-item {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .value-item:last-child {
+            border-bottom: none;
+        }
+
+        .value-item:hover {
+            background-color: var(--white);
+        }
+
+        .value-item-name {
+            font-weight: 600;
+            color: var(--navy);
+            flex: 1;
+        }
+
+        .value-item-value {
+            font-weight: 700;
+            color: var(--green);
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .value-total {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+            color: var(--white);
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .value-total-label {
+            font-size: 1.1rem;
+        }
+
+        .value-total-amount {
+            font-size: 1.8rem;
+            color: var(--green);
+        }
+
+        .value-your-price {
+            background-color: var(--green);
+            color: var(--navy);
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .value-your-price-label {
+            font-size: 1.1rem;
+        }
+
+        .value-your-price-amount {
+            font-size: 1.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .value-stack h2 {
+                font-size: 1.5rem;
+            }
+
+            .value-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .value-item-value {
+                align-self: flex-end;
+            }
+
+            .value-total,
+            .value-your-price {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+
+        /* Price Comparison */
+        .comparison {
+            background-color: var(--light-gray);
+            padding: 4rem 2rem;
+        }
+
+        .comparison-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .comparison h2 {
+            font-size: 2rem;
+            color: var(--navy);
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .comparison-item {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .comparison-item h3 {
+            color: var(--navy);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-price {
+            font-size: 2rem;
+            color: var(--teal);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-item p {
+            color: var(--dark);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .comparison-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .comparison-link:hover {
+            color: var(--teal);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .comparison h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Guarantee Section */
+        .guarantee {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+            color: var(--white);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .guarantee-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .guarantee-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .guarantee h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .guarantee p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--light-gray);
+        }
+
+        @media (max-width: 768px) {
+            .guarantee h2 {
+                font-size: 1.5rem;
+            }
+
+            .guarantee p {
+                font-size: 1rem;
+            }
+        }
+
+        /* Bonus Section */
+        .bonus {
+            background-color: var(--gray);
+            padding: 3rem 2rem;
+        }
+
+        .bonus-container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .bonus-badge {
+            display: inline-block;
+            background-color: var(--green);
+            color: var(--navy);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .bonus h2 {
+            font-size: 1.8rem;
+            color: var(--navy);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .bonus p {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .bonus-value {
+            color: var(--green);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .bonus-limit {
+            color: var(--teal);
+            font-weight: 600;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .bonus h2 {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* CTA Buttons */
+        .cta-section {
+            padding: 4rem 2rem;
+            text-align: center;
+            background-color: var(--white);
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            color: var(--navy);
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .cta-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .cta-btn {
+            padding: 1.5rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cta-btn-primary {
+            background-color: var(--green);
+            color: var(--navy);
+            box-shadow: 0 4px 15px rgba(0, 200, 150, 0.3);
+        }
+
+        .cta-btn-primary:hover {
+            background-color: #00a870;
+            box-shadow: 0 6px 20px rgba(0, 200, 150, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .cta-btn-secondary {
+            background-color: var(--navy);
+            color: var(--white);
+            border: 2px solid var(--green);
+        }
+
+        .cta-btn-secondary:hover {
+            background-color: var(--teal);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .cta-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-btn {
+                width: 100%;
+            }
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--navy);
+            color: var(--white);
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--green);
+            text-decoration: none;
+            margin: 0 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--light-gray);
+        }
+
+        .footer-bottom {
+            color: var(--light-gray);
+            margin-top: 1rem;
+            border-top: 1px solid var(--teal);
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">CyberSecPro <span class="logo-pro">Academy</span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="lab-setup.html">Labs</a></li>
+                <li><a href="price-comparison.html">Pricing</a></li>
+                <li><a href="checkout.html">Enroll</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>You Downloaded the Guide.<br>Now Here's the Full System.</h1>
+            <div class="hero-price">$19<span style="font-size: 1.5rem;">/month</span></div>
+            <p class="hero-price-label">Everything you need to go from zero to hired in cybersecurity.</p>
+            <p>Get instant access to our complete system designed to accelerate your cybersecurity career from day one.</p>
+        </div>
+    </section>
+
+    <!-- Proof Section -->
+    <section class="proof">
+        <div class="proof-container">
+            <h2>Proven by Real Results</h2>
+            <p style="color: var(--teal); margin-bottom: 2rem; font-size: 1.1rem;">Founder's W-2 Income:</p>
+
+            <div class="earnings">
+                <div class="earning-item">
+                    <h3>2023</h3>
+                    <div class="earning-amount">$358,246.66</div>
+                </div>
+                <div class="earning-item">
+                    <h3>2024</h3>
+                    <div class="earning-amount">$427,753.92</div>
+                </div>
+                <div class="earning-item">
+                    <h3>2025</h3>
+                    <div class="earning-amount">$405,191.95</div>
+                </div>
+            </div>
+
+            <div class="earnings-total">
+                <h3>Total 3-Year Income</h3>
+                <div class="amount">$1,191,192.53</div>
+            </div>
+
+            <p class="proof-note">[W-2 images would go here]</p>
+        </div>
+    </section>
+
+    <!-- Value Stack Section -->
+    <section class="value-stack">
+        <h2>What You Get Inside</h2>
+        <p class="value-stack-subtitle">$4,427 in total value for just $19/month</p>
+
+        <div class="value-items">
+            <div class="value-item">
+                <span class="value-item-name">Structured Learning Path</span>
+                <span class="value-item-value">$997</span>
+            </div>
+            <div class="value-item">
+                <span class="value-item-name">CompTIA Security+ & CySA+ Cert Prep</span>
+                <span class="value-item-value">$1,200</span>
+            </div>
+            <div class="value-item">
+                <span class="value-item-name">20 Hands-On AI Cybersecurity Labs</span>
+                <span class="value-item-value">$500</span>
+            </div>
+            <div class="value-item">
+                <span class="value-item-name">Resume + Interview Coaching</span>
+                <span class="value-item-value">$600</span>
+            </div>
+            <div class="value-item">
+                <span class="value-item-name">Private Community Access</span>
+                <span class="value-item-value">$480/yr</span>
+            </div>
+            <div class="value-item">
+                <span class="value-item-name">Weekly Updates + New Content</span>
+                <span class="value-item-value">$650</span>
+            </div>
+
+            <div class="value-total">
+                <span class="value-total-label">TOTAL VALUE:</span>
+                <span class="value-total-amount">$4,427</span>
+            </div>
+
+            <div class="value-your-price">
+                <span class="value-your-price-label">YOUR PRICE:</span>
+                <span class="value-your-price-amount">$19/month</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Price Comparison -->
+    <section class="comparison">
+        <div class="comparison-container">
+            <h2>How It Compares</h2>
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <h3>Bootcamps</h3>
+                    <div class="comparison-price">$5K-$15K</div>
+                    <p>Expensive upfront cost with no flexibility. Lock yourself into months of intensive study.</p>
+                </div>
+                <div class="comparison-item">
+                    <h3>College</h3>
+                    <div class="comparison-price">$40K-$100K+</div>
+                    <p>Years of time and massive debt. Most content isn't even relevant to the job market.</p>
+                </div>
+                <div class="comparison-item">
+                    <h3>CyberSecPro Academy</h3>
+                    <div class="comparison-price">$19/month</div>
+                    <p>Affordable, flexible, and designed specifically for getting hired in cybersecurity fast.</p>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 2rem;">
+                <a href="price-comparison.html" class="comparison-link">See Full Pricing Breakdown →</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- Guarantee Section -->
+    <section class="guarantee">
+        <div class="guarantee-container">
+            <div class="guarantee-icon">🛡️</div>
+            <h2>30-Day Money-Back Guarantee</h2>
+            <p>If you're not 100% satisfied with the program, simply request a refund within 30 days. No questions asked. You're completely protected.</p>
+        </div>
+    </section>
+
+    <!-- Bonus Section -->
+    <section class="bonus">
+        <div class="bonus-container">
+            <div class="bonus-badge">Limited Time Bonus</div>
+            <h2>Free 1-on-1 Mentorship Session</h2>
+            <p>Join within 48 hours and get a personal mentorship call with our founder.</p>
+            <p><span class="bonus-value">Normally $100</span> — completely FREE for email subscribers.</p>
+            <p class="bonus-limit">⏰ Only 7 spots available this month</p>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2>Ready to Transform Your Career?</h2>
+            <div class="cta-buttons">
+                <a href="checkout.html?plan=monthly" class="cta-btn cta-btn-primary">$19/Month</a>
+                <a href="checkout.html?plan=annual" class="cta-btn cta-btn-secondary">$497 One-Time</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="mailto:bcapuyan@gmail.com">Email</a>
+                <a href="https://www.linkedin.com/in/boncapuyan/">LinkedIn</a>
+                <a href="index.html">Home</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CyberSecPro Academy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6T7DPEWEP7"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-6T7DPEWEP7');
+    </script>
+</body>
+</html>

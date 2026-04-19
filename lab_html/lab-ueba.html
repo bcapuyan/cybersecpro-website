@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L07: User &amp; Entity Behavior Analytics | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-medium">Intermediate</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Threat Detection</span>
+    </div>
+    <h1>L07: User &amp; Entity Behavior Analytics (UEBA)</h1>
+    <p>Build a UEBA system that profiles normal user behavior from Windows Event Logs and flags anomalies — after-hours logins, privilege escalation, lateral movement, and insider threat patterns. Use Python, pandas, and scikit-learn on SIFT Workstation.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">Python 3</span>
+      <span class="tool-tag">pandas</span>
+      <span class="tool-tag">scikit-learn</span>
+      <span class="tool-tag">SIFT Workstation</span>
+      <span class="tool-tag">Windows Event Logs</span>
+      <span class="tool-tag">python-evtx</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 12 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Log Collection &amp; Parsing</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Set up UEBA environment on SIFT</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On SIFT Workstation (192.168.56.20), install required Python packages:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>sudo apt update && sudo apt install -y python3-pip python3-venv
+python3 -m venv ~/ueba-lab
+source ~/ueba-lab/bin/activate
+pip install pandas numpy scikit-learn matplotlib seaborn python-evtx pywinrm
+
+mkdir ~/ueba-lab/logs ~/ueba-lab/models ~/ueba-lab/reports</pre>
+        </div>
+        <p>Download a sample Windows Security Event Log dataset:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cd ~/ueba-lab/logs
+# Download EVTX sample from SANS/DFIR.training datasets
+wget -O Security.evtx \
+  "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/raw/master/Credential%20Access/credential_access_lsass_access_meterpreter.evtx"
+
+# Or generate synthetic log data for the lab
+python3 -c "
+import json, random, datetime
+users = ['alice', 'bob', 'charlie', 'admin', 'svc_backup']
+events = []
+base = datetime.datetime(2024, 1, 15, 8, 0, 0)
+for i in range(5000):
+    user = random.choices(users, weights=[40,30,20,8,2])[0]
+    hour = random.gauss(10, 2) if user != 'admin' else random.gauss(14, 4)
+    hour = max(0, min(23, int(hour)))
+    events.append({
+        'timestamp': (base + datetime.timedelta(
+            days=random.randint(0,30),
+            hours=hour,
+            minutes=random.randint(0,59))).isoformat(),
+        'user': user,
+        'event_id': random.choices([4624,4625,4648,4672,4768],[50,10,5,3,2])[0],
+        'logon_type': random.choice([2,3,7,10]),
+        'source_ip': f'192.168.56.{random.randint(10,50)}',
+        'workstation': f'WS{random.randint(1,20):02d}'
+    })
+with open('security_events.json', 'w') as f:
+    json.dump(events, f)
+print(f'Generated {len(events)} events')
+"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Parse Windows Event Log key Event IDs</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Key Event IDs for UEBA analysis:</p>
+        <div class="findings-table">
+          <table>
+            <tr><th>Event ID</th><th>Description</th><th>UEBA Relevance</th></tr>
+            <tr><td>4624</td><td>Successful logon</td><td>Login time baseline</td></tr>
+            <tr><td>4625</td><td>Failed logon</td><td>Brute force, wrong creds</td></tr>
+            <tr><td>4648</td><td>Explicit credential logon</td><td>Pass-the-Hash, lateral movement</td></tr>
+            <tr><td>4672</td><td>Special privilege assigned</td><td>Privilege escalation</td></tr>
+            <tr><td>4768/4769</td><td>Kerberos TGT/service ticket</td><td>Kerberoasting</td></tr>
+            <tr><td>4776</td><td>NTLM auth attempt</td><td>Legacy auth, PtH</td></tr>
+          </table>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/parse_events.py << 'EOF'
+import json, pandas as pd
+
+with open('logs/security_events.json') as f:
+    events = json.load(f)
+
+df = pd.DataFrame(events)
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+df['hour'] = df['timestamp'].dt.hour
+df['day_of_week'] = df['timestamp'].dt.dayofweek  # 0=Mon, 6=Sun
+df['is_weekend'] = df['day_of_week'].isin([5,6]).astype(int)
+df['is_after_hours'] = ((df['hour'] < 7) | (df['hour'] > 19)).astype(int)
+df['date'] = df['timestamp'].dt.date
+
+print("Event distribution:")
+print(df['event_id'].value_counts())
+print(f"\nTotal events: {len(df)}")
+print(f"Unique users: {df['user'].nunique()}")
+print(f"Date range: {df['date'].min()} to {df['date'].max()}")
+df.to_csv('logs/parsed_events.csv', index=False)
+EOF
+cd ~/ueba-lab && python3 parse_events.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Baseline User Behavior Profiling</div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Build per-user login time baseline</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Calculate each user's normal working hours distribution:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/build_baseline.py << 'EOF'
+import pandas as pd, numpy as np
+
+df = pd.read_csv('logs/parsed_events.csv', parse_dates=['timestamp'])
+logins = df[df['event_id'] == 4624]  # Successful logins only
+
+# Per-user hourly profile (probability distribution)
+user_profiles = {}
+for user, group in logins.groupby('user'):
+    hours = group['hour'].values
+    profile = {
+        'mean_hour': hours.mean(),
+        'std_hour': hours.std(),
+        'median_hour': np.median(hours),
+        'typical_hours': list(pd.Series(hours).value_counts().head(5).index),
+        'weekend_login_rate': group['is_weekend'].mean(),
+        'after_hours_rate': group['is_after_hours'].mean(),
+        'unique_workstations': group['workstation'].nunique(),
+        'unique_source_ips': group['source_ip'].nunique(),
+        'daily_avg_logins': len(group) / group['date'].nunique(),
+        'failed_login_ratio': len(df[(df['user']==user)&(df['event_id']==4625)]) /
+                              max(len(group), 1),
+        'privileged_logins': len(df[(df['user']==user)&(df['event_id']==4672)]),
+    }
+    user_profiles[user] = profile
+
+profile_df = pd.DataFrame(user_profiles).T
+print("User behavior profiles:")
+print(profile_df.round(3))
+profile_df.to_csv('models/user_baselines.csv')
+EOF
+python3 build_baseline.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Calculate per-user risk scores (rolling window)</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Compute daily risk scores for each user based on deviation from their baseline:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/risk_score.py << 'EOF'
+import pandas as pd, numpy as np
+from scipy import stats
+
+df = pd.read_csv('logs/parsed_events.csv', parse_dates=['timestamp'])
+baselines = pd.read_csv('models/user_baselines.csv', index_col=0)
+
+def daily_risk_score(user_df, baseline, user):
+    if user not in baseline.index:
+        return 0
+    b = baseline.loc[user]
+    score = 0
+    reasons = []
+
+    # After-hours login
+    after_hrs = (user_df['is_after_hours'] == 1).sum()
+    if after_hrs > 0 and b['after_hours_rate'] < 0.05:
+        score += 30 * after_hrs
+        reasons.append(f"After-hours login x{after_hrs}")
+
+    # Weekend login
+    weekend = (user_df['is_weekend'] == 1).sum()
+    if weekend > 0 and b['weekend_login_rate'] < 0.1:
+        score += 20
+        reasons.append("Weekend login (unusual)")
+
+    # Login volume spike
+    daily_vol = len(user_df)
+    if daily_vol > b['daily_avg_logins'] * 3:
+        score += 25
+        reasons.append(f"Login volume spike: {daily_vol:.0f} vs avg {b['daily_avg_logins']:.1f}")
+
+    # New source IP
+    known_ips = user_df['source_ip'].nunique()
+    if known_ips > b['unique_source_ips'] * 1.5:
+        score += 20
+        reasons.append("Unusual source IP count")
+
+    # Failed logins
+    fails = (user_df['event_id'] == 4625).sum() if 'event_id' in user_df else 0
+    if fails >= 5:
+        score += 15 * (fails // 5)
+        reasons.append(f"{fails} failed login attempts")
+
+    # Privileged login
+    priv = (user_df['event_id'] == 4672).sum() if 'event_id' in user_df else 0
+    if priv > b['privileged_logins'] / 30 * 2:
+        score += 35
+        reasons.append(f"Unusual privileged access x{priv}")
+
+    return score, reasons
+
+# Calculate daily scores
+results = []
+for (user, date), group in df.groupby(['user', 'date']):
+    score, reasons = daily_risk_score(group, baselines, user)
+    if score > 0:
+        results.append({'user': user, 'date': date, 'risk_score': score,
+                        'reasons': '; '.join(reasons)})
+
+risk_df = pd.DataFrame(results).sort_values('risk_score', ascending=False)
+print("High-risk events detected:")
+print(risk_df[risk_df['risk_score'] >= 30].head(20))
+risk_df.to_csv('reports/risk_scores.csv', index=False)
+EOF
+python3 risk_score.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Anomaly Detection &amp; Insider Threat Patterns</div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Inject insider threat scenario</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Simulate a rogue insider: "alice" suddenly starts logging in at 2am, accessing 10 new workstations:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 << 'EOF'
+import json, datetime, random
+
+with open('logs/security_events.json') as f:
+    events = json.load(f)
+
+# Inject insider threat events — alice after hours, many workstations, privilege use
+base_date = datetime.datetime(2024, 2, 12, 2, 30, 0)  # 2:30 AM
+for i in range(30):
+    events.append({
+        'timestamp': (base_date + datetime.timedelta(minutes=i*3)).isoformat(),
+        'user': 'alice',
+        'event_id': random.choice([4624, 4624, 4648, 4672]),
+        'logon_type': 3,  # Network logon
+        'source_ip': f'10.10.0.{random.randint(50,80)}',  # External IP range
+        'workstation': f'SERVER{random.randint(1,10):02d}'
+    })
+
+# Inject brute force against bob
+for i in range(20):
+    events.append({
+        'timestamp': (datetime.datetime(2024, 2, 12, 22, 0, 0) +
+                      datetime.timedelta(seconds=i*10)).isoformat(),
+        'user': 'bob',
+        'event_id': 4625,  # Failed logon
+        'logon_type': 3,
+        'source_ip': '192.168.56.10',  # Kali attacker
+        'workstation': 'DC01'
+    })
+
+with open('logs/security_events_injected.json', 'w') as f:
+    json.dump(events, f)
+print(f"Injected attack events. Total: {len(events)}")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Train Isolation Forest on user behavior vectors</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Build user feature vectors and apply Isolation Forest across all users:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/ueba_model.py << 'EOF'
+import pandas as pd, numpy as np, json
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+
+# Load injected data
+with open('logs/security_events_injected.json') as f:
+    events = json.load(f)
+df = pd.DataFrame(events)
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+df['hour'] = df['timestamp'].dt.hour
+df['is_after_hours'] = ((df['hour'] < 7) | (df['hour'] > 19)).astype(int)
+df['is_weekend'] = df['timestamp'].dt.dayofweek.isin([5,6]).astype(int)
+df['date'] = df['timestamp'].dt.date
+
+# Daily feature vectors per user
+daily_vectors = []
+for (user, date), group in df.groupby(['user', 'date']):
+    vec = {
+        'user': user, 'date': str(date),
+        'login_count': len(group[group['event_id']==4624]),
+        'fail_count': len(group[group['event_id']==4625]),
+        'priv_count': len(group[group['event_id']==4672]),
+        'after_hours': group['is_after_hours'].sum(),
+        'weekend': group['is_weekend'].sum(),
+        'unique_workstations': group['workstation'].nunique(),
+        'unique_ips': group['source_ip'].nunique(),
+        'network_logons': (group['logon_type']==3).sum(),
+        'explicit_creds': len(group[group['event_id']==4648]),
+    }
+    daily_vectors.append(vec)
+
+vdf = pd.DataFrame(daily_vectors)
+feature_cols = [c for c in vdf.columns if c not in ['user','date']]
+X = vdf[feature_cols].fillna(0)
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+iso = IsolationForest(n_estimators=200, contamination=0.05, random_state=42)
+vdf['anomaly'] = iso.fit_predict(X_scaled)
+vdf['score'] = iso.score_samples(X_scaled)
+
+anomalies = vdf[vdf['anomaly']==-1].sort_values('score')
+print(f"\nAnomalous user-days detected: {len(anomalies)}")
+print(anomalies[['user','date','login_count','fail_count','priv_count',
+                   'after_hours','unique_workstations','score']].head(15))
+vdf.to_csv('reports/ueba_results.csv', index=False)
+EOF
+cd ~/ueba-lab && python3 ueba_model.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Detect lateral movement patterns</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Identify users accessing unusual numbers of distinct hosts (lateral movement indicator):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/ueba-lab/lateral_movement.py << 'EOF'
+import pandas as pd, json
+
+with open('logs/security_events_injected.json') as f:
+    events = json.load(f)
+df = pd.DataFrame(events)
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+df['date'] = df['timestamp'].dt.date
+
+# Rolling 24-hour window: flag users accessing > mean + 2*std workstations
+baseline = pd.read_csv('models/user_baselines.csv', index_col=0)
+
+lateral_flags = []
+for (user, date), group in df.groupby(['user', 'date']):
+    ws_count = group['workstation'].nunique()
+    if user in baseline.index:
+        baseline_ws = float(baseline.loc[user, 'unique_workstations'])
+        if ws_count > max(baseline_ws * 2, 3):
+            lateral_flags.append({
+                'user': user, 'date': str(date),
+                'workstations_accessed': ws_count,
+                'baseline_workstations': baseline_ws,
+                'workstation_list': list(group['workstation'].unique()),
+                'source_ips': list(group['source_ip'].unique()),
+                'risk': 'HIGH' if ws_count > baseline_ws * 3 else 'MEDIUM'
+            })
+
+for flag in sorted(lateral_flags, key=lambda x: -x['workstations_accessed']):
+    print(f"\n[{flag['risk']}] {flag['user']} on {flag['date']}")
+    print(f"  Workstations: {flag['workstations_accessed']} (baseline: {flag['baseline_workstations']:.1f})")
+    print(f"  Systems accessed: {flag['workstation_list']}")
+    print(f"  Source IPs: {flag['source_ips']}")
+EOF
+python3 lateral_movement.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Detect brute force via failed login spike</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Identify credential stuffing and brute-force patterns from Event ID 4625:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/brute_force.py << 'EOF'
+import pandas as pd, json
+from datetime import timedelta
+
+with open('logs/security_events_injected.json') as f:
+    events = json.load(f)
+df = pd.DataFrame(events)
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+fails = df[df['event_id']==4625].copy()
+fails = fails.sort_values('timestamp')
+
+# Sliding 5-minute window: >=5 fails from same IP = brute force
+THRESHOLD = 5
+WINDOW = timedelta(minutes=5)
+
+brute_force_alerts = []
+for ip, group in fails.groupby('source_ip'):
+    group = group.sort_values('timestamp')
+    for i, row in group.iterrows():
+        window = group[(group['timestamp'] >= row['timestamp']) &
+                       (group['timestamp'] <= row['timestamp'] + WINDOW)]
+        if len(window) >= THRESHOLD:
+            brute_force_alerts.append({
+                'source_ip': ip,
+                'start_time': row['timestamp'].isoformat(),
+                'attempts': len(window),
+                'targeted_users': list(window['user'].unique()),
+                'targeted_workstations': list(window['workstation'].unique()),
+            })
+            break
+
+for alert in brute_force_alerts:
+    print(f"\n[ALERT] Brute Force from {alert['source_ip']}")
+    print(f"  Time: {alert['start_time']}")
+    print(f"  Attempts: {alert['attempts']} in 5 minutes")
+    print(f"  Targeted: {alert['targeted_users']}")
+    print(f"  MITRE: T1110.003 — Password Spraying")
+EOF
+python3 brute_force.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Visualization &amp; Reporting</div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Generate user risk heatmap</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/visualize.py << 'EOF'
+import pandas as pd, numpy as np, matplotlib.pyplot as plt, seaborn as sns
+
+vdf = pd.read_csv('reports/ueba_results.csv')
+vdf['date'] = pd.to_datetime(vdf['date'])
+vdf['date_str'] = vdf['date'].dt.strftime('%m/%d')
+
+# Pivot: users vs date, value = anomaly score (inverted so higher = worse)
+pivot = vdf.pivot_table(
+    values='score', index='user', columns='date_str', aggfunc='min')
+pivot_inverted = -pivot  # Isolation Forest: more negative = more anomalous
+
+plt.figure(figsize=(16, 5))
+sns.heatmap(pivot_inverted, cmap='Reds', linewidths=0.3,
+            linecolor='gray', annot=False)
+plt.title('UEBA Risk Heatmap — User Anomaly Scores Over Time')
+plt.xlabel('Date'); plt.ylabel('User')
+plt.tight_layout()
+plt.savefig('reports/ueba_heatmap.png', dpi=150)
+print("Risk heatmap saved to reports/ueba_heatmap.png")
+
+# Login hour distribution per user
+fig, axes = plt.subplots(1, vdf['user'].nunique(), figsize=(15, 3))
+import json
+with open('logs/security_events_injected.json') as f:
+    events = json.load(f)
+df = pd.DataFrame(events)
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+df['hour'] = df['timestamp'].dt.hour
+
+for ax, (user, group) in zip(axes, df[df['event_id']==4624].groupby('user')):
+    ax.hist(group['hour'], bins=24, range=(0,24), color='#0e5f7a', alpha=0.8)
+    ax.set_title(user, fontsize=9)
+    ax.set_xlabel('Hour'); ax.set_xlim(0,24)
+fig.suptitle('Login Hour Distribution per User', fontsize=12)
+plt.tight_layout()
+plt.savefig('reports/login_hours.png', dpi=150)
+print("Login hour chart saved")
+EOF
+python3 visualize.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Write Sigma rules for UEBA detections</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/ueba-lab/sigma_after_hours.yml << 'EOF'
+title: After-Hours Login — Insider Threat Indicator
+id: c3d4e5f6-a7b8-9012-cdef-012345678901
+status: experimental
+description: >
+  Detects interactive or network logon outside business hours (7am-7pm)
+  for users who historically don't log in during these windows.
+author: CyberSec Pro Academy - L07
+logsource:
+    product: windows
+    service: security
+    definition: 'Event ID 4624'
+detection:
+    selection:
+        EventID: 4624
+        LogonType:
+            - 2    # Interactive
+            - 3    # Network
+            - 10   # RemoteInteractive
+    timeframe: business_hours_outside  # 00:00-07:00 or 19:00-23:59
+    filter_service_accounts:
+        AccountName|endswith: '$'
+    condition: selection and not filter_service_accounts
+falsepositives:
+    - Authorized after-hours maintenance
+    - On-call staff responding to incidents
+level: medium
+tags:
+    - attack.initial_access
+    - attack.t1078
+    - insider_threat
+EOF
+echo "Sigma rule created"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Map all detections to MITRE ATT&amp;CK</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <table>
+            <tr><th>Detection</th><th>ATT&amp;CK ID</th><th>Tactic</th></tr>
+            <tr><td>After-hours login</td><td>T1078 — Valid Accounts</td><td>Initial Access</td></tr>
+            <tr><td>Lateral movement (many hosts)</td><td>T1021 — Remote Services</td><td>Lateral Movement</td></tr>
+            <tr><td>Brute force detection</td><td>T1110.003 — Password Spray</td><td>Credential Access</td></tr>
+            <tr><td>Privileged access spike</td><td>T1078.003 — Local Accounts</td><td>Privilege Escalation</td></tr>
+            <tr><td>Explicit credential use</td><td>T1550.002 — Pass-the-Hash</td><td>Defense Evasion</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Document findings and produce UEBA report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Finding</th><th>Details</th></tr>
+            <tr><td>Insider threat user detected</td><td><input type="text" placeholder="e.g., alice on 2024-02-12"></td></tr>
+            <tr><td>Brute force source IP</td><td><input type="text" placeholder="e.g., 192.168.56.10"></td></tr>
+            <tr><td>Lateral movement host count</td><td><input type="text" placeholder="e.g., alice accessed 8 servers"></td></tr>
+            <tr><td>Anomaly model AUC (if labeled)</td><td><input type="text" placeholder="e.g., 0.91"></td></tr>
+            <tr><td>MITRE techniques detected</td><td><input type="text" placeholder="e.g., T1078, T1021, T1110.003"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI UEBA Analyst</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('baseline')">Build better baseline</button>
+      <button onclick="qp('insider')">Insider threat indicators</button>
+      <button onclick="qp('lateral')">Lateral movement logic</button>
+      <button onclick="qp('risk')">Risk score tuning</button>
+      <button onclick="qp('sigma')">Write Sigma rule</button>
+      <button onclick="qp('report')">UEBA alert report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about UEBA baselines, risk scoring, anomaly detection..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L07',
+  totalSteps: 12,
+  modeLabel: 'UEBA Detection Lab',
+  welcomeMsg: `Welcome to Lab L07: User & Entity Behavior Analytics!
+
+I'm your AI UEBA Analyst. I can help you with:
+- Building accurate user behavior baselines from Windows Event Logs
+- Designing risk scoring algorithms for insider threats
+- Detecting lateral movement, brute force, and privilege abuse patterns
+- Tuning anomaly detection to minimize false positives for service accounts
+- Writing Sigma rules for your detected patterns
+- Interpreting UEBA alerts for SOC investigations
+
+What would you like to work on?`,
+  systemPrompt: `You are a senior threat detection engineer specializing in UEBA (User and Entity Behavior Analytics). You're helping a cybersecurity student with Lab L07 on SIFT Workstation (192.168.56.20).
+
+Technical context:
+- Python/pandas/scikit-learn on SIFT Workstation
+- Windows Security Event IDs: 4624 (login), 4625 (fail), 4648 (explicit creds), 4672 (privilege), 4768/4769 (Kerberos)
+- Synthetic dataset with 5 users: alice, bob, charlie, admin, svc_backup
+- Attack scenarios injected: alice insider threat (after-hours, new workstations), bob brute force victim
+- Models: Isolation Forest on daily feature vectors, rule-based risk scoring, lateral movement detection
+
+Key UEBA concepts to teach:
+- Baseline building: need 14-30 days of clean data minimum; weekday vs weekend separate baselines help
+- Risk scoring: additive factors weighted by severity; normalize by user role (admin expected more activity)
+- False positives: service accounts, on-call staff, scheduled tasks all generate "abnormal" patterns
+- Lateral movement: workstation count spike within short window; T1021 sub-techniques
+- Insider threat: the hardest to detect because valid credentials; behavioral analytics is primary detection method
+
+If the student shares anomaly output, help them triage which flags are genuine vs false positive.`,
+  quickPrompts: {
+    baseline: `I have 30 days of Windows Security Event Logs for 5 users. I want to build behavioral baselines. What are the most important features beyond login time? How do I handle users with variable schedules (on-call staff, part-time)?`,
+    insider: `My UEBA system flagged user 'alice': she logged in at 2:30 AM (never done this before), accessed 8 servers in 30 minutes (normal is 2), and used explicit credentials (Event ID 4648) multiple times. She's in HR. Is this a confirmed insider threat? What's my investigation workflow?`,
+    lateral: `I detected a user accessing 15 distinct workstations in 20 minutes. Their baseline is 2-3 workstations per day. The logon type is 3 (network) and the account used is their normal domain account. What MITRE technique is this and how do I distinguish compromise from legitimate IT activity?`,
+    risk: `My risk scoring currently flags ~20% of users daily as "high risk" which is too many for the SOC to investigate. My current weights are: after-hours=30, weekend=20, vol_spike=25, new_ip=20, failed_logins=15. How do I calibrate this to flag ~5% per day?`,
+    sigma: `User 'bob' had 20 failed logon attempts (Event ID 4625) in 5 minutes from IP 192.168.56.10, targeting workstation DC01. The attempts used different usernames. Write a Sigma rule to detect this password spray pattern.`,
+    report: `My UEBA analysis found: 1 insider threat (alice, after-hours lateral movement), 1 brute force attack (against bob from 192.168.56.10), and 3 false positives (svc_backup scheduled tasks). Write a UEBA incident report for the security team with triage recommendations.`
+  }
+});
+</script>
+</body>
+</html>

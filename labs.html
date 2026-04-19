@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labs — CyberSec Pro Academy</title>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy:  #0a1628;
+    --teal:  #0e5f7a;
+    --green: #00c896;
+    --dark:  #1a202c;
+    --gray:  #f4f6f9;
+    --mid:   #6b7280;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: #f8fafc; }
+  a { text-decoration: none; color: inherit; }
+
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: var(--navy); border-bottom: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 68px;
+  }
+  .nav-logo { font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px; }
+  .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta { background: var(--green); color: var(--navy) !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; }
+
+  /* ── LAYOUT ── */
+  .page-layout { display: grid; grid-template-columns: 1fr 380px; min-height: calc(100vh - 68px); }
+  .main-area { padding: 0; overflow-y: auto; }
+  .ai-sidebar {
+    background: var(--navy); border-left: 1px solid rgba(255,255,255,.08);
+    display: flex; flex-direction: column; height: calc(100vh - 68px);
+    position: sticky; top: 68px;
+  }
+
+  /* ── HERO ── */
+  .labs-hero {
+    background: linear-gradient(135deg, var(--navy) 0%, #0d3b6e 55%, var(--teal) 100%);
+    color: white; padding: 56px 40px 48px;
+  }
+  .labs-hero .label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+  .labs-hero h1 { font-size: clamp(26px, 3.5vw, 42px); font-weight: 900; margin-bottom: 12px; line-height: 1.1; }
+  .labs-hero h1 em { color: var(--green); font-style: normal; }
+  .labs-hero p { color: #a0c4e8; font-size: 16px; line-height: 1.6; max-width: 600px; margin-bottom: 24px; }
+  .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero-stat { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 12px 20px; text-align: center; }
+  .hero-stat .num { font-size: 26px; font-weight: 900; color: var(--green); }
+  .hero-stat .lbl { font-size: 12px; color: #a0c4e8; margin-top: 2px; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar { background: white; padding: 16px 40px; border-bottom: 1px solid #e8f0fe; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; position: sticky; top: 68px; z-index: 100; }
+  .filter-label { font-size: 12px; font-weight: 700; color: var(--mid); text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+  .filter-btn {
+    padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid #e2e8f0; background: white; color: var(--mid);
+    cursor: pointer; transition: all .15s;
+  }
+  .filter-btn:hover, .filter-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .filter-btn[data-cat="forensics"].active { background: #1a365d; border-color: #1a365d; }
+  .filter-btn[data-cat="malware"].active { background: #2d3a1e; border-color: #2d3a1e; }
+  .filter-btn[data-cat="ir"].active { background: #7f1d1d; border-color: #7f1d1d; }
+  .filter-btn[data-cat="detection"].active { background: #1e3a5f; border-color: #1e3a5f; }
+  .filter-btn[data-cat="network"].active { background: #0e5f7a; border-color: #0e5f7a; }
+  .filter-btn[data-cat="cloud"].active { background: #312e81; border-color: #312e81; }
+  .setup-link { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--teal); display: flex; align-items: center; gap: 6px; }
+  .setup-link:hover { color: var(--navy); }
+
+  /* ── LABS GRID ── */
+  .labs-grid { padding: 32px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .lab-card {
+    background: white; border-radius: 16px; border: 1px solid #e8f0fe;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06); overflow: hidden;
+    transition: transform .2s, box-shadow .2s; cursor: pointer;
+    display: flex; flex-direction: column;
+  }
+  .lab-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.12); }
+  .lab-card.completed { border-left: 4px solid var(--green); }
+  .lab-card-top { padding: 20px 20px 14px; flex: 1; }
+  .lab-num-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .lab-num { font-size: 12px; font-weight: 900; padding: 4px 10px; border-radius: 8px; background: var(--navy); color: var(--green); letter-spacing: .5px; }
+  .cat-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .cat-forensics { background: #dbeafe; color: #1e3a8a; }
+  .cat-malware { background: #dcfce7; color: #14532d; }
+  .cat-ir { background: #fee2e2; color: #7f1d1d; }
+  .cat-detection { background: #fef3c7; color: #78350f; }
+  .cat-network { background: #cffafe; color: #164e63; }
+  .cat-cloud { background: #ede9fe; color: #4c1d95; }
+  .cat-appsec { background: #fce7f3; color: #831843; }
+  .diff-badge { margin-left: auto; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; }
+  .diff-beginner { background: #f0fdf4; color: #15803d; }
+  .diff-intermediate { background: #fffbeb; color: #b45309; }
+  .diff-advanced { background: #fef2f2; color: #dc2626; }
+  .lab-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 8px; line-height: 1.3; }
+  .lab-card p { font-size: 13px; color: var(--mid); line-height: 1.6; margin-bottom: 12px; }
+  .lab-tools { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tool-tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 6px; background: var(--gray); color: #374151; }
+  .lab-card-bottom { padding: 14px 20px; border-top: 1px solid var(--gray); display: flex; align-items: center; gap: 10px; }
+  .lab-time { font-size: 12px; color: var(--mid); display: flex; align-items: center; gap: 4px; }
+  .ai-chip { font-size: 11px; font-weight: 700; background: linear-gradient(90deg, #00c896, #0e5f7a); color: white; padding: 3px 10px; border-radius: 10px; letter-spacing: .5px; }
+  .start-btn {
+    margin-left: auto; font-size: 13px; font-weight: 800; padding: 8px 18px;
+    background: var(--navy); color: white; border-radius: 8px; border: none;
+    cursor: pointer; transition: background .15s;
+  }
+  .start-btn:hover { background: var(--teal); }
+  .lab-card.completed .start-btn { background: var(--green); color: var(--navy); }
+  .done-check { display: none; color: var(--green); font-size: 18px; }
+  .lab-card.completed .done-check { display: block; }
+
+  /* ── AI SIDEBAR ── */
+  .ai-header {
+    padding: 18px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.08);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ai-avatar { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--green), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .ai-name { font-size: 15px; font-weight: 800; color: white; }
+  .ai-status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+  .ai-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .api-setup-banner {
+    margin: 12px; background: rgba(0,200,150,.08); border: 1px solid rgba(0,200,150,.2);
+    border-radius: 10px; padding: 12px 14px; cursor: pointer;
+  }
+  .api-setup-banner p { font-size: 12px; color: #a0c4e8; line-height: 1.5; }
+  .api-setup-banner strong { color: var(--green); }
+  .api-setup-banner:hover { background: rgba(0,200,150,.14); }
+  .ai-chat { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 100%; }
+  .msg-ai .bubble {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px 12px 12px 4px; padding: 12px 14px;
+    font-size: 13px; color: #e2e8f0; line-height: 1.6;
+  }
+  .msg-user .bubble {
+    background: rgba(0,200,150,.15); border: 1px solid rgba(0,200,150,.25);
+    border-radius: 12px 12px 4px 12px; padding: 12px 14px;
+    font-size: 13px; color: #e2e8f0; line-height: 1.6; margin-left: 24px;
+  }
+  .msg-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+  .msg-ai .msg-label { color: var(--green); }
+  .msg-user .msg-label { color: #a0c4e8; text-align: right; }
+  .bubble code { background: rgba(0,0,0,.3); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #a5f3fc; }
+  .bubble pre { background: rgba(0,0,0,.3); border-radius: 6px; padding: 10px; margin-top: 8px; overflow-x: auto; }
+  .bubble pre code { background: none; padding: 0; font-size: 12px; }
+  .typing-indicator { display: flex; gap: 5px; padding: 10px 14px; }
+  .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: .2s; }
+  .typing-dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+  .quick-actions { padding: 10px 16px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(255,255,255,.08); }
+  .quick-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .quick-btn {
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+    color: #c8d8e8; cursor: pointer; transition: all .15s;
+  }
+  .quick-btn:hover { background: rgba(255,255,255,.12); color: white; }
+  .ai-input-area { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.08); }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .ai-textarea {
+    flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 10px; padding: 10px 12px; color: white; font-size: 13px;
+    font-family: inherit; resize: none; min-height: 42px; max-height: 120px;
+    line-height: 1.5; outline: none; transition: border .15s;
+  }
+  .ai-textarea:focus { border-color: rgba(0,200,150,.5); }
+  .ai-textarea::placeholder { color: #64748b; }
+  .send-btn {
+    width: 38px; height: 38px; border-radius: 10px; background: var(--green);
+    color: var(--navy); border: none; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .15s; flex-shrink: 0;
+  }
+  .send-btn:hover { opacity: .85; }
+  .send-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .input-hint { font-size: 11px; color: #64748b; margin-top: 6px; text-align: center; }
+
+  /* ── API KEY MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--navy); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 36px; max-width: 440px; width: 90%; }
+  .modal h3 { font-size: 20px; font-weight: 800; color: white; margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: #a0c4e8; line-height: 1.6; margin-bottom: 20px; }
+  .modal-input { width: 100%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 12px 16px; color: white; font-size: 14px; font-family: monospace; outline: none; margin-bottom: 12px; }
+  .modal-input:focus { border-color: var(--green); }
+  .modal-note { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 20px; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-save { flex: 1; background: var(--green); color: var(--navy); font-weight: 800; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-size: 15px; }
+  .modal-skip { background: transparent; border: 1px solid rgba(255,255,255,.2); color: #a0c4e8; font-weight: 600; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+
+  /* ── LAB MODAL ── */
+  .lab-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .lab-modal-overlay.open { opacity: 1; pointer-events: all; }
+  .lab-modal { background: white; border-radius: 20px; max-width: 640px; width: 94%; max-height: 85vh; overflow-y: auto; box-shadow: 0 40px 80px rgba(0,0,0,.4); }
+  .lab-modal-header { background: var(--navy); color: white; padding: 24px 28px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .lab-modal-header h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .lab-modal-header p { font-size: 13px; color: #a0c4e8; }
+  .close-modal { background: none; border: none; color: #a0c4e8; font-size: 22px; cursor: pointer; padding: 0 4px; }
+  .lab-modal-body { padding: 28px; }
+  .lab-section-title { font-size: 14px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; margin-top: 20px; }
+  .lab-section-title:first-child { margin-top: 0; }
+  .lab-step-list { display: flex; flex-direction: column; gap: 10px; }
+  .lab-step { display: flex; gap: 12px; align-items: flex-start; background: var(--gray); border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+  .lab-step:hover { background: #eef2fb; }
+  .lab-step.done { background: #f0fdf4; }
+  .ls-check { width: 20px; height: 20px; border-radius: 5px; border: 2px solid #d1d5db; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: transparent; }
+  .lab-step.done .ls-check { background: var(--green); border-color: var(--green); color: white; }
+  .ls-text { font-size: 13px; color: #374151; line-height: 1.6; }
+  .lab-step.done .ls-text { color: var(--mid); text-decoration: line-through; }
+  .lab-code { background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px; font-family: monospace; font-size: 12px; line-height: 1.7; margin: 8px 0; overflow-x: auto; }
+  .lab-code .c { color: #64748b; }
+  .lab-code .k { color: #a5f3fc; }
+  .ai-assist-btn {
+    display: flex; align-items: center; gap: 8px; background: linear-gradient(90deg, rgba(0,200,150,.12), rgba(14,95,122,.12));
+    border: 1px solid rgba(0,200,150,.3); border-radius: 10px; padding: 10px 16px;
+    font-size: 13px; font-weight: 700; color: var(--teal); cursor: pointer;
+    margin-top: 12px; transition: all .15s; width: 100%;
+  }
+  .ai-assist-btn:hover { background: rgba(0,200,150,.18); }
+  .lab-modal-footer { padding: 20px 28px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+  .lab-progress-text { font-size: 13px; color: var(--mid); }
+  .launch-btn { background: var(--green); color: var(--navy); font-weight: 800; padding: 12px 28px; border-radius: 10px; border: none; cursor: pointer; font-size: 15px; }
+  .launch-btn.full-lab { background: var(--navy); color: white; }
+  .launch-btn.full-lab:hover { background: var(--teal); }
+
+  @media (max-width: 900px) {
+    .page-layout { grid-template-columns: 1fr; }
+    .ai-sidebar { display: none; }
+    nav { padding: 0 20px; }
+    .labs-hero { padding: 40px 20px; }
+    .filter-bar, .labs-grid { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="lab-setup.html">Lab Setup</a>
+    <a href="labs.html" style="color:var(--green)">Labs</a>
+    <a href="checkout.html" class="nav-cta">Enroll Now</a>
+  </div>
+</nav>
+
+<div class="page-layout">
+
+  <!-- MAIN CONTENT -->
+  <div class="main-area">
+
+    <!-- HERO -->
+    <div class="labs-hero">
+      <div class="label">Hands-On Practice</div>
+      <h1>20 <em>AI-Powered</em> Security Labs</h1>
+      <p>Real tools. Real scenarios. An AI analyst beside you the whole time — analyzing your output, explaining techniques, and guiding your investigation.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num">20</div><div class="lbl">Labs</div></div>
+        <div class="hero-stat"><div class="num">5</div><div class="lbl">VM Environments</div></div>
+        <div class="hero-stat"><div class="num">AI</div><div class="lbl">Live Analyst</div></div>
+        <div class="hero-stat"><div class="num" id="completedCount">0</div><div class="lbl">Completed</div></div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-btn active" data-cat="all" onclick="filterLabs(this)">All</button>
+      <button class="filter-btn" data-cat="forensics" onclick="filterLabs(this)">Forensics</button>
+      <button class="filter-btn" data-cat="malware" onclick="filterLabs(this)">Malware RE</button>
+      <button class="filter-btn" data-cat="ir" onclick="filterLabs(this)">Incident Response</button>
+      <button class="filter-btn" data-cat="detection" onclick="filterLabs(this)">Detection</button>
+      <button class="filter-btn" data-cat="network" onclick="filterLabs(this)">Network</button>
+      <button class="filter-btn" data-cat="cloud" onclick="filterLabs(this)">Cloud</button>
+      <a href="lab-setup.html" class="setup-link">⚙️ Lab Environment Setup →</a>
+    </div>
+
+    <!-- LABS GRID -->
+    <div class="labs-grid" id="labsGrid">
+
+      <!-- L01 -->
+      <div class="lab-card" data-cat="network" data-id="L01" onclick="openLab('L01')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L01</span>
+            <span class="cat-badge cat-network">Network</span>
+            <span class="diff-badge diff-beginner">Beginner</span>
+          </div>
+          <h3>Wireshark + AI Traffic Analysis</h3>
+          <p>Capture live packets, analyze protocol distributions, and use AI to flag anomalous flows and identify attack signatures in PCAP files.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Kali</span><span class="tool-tag">Wireshark</span><span class="tool-tag">tcpdump</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 45 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L02 -->
+      <div class="lab-card" data-cat="detection" data-id="L02" onclick="openLab('L02')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L02</span>
+            <span class="cat-badge cat-detection">Detection</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>AI-Powered SIEM (Splunk)</h3>
+          <p>Build ML-based correlation rules in Splunk, detect brute force and lateral movement patterns in real security logs with AI-assisted query building.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Splunk Free</span><span class="tool-tag">Python</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L03 -->
+      <div class="lab-card" data-cat="malware" data-id="L03" onclick="openLab('L03')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L03</span>
+            <span class="cat-badge cat-malware">Malware RE</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Static Malware Analysis with AI</h3>
+          <p>Analyze suspicious executables using REMnux tools — strings, PE headers, FLOSS, Capa. AI helps interpret indicators and map behavior to MITRE ATT&CK.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">REMnux</span><span class="tool-tag">FLOSS</span><span class="tool-tag">Capa</span><span class="tool-tag">pefile</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 60 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn" onclick="event.stopPropagation();window.location='lab-malware.html'">Full Lab →</button>
+        </div>
+      </div>
+
+      <!-- L04 -->
+      <div class="lab-card" data-cat="malware" data-id="L04" onclick="openLab('L04')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L04</span>
+            <span class="cat-badge cat-malware">Malware RE</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Dynamic Malware Analysis + Sandbox</h3>
+          <p>Execute malware in a controlled Flare-VM environment. Monitor processes, registry changes, and network activity. AI synthesizes behavioral IOCs automatically.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Flare-VM</span><span class="tool-tag">Process Monitor</span><span class="tool-tag">x64dbg</span><span class="tool-tag">Wireshark</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 120 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L05 -->
+      <div class="lab-card" data-cat="detection" data-id="L05" onclick="openLab('L05')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L05</span>
+            <span class="cat-badge cat-detection">Detection</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Phishing Detection with NLP</h3>
+          <p>Build a Python NLP model that classifies phishing emails with 95%+ accuracy. Use AI to explain why specific emails are flagged and generate detection rules.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Python</span><span class="tool-tag">scikit-learn</span><span class="tool-tag">NLTK</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 75 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L06 -->
+      <div class="lab-card" data-cat="network" data-id="L06" onclick="openLab('L06')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L06</span>
+            <span class="cat-badge cat-network">Network</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Network Anomaly Detection</h3>
+          <p>Use Isolation Forest and Autoencoder models in Python to detect outliers in NetFlow data. AI explains each anomaly's risk score and suggests next steps.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Kali</span><span class="tool-tag">Python</span><span class="tool-tag">scikit-learn</span><span class="tool-tag">Zeek</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L07 -->
+      <div class="lab-card" data-cat="detection" data-id="L07" onclick="openLab('L07')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L07</span>
+            <span class="cat-badge cat-detection">Detection</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Behavioral Analytics (UEBA)</h3>
+          <p>Profile normal user activity from Windows event logs. Build AI-powered baselines and trigger alerts on insider threat patterns like off-hours access and bulk downloads.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">SIFT</span><span class="tool-tag">Python</span><span class="tool-tag">Windows Logs</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 60 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L08 -->
+      <div class="lab-card" data-cat="ir" data-id="L08" onclick="openLab('L08')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L08</span>
+            <span class="cat-badge cat-ir">Incident Response</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>AI Incident Response Automation</h3>
+          <p>Simulate a ransomware incident. AI orchestrates the IR playbook: containment decisions, evidence collection commands, and a full written incident report.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">SIFT</span><span class="tool-tag">Volatility</span><span class="tool-tag">Autopsy</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 120 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L09 -->
+      <div class="lab-card" data-cat="cloud" data-id="L09" onclick="openLab('L09')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L09</span>
+            <span class="cat-badge cat-cloud">Cloud</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Cloud Security AI Monitoring</h3>
+          <p>Ingest AWS CloudTrail logs and use AI to detect privilege escalation, impossible travel, and credential abuse in real time with automated alert triage.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">AWS Free Tier</span><span class="tool-tag">CloudTrail</span><span class="tool-tag">Python</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L10 -->
+      <div class="lab-card" data-cat="detection" data-id="L10" onclick="openLab('L10')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L10</span>
+            <span class="cat-badge cat-detection">Detection</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Deepfake &amp; Social Engineering Defense</h3>
+          <p>Analyze deepfake audio/video samples using open-source detection tools. AI explains manipulation artifacts and builds organizational detection policies.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Python</span><span class="tool-tag">FaceForensics++</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 60 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L11 -->
+      <div class="lab-card" data-cat="network" data-id="L11" onclick="openLab('L11')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L11</span>
+            <span class="cat-badge cat-network">Network</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Vulnerability Triage with AI (Nessus)</h3>
+          <p>Run Nessus scans against Metasploitable. AI prioritizes CVEs by CVSS score, exploit availability, and business impact — generating an executive-ready report.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Nessus Essentials</span><span class="tool-tag">Kali</span><span class="tool-tag">Metasploitable</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L12 -->
+      <div class="lab-card" data-cat="ir" data-id="L12" onclick="openLab('L12')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L12</span>
+            <span class="cat-badge cat-ir">Incident Response</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Active Directory Attack &amp; AI Defense</h3>
+          <p>Execute Kerberoasting and Pass-the-Hash attacks against a lab AD environment. AI detects each attack from Windows event logs and writes Sigma detection rules.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Kali</span><span class="tool-tag">Windows Server</span><span class="tool-tag">Impacket</span><span class="tool-tag">Sigma</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 120 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L13 -->
+      <div class="lab-card" data-cat="forensics" data-id="L13" onclick="openLab('L13')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L13</span>
+            <span class="cat-badge cat-forensics">Forensics</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Memory Forensics with Volatility</h3>
+          <p>Analyze a memory dump from a compromised system. Extract running processes, network connections, and injected code. AI identifies malware artifacts and persistence mechanisms.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">SIFT</span><span class="tool-tag">Volatility 3</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L14 -->
+      <div class="lab-card" data-cat="forensics" data-id="L14" onclick="openLab('L14')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L14</span>
+            <span class="cat-badge cat-forensics">Forensics</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Disk Forensics &amp; Timeline Analysis</h3>
+          <p>Forensically image a disk, recover deleted files, and build a super-timeline with Plaso/log2timeline. AI correlates artifacts to reconstruct attacker activity.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">SIFT</span><span class="tool-tag">Autopsy</span><span class="tool-tag">Plaso</span><span class="tool-tag">Sleuth Kit</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 120 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L15 -->
+      <div class="lab-card" data-cat="malware" data-id="L15" onclick="openLab('L15')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L15</span>
+            <span class="cat-badge cat-malware">Malware RE</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Reverse Engineering with Ghidra + AI</h3>
+          <p>Decompile a real malware sample in Ghidra. AI explains assembly and decompiled C code, identifies key functions, and maps behavior to MITRE ATT&CK techniques.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Flare-VM</span><span class="tool-tag">Ghidra</span><span class="tool-tag">x64dbg</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 120 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L16 -->
+      <div class="lab-card" data-cat="detection" data-id="L16" onclick="openLab('L16')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L16</span>
+            <span class="cat-badge cat-detection">Detection</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>AI Threat Intelligence Aggregator</h3>
+          <p>Build a Python tool that pulls OTX, AbuseIPDB, and MISP feeds, then uses AI to surface critical IOCs, cluster threat actors, and prioritize response actions.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">Python</span><span class="tool-tag">OTX API</span><span class="tool-tag">MISP</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L17 -->
+      <div class="lab-card" data-cat="ir" data-id="L17" onclick="openLab('L17')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L17</span>
+            <span class="cat-badge cat-ir">Incident Response</span>
+            <span class="diff-badge diff-intermediate">Intermediate</span>
+          </div>
+          <h3>Log Analysis &amp; IOC Extraction with AI</h3>
+          <p>Parse Windows Event Logs, Syslog, and web server access logs. AI automatically extracts IOCs, identifies attack patterns, and writes a detection hypothesis.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">SIFT</span><span class="tool-tag">Python</span><span class="tool-tag">EVTX Parser</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 75 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L18 -->
+      <div class="lab-card" data-cat="malware" data-id="L18" onclick="openLab('L18')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L18</span>
+            <span class="cat-badge cat-malware">Malware RE</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>YARA Rule Writing with AI</h3>
+          <p>Analyze a malware family, identify unique byte patterns and strings, then use AI to write and test YARA detection rules against a sample corpus.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">REMnux</span><span class="tool-tag">YARA</span><span class="tool-tag">Python</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L19 -->
+      <div class="lab-card" data-cat="cloud" data-id="L19" onclick="openLab('L19')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L19</span>
+            <span class="cat-badge cat-cloud">Cloud</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>DevSecOps Pipeline Security</h3>
+          <p>Embed SAST (Semgrep), DAST (OWASP ZAP), and AI code review into a GitHub Actions CI/CD pipeline. Block vulnerable builds automatically.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">GitHub Actions</span><span class="tool-tag">Semgrep</span><span class="tool-tag">OWASP ZAP</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 90 min</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+      <!-- L20 -->
+      <div class="lab-card" data-cat="ir" data-id="L20" onclick="openLab('L20')">
+        <div class="lab-card-top">
+          <div class="lab-num-row">
+            <span class="lab-num">L20</span>
+            <span class="cat-badge cat-ir">Incident Response</span>
+            <span class="diff-badge diff-advanced">Advanced</span>
+          </div>
+          <h3>Full SOC Simulation — AI Analyst</h3>
+          <p>Capstone lab: a full-scope attack scenario (initial access → lateral movement → exfiltration). AI triages alerts, coordinates response, and generates the final post-incident report.</p>
+          <div class="lab-tools">
+            <span class="tool-tag">All VMs</span><span class="tool-tag">Splunk</span><span class="tool-tag">SIFT</span><span class="tool-tag">AI Analyst</span>
+          </div>
+        </div>
+        <div class="lab-card-bottom">
+          <span class="lab-time">⏱ 3 hrs</span>
+          <span class="ai-chip">AI</span>
+          <span class="done-check">✓</span>
+          <button class="start-btn">Start Lab</button>
+        </div>
+      </div>
+
+    </div><!-- end labs-grid -->
+  </div><!-- end main-area -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <div class="ai-avatar">🤖</div>
+      <div>
+        <div class="ai-name">CyberSec AI Analyst</div>
+        <div class="ai-status" id="aiStatus">Ready — select a lab to begin</div>
+      </div>
+    </div>
+
+    <div class="api-setup-banner" id="apiSetupBanner" onclick="openApiModal()">
+      <p><strong>Connect Your AI Analyst →</strong><br>Add your Claude API key to enable live analysis of your terminal output, log files, and malware indicators.</p>
+    </div>
+
+    <div class="ai-chat" id="aiChat">
+      <div class="msg msg-ai">
+        <div class="msg-label">AI Analyst</div>
+        <div class="bubble">Welcome to the CyberSec Pro lab environment. I'm your AI analyst — I can analyze terminal output, interpret malware indicators, guide you through investigation steps, and explain what you're seeing.<br><br>
+        To get started: <strong>select a lab from the list</strong>, then paste any output from your VM into the chat below.<br><br>
+        I'll help you understand what it means and what to do next.</div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <div class="quick-label">Quick Actions</div>
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="quickPrompt('analyze')">Analyze Output</button>
+        <button class="quick-btn" onclick="quickPrompt('ioc')">Extract IOCs</button>
+        <button class="quick-btn" onclick="quickPrompt('mitre')">Map to ATT&CK</button>
+        <button class="quick-btn" onclick="quickPrompt('sigma')">Write Sigma Rule</button>
+        <button class="quick-btn" onclick="quickPrompt('yara')">Write YARA Rule</button>
+        <button class="quick-btn" onclick="quickPrompt('report')">Draft IR Report</button>
+      </div>
+    </div>
+
+    <div class="ai-input-area">
+      <div class="input-row">
+        <textarea class="ai-textarea" id="aiInput" placeholder="Paste terminal output, log entries, or ask a question..." rows="2" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="input-hint" id="inputHint">Enter to send • Shift+Enter for new line</div>
+    </div>
+  </div>
+
+</div><!-- end page-layout -->
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h3>Connect AI Analyst</h3>
+    <p>Enter your Anthropic API key to enable the AI lab assistant. Your key is stored locally in your browser only — it never leaves your machine.</p>
+    <input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
+    <div class="modal-note">Get a free API key at console.anthropic.com. The AI analyst uses claude-opus-4-6 and costs roughly $0.01–0.05 per lab session.</div>
+    <div class="modal-btns">
+      <button class="modal-skip" onclick="closeApiModal()">Skip for now</button>
+      <button class="modal-save" onclick="saveApiKey()">Save Key &amp; Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAB DETAIL MODAL -->
+<div class="lab-modal-overlay" id="labModal">
+  <div class="lab-modal">
+    <div class="lab-modal-header">
+      <div>
+        <h2 id="modalTitle">Lab Title</h2>
+        <p id="modalMeta">Category • Difficulty • Duration</p>
+      </div>
+      <button class="close-modal" onclick="closeLab()">✕</button>
+    </div>
+    <div class="lab-modal-body" id="modalBody"></div>
+    <div class="lab-modal-footer">
+      <span class="lab-progress-text" id="modalProgress">0 of 0 steps completed</span>
+      <button class="launch-btn full-lab" id="modalLaunchBtn" onclick="closeLab()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── API KEY ──
+let apiKey = localStorage.getItem('cspa_api_key') || '';
+let currentLabContext = 'general cybersecurity lab assistance';
+const chatHistory = [];
+
+function openApiModal() { document.getElementById('apiModal').classList.add('open'); }
+function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val.startsWith('sk-')) { alert('Please enter a valid API key starting with sk-'); return; }
+  apiKey = val;
+  localStorage.setItem('cspa_api_key', apiKey);
+  document.getElementById('apiSetupBanner').style.display = 'none';
+  document.getElementById('aiStatus').textContent = 'Online — AI Analyst Active';
+  closeApiModal();
+  addAiMessage("API key connected. I'm now fully active as your lab analyst. Select a lab, run commands in your VM, and paste the output here for analysis.");
+}
+
+// ── FILTER ──
+function filterLabs(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cat = btn.dataset.cat;
+  document.querySelectorAll('.lab-card').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+// ── LAB MODAL DATA ──
+const labData = {
+  L01: {
+    title: "Wireshark + AI Traffic Analysis",
+    meta: "Network • Beginner • 45 min",
+    context: "You are helping a student with the Wireshark + AI Traffic Analysis lab (L01). They are using Kali Linux to capture and analyze network traffic. Help them interpret Wireshark output, identify suspicious patterns, and understand network protocols.",
+    fullPage: "lab-wireshark.html",
+    steps: [
+      { text: "Boot your Kali Linux VM. Open a terminal and start a packet capture on your network interface", code: "sudo tcpdump -i eth0 -w /tmp/capture.pcap &\nping -c 20 192.168.56.101\nsudo killall tcpdump" },
+      { text: "Open Wireshark and load the capture file: File → Open → /tmp/capture.pcap" },
+      { text: "Apply filters to isolate traffic types", code: "# In Wireshark display filter bar:\ntcp.flags.syn == 1          # Find all SYN packets (connections)\nhttp                         # HTTP only\ndns                          # DNS queries\nip.addr == 192.168.56.101   # Traffic to/from target" },
+      { text: "Use the Statistics menu → Conversations to see all connections and data volumes" },
+      { text: "Export 10 suspicious packet summaries and paste them into the AI Analyst for interpretation" },
+      { text: "Run a Nmap scan and capture it in Wireshark simultaneously to see what a scan looks like", code: "# Terminal 1:\nsudo tcpdump -i eth0 -w /tmp/nmap_scan.pcap\n\n# Terminal 2:\nnmap -sV 192.168.56.101\n\n# Stop capture after scan completes" },
+      { text: "In the AI Analyst, paste your Wireshark output and ask it to identify: protocol distribution, suspicious ports, and potential attack indicators" }
+    ]
+  },
+  L03: {
+    title: "Static Malware Analysis with AI",
+    meta: "Malware RE • Intermediate • 60 min",
+    context: "You are helping a student with the Static Malware Analysis lab (L03). They are using REMnux to perform static analysis on a suspicious executable. Help them interpret tool output, identify malicious indicators, map behaviors to MITRE ATT&CK, and write detection rules.",
+    fullPage: "lab-malware.html"
+  },
+  L02: { title: "AI-Powered SIEM (Splunk)", meta: "Detection • Intermediate • 90 min", fullPage: "labs/lab-splunk.html" },
+  L04: { title: "Dynamic Malware Analysis + Sandbox", meta: "Malware RE • Advanced • 120 min", fullPage: "labs/lab-dynamic-malware.html" },
+  L05: { title: "Phishing Detection with NLP", meta: "Detection • Intermediate • 75 min", fullPage: "labs/lab-phishing-nlp.html" },
+  L06: { title: "Network Anomaly Detection", meta: "Network • Advanced • 90 min", fullPage: "labs/lab-network-anomaly.html" },
+  L07: { title: "Behavioral Analytics (UEBA)", meta: "Detection • Intermediate • 60 min", fullPage: "labs/lab-ueba.html" },
+  L08: {
+    title: "AI Incident Response Automation",
+    meta: "Incident Response • Advanced • 120 min",
+    fullPage: "labs/lab-ir.html",
+    context: "You are helping a student with the AI Incident Response lab (L08). They are investigating a simulated ransomware incident using SIFT Workstation. Help them execute the IR playbook, analyze evidence, identify the attack timeline, and draft an incident report.",
+    steps: [
+      { text: "Start SIFT Workstation. Download the practice memory image for this lab", code: "wget https://downloads.digitalcorpora.org/corpora/scenarios/2009-m57-patents/ram/terry-work-usb-2009-12-11.img.gz\ngunzip terry-work-usb-2009-12-11.img.gz" },
+      { text: "Run Volatility to identify the OS profile and running processes", code: "volatility -f terry-work-usb-2009-12-11.img imageinfo\nvolatility -f terry-work-usb-2009-12-11.img --profile=WinXPSP3x86 pslist" },
+      { text: "Look for suspicious processes — paste the pslist output into the AI Analyst and ask it to flag anomalies" },
+      { text: "Extract network connections active at the time of the image", code: "volatility -f terry-work-usb-2009-12-11.img --profile=WinXPSP3x86 netscan" },
+      { text: "Search for injected code or hollowed processes", code: "volatility -f terry-work-usb-2009-12-11.img --profile=WinXPSP3x86 malfind | head -80" },
+      { text: "Paste all your findings into the AI Analyst and ask it to: 1) identify the attack type, 2) map to MITRE ATT&CK, 3) draft containment steps, 4) write the executive summary" }
+    ]
+  },
+  L09: { title: "Cloud Security AI Monitoring", meta: "Cloud • Advanced • 90 min", fullPage: "labs/lab-cloud.html" },
+  L10: { title: "Deepfake & Social Engineering Defense", meta: "Detection • Intermediate • 60 min", fullPage: "labs/lab-deepfake.html" },
+  L11: { title: "Vulnerability Triage with AI (Nessus)", meta: "Network • Intermediate • 90 min", fullPage: "labs/lab-nessus.html" },
+  L12: { title: "Active Directory Attack & AI Defense", meta: "Incident Response • Advanced • 120 min", fullPage: "labs/lab-active-directory.html" },
+  L13: {
+    title: "Memory Forensics with Volatility",
+    meta: "Forensics • Intermediate • 90 min",
+    fullPage: "labs/lab-memory-forensics.html",
+    context: "You are helping a student with the Memory Forensics lab (L13). They are using Volatility on SIFT Workstation to analyze a memory dump from a compromised Windows system. Help them identify malware artifacts, persistence mechanisms, and attacker activity.",
+    steps: [
+      { text: "Load the practice memory image in SIFT. Check available profiles", code: "volatility -f memory.img imageinfo" },
+      { text: "List all running processes and identify anomalies", code: "volatility -f memory.img --profile=<PROFILE> pstree\nvolatility -f memory.img --profile=<PROFILE> cmdline" },
+      { text: "Check network connections and DNS cache", code: "volatility -f memory.img --profile=<PROFILE> netscan\nvolatility -f memory.img --profile=<PROFILE> dnscache" },
+      { text: "Scan for injected shellcode and process hollowing", code: "volatility -f memory.img --profile=<PROFILE> malfind\nvolatility -f memory.img --profile=<PROFILE> hollowfind" },
+      { text: "Extract browser history, registry hives, and clipboard data", code: "volatility -f memory.img --profile=<PROFILE> iehistory\nvolatility -f memory.img --profile=<PROFILE> hivelist\nvolatility -f memory.img --profile=<PROFILE> clipboard" },
+      { text: "Paste your findings into the AI Analyst — ask it to reconstruct the attack timeline and identify the malware family" }
+    ]
+  },
+  L14: { title: "Disk Forensics & Timeline Analysis", meta: "Forensics • Advanced • 120 min", fullPage: "labs/lab-disk-forensics.html" },
+  L15: { title: "Reverse Engineering with Ghidra + AI", meta: "Malware RE • Advanced • 120 min", fullPage: "labs/lab-ghidra.html" },
+  L16: { title: "AI Threat Intelligence Aggregator", meta: "Detection • Intermediate • 90 min", fullPage: "labs/lab-threat-intel.html" },
+  L17: { title: "Log Analysis & IOC Extraction with AI", meta: "Incident Response • Intermediate • 75 min", fullPage: "labs/lab-log-analysis.html" },
+  L18: { title: "YARA Rule Writing with AI", meta: "Malware RE • Advanced • 90 min", fullPage: "labs/lab-yara.html" },
+  L19: { title: "DevSecOps Pipeline Security", meta: "Cloud • Advanced • 90 min", fullPage: "labs/lab-devsecops.html" },
+  L20: { title: "Full SOC Simulation — AI Analyst", meta: "Incident Response • Advanced • 3 hrs", fullPage: "labs/lab-soc-simulation.html" }
+};
+
+// Default step structure for labs without detailed data
+function getDefaultSteps(id) {
+  return [
+    { text: `Boot the required VM environment for lab ${id}. Review the lab objectives.` },
+    { text: "Complete the setup phase and take a pre-lab snapshot of your VM." },
+    { text: "Follow the lab instructions and run the required commands in your VM." },
+    { text: "Paste your output into the AI Analyst on the right for analysis and guidance." },
+    { text: "Document your findings and complete the lab report template." }
+  ];
+}
+
+function openLab(id) {
+  const data = labData[id];
+
+  // If this lab has a dedicated full page, navigate there directly
+  if (data && data.fullPage) {
+    window.location.href = data.fullPage;
+    return;
+  }
+
+  const title = data ? data.title : `Lab ${id}`;
+  const meta = data ? data.meta : 'Lab';
+  const steps = data && data.steps ? data.steps : getDefaultSteps(id);
+
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMeta').textContent = meta;
+
+  if (data && data.context) currentLabContext = data.context;
+  document.getElementById('aiStatus').textContent = `Active — ${title}`;
+
+  // Build body
+  const savedSteps = JSON.parse(localStorage.getItem('labSteps_' + id) || '{}');
+  let html = '<div class="lab-step-list">';
+  steps.forEach((step, i) => {
+    const done = savedSteps[i] ? 'done' : '';
+    html += `<div class="lab-step ${done}" onclick="toggleLabStep(this,'${id}',${i})">
+      <div class="ls-check">✓</div>
+      <div class="ls-text">${step.text}${step.code ? `<div class="lab-code"><span class="c"># Commands:</span><br><span class="k">${step.code.replace(/\n/g,'<br>')}</span></div>` : ''}</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  if (data && data.fullPage) {
+    html += `<a href="${data.fullPage}" style="display:block;margin-top:16px;"><button class="ai-assist-btn">🧪 Open Full Interactive Lab — ${title} →</button></a>`;
+  }
+
+  html += `<button class="ai-assist-btn" style="margin-top:12px" onclick="sendToAI('I am starting lab ${id}: ${title}. What should I focus on first?');closeLab()">🤖 Ask AI Analyst for guidance on this lab</button>`;
+
+  document.getElementById('modalBody').innerHTML = html;
+  updateModalProgress(id, steps.length);
+  document.getElementById('labModal').classList.add('open');
+}
+
+function closeLab() { document.getElementById('labModal').classList.remove('open'); }
+
+function toggleLabStep(el, labId, idx) {
+  el.classList.toggle('done');
+  const saved = JSON.parse(localStorage.getItem('labSteps_' + labId) || '{}');
+  saved[idx] = el.classList.contains('done');
+  localStorage.setItem('labSteps_' + labId, JSON.stringify(saved));
+  const card = document.querySelector(`[data-id="${labId}"]`);
+  const steps = Object.values(saved);
+  const allDone = steps.length > 0 && steps.every(Boolean);
+  if (card) card.classList.toggle('completed', allDone);
+  updateCompletedCount();
+}
+
+function updateModalProgress(id, total) {
+  const saved = JSON.parse(localStorage.getItem('labSteps_' + id) || '{}');
+  const done = Object.values(saved).filter(Boolean).length;
+  document.getElementById('modalProgress').textContent = `${done} of ${total} steps completed`;
+}
+
+function updateCompletedCount() {
+  const done = document.querySelectorAll('.lab-card.completed').length;
+  document.getElementById('completedCount').textContent = done;
+}
+
+// ── AI CHAT ──
+function addAiMessage(text) {
+  const chat = document.getElementById('aiChat');
+  const msg = document.createElement('div');
+  msg.className = 'msg msg-ai';
+  msg.innerHTML = `<div class="msg-label">AI Analyst</div><div class="bubble">${text.replace(/\n/g,'<br>').replace(/`([^`]+)`/g,'<code>$1</code>')}</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addUserMessage(text) {
+  const chat = document.getElementById('aiChat');
+  const msg = document.createElement('div');
+  msg.className = 'msg msg-user';
+  msg.innerHTML = `<div class="msg-label">You</div><div class="bubble">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping() {
+  const chat = document.getElementById('aiChat');
+  const div = document.createElement('div');
+  div.id = 'typingIndicator';
+  div.className = 'msg msg-ai';
+  div.innerHTML = `<div class="msg-label">AI Analyst</div><div class="bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  if (!apiKey) {
+    addAiMessage("Please add your API key to enable AI analysis. Click **Connect Your AI Analyst** above.");
+    return;
+  }
+
+  addUserMessage(text);
+  chatHistory.push({ role: 'user', content: text });
+  showTyping();
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 1500,
+        system: `You are a senior cybersecurity analyst and instructor helping a student in a hands-on lab. Lab context: ${currentLabContext}
+
+Your role: analyze output, explain findings, map to MITRE ATT&CK when relevant, suggest concrete next steps. Be direct and practical. Use markdown for structure when helpful. Ask clarifying questions when needed. Guide students to discoveries rather than just giving answers — help them think like analysts.`,
+        messages: chatHistory.slice(-10)
+      })
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    if (data.error) {
+      addAiMessage(`Error: ${data.error.message}`);
+    } else {
+      const reply = data.content[0].text;
+      chatHistory.push({ role: 'assistant', content: reply });
+      addAiMessage(reply);
+    }
+  } catch (err) {
+    removeTyping();
+    addAiMessage(`Connection error: ${err.message}. Check your API key and internet connection.`);
+  }
+
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function sendToAI(text) {
+  document.getElementById('aiInput').value = text;
+  sendMessage();
+}
+
+function quickPrompt(type) {
+  const prompts = {
+    analyze: "Please analyze the following output from my VM and tell me what it means, any anomalies to investigate, and recommended next steps:\n\n[Paste your output here]",
+    ioc: "Extract all IOCs (IPs, domains, file hashes, registry keys, mutexes) from the following output and format them as a structured IOC list:\n\n[Paste your output here]",
+    mitre: "Map the following attacker behaviors to MITRE ATT&CK techniques and tactics. Include technique IDs:\n\n[Paste your findings here]",
+    sigma: "Write a Sigma detection rule based on the following malicious behavior or log evidence:\n\n[Describe the behavior or paste logs]",
+    yara: "Write a YARA rule to detect the malware sample based on these characteristics:\n\n[Paste strings, PE headers, or behavior indicators]",
+    report: "Draft an incident report executive summary based on these investigation findings. Include: incident timeline, attack vector, impact, and recommended remediation:\n\n[Paste your investigation notes]"
+  };
+  document.getElementById('aiInput').value = prompts[type];
+  document.getElementById('aiInput').focus();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ── INIT ──
+(function init() {
+  if (apiKey) {
+    document.getElementById('apiSetupBanner').style.display = 'none';
+    document.getElementById('aiStatus').textContent = 'Online — AI Analyst Active';
+  }
+
+  // Restore completed labs
+  document.querySelectorAll('.lab-card').forEach(card => {
+    const id = card.dataset.id;
+    const saved = JSON.parse(localStorage.getItem('labSteps_' + id) || '{}');
+    const vals = Object.values(saved);
+    if (vals.length > 0 && vals.every(Boolean)) card.classList.add('completed');
+  });
+
+  updateCompletedCount();
+
+  // Close modals on overlay click
+  document.getElementById('apiModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeApiModal(); });
+  document.getElementById('labModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeLab(); });
+})();
+</script>
+</body>
+</html>

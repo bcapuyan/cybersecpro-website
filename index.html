@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberSec Pro Academy — Break Into Cybersecurity</title>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6T7DPEWEP7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6T7DPEWEP7');
+</script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy:  #0a1628;
+    --teal:  #0e5f7a;
+    --green: #00c896;
+    --dark:  #1a202c;
+    --gray:  #f4f6f9;
+    --mid:   #6b7280;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: #fff; }
+  a { text-decoration: none; color: inherit; }
+  img { max-width: 100%; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy); border-bottom: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 68px;
+  }
+  .nav-logo { font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px; }
+  .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta {
+    background: var(--green); color: var(--navy) !important;
+    font-weight: 800 !important; padding: 10px 22px; border-radius: 8px;
+    font-size: 14px !important; transition: opacity .15s !important;
+  }
+  .nav-cta:hover { opacity: .85; }
+  .nav-enroll {
+    background: var(--green); color: var(--navy) !important;
+    font-weight: 800 !important; padding: 10px 22px; border-radius: 8px;
+    font-size: 14px !important; transition: opacity .15s !important;
+    white-space: nowrap;
+  }
+  .nav-enroll:hover { opacity: .85; }
+  /* Hamburger */
+  .nav-hamburger {
+    display: none; flex-direction: column; justify-content: center; gap: 5px;
+    cursor: pointer; padding: 8px; background: none; border: none;
+  }
+  .nav-hamburger span {
+    display: block; width: 24px; height: 2px; background: white; border-radius: 2px;
+    transition: all .25s;
+  }
+  /* Mobile nav drawer */
+  .nav-drawer {
+    display: none; flex-direction: column; gap: 0;
+    background: var(--navy); border-top: 1px solid rgba(255,255,255,.1);
+    position: absolute; top: 68px; left: 0; right: 0; z-index: 99;
+    padding: 16px 24px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a {
+    color: #c8d8e8; font-size: 15px; font-weight: 500; padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,.08); transition: color .15s;
+  }
+  .nav-drawer a:last-child { border-bottom: none; }
+  .nav-drawer a:hover { color: var(--green); }
+  .nav-drawer .drawer-enroll {
+    margin-top: 16px; background: var(--green); color: var(--navy) !important;
+    font-weight: 800 !important; padding: 14px; border-radius: 8px;
+    text-align: center; font-size: 15px !important; border: none;
+  }
+  @media (max-width: 860px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .nav-hamburger { display: flex; }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, #0d3b6e 55%, var(--teal) 100%);
+    color: white; padding: 80px 40px 90px;
+    display: grid; grid-template-columns: 1fr 420px; gap: 60px; align-items: center;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .hero-text h1 { font-size: clamp(36px, 4.5vw, 56px); font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+  .hero-text h1 em { color: var(--green); font-style: normal; }
+  .hero-text p { font-size: 18px; color: #a0c4e8; line-height: 1.7; margin-bottom: 36px; max-width: 520px; }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 16px 32px; border-radius: 10px; font-size: 16px; font-weight: 800; transition: transform .15s, opacity .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-green { background: var(--green); color: var(--navy); }
+  .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.35); }
+  .btn-outline:hover { border-color: white; }
+  .hero-card {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px; padding: 32px; backdrop-filter: blur(6px);
+  }
+  .hero-card h3 { font-size: 17px; font-weight: 700; color: var(--green); margin-bottom: 20px; letter-spacing: .5px; text-transform: uppercase; }
+  .hero-stat { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .hero-stat .num { font-size: 36px; font-weight: 900; color: white; line-height: 1; min-width: 80px; }
+  .hero-stat .desc { font-size: 14px; color: #a0c4e8; line-height: 1.4; }
+  .hero-divider { height: 1px; background: rgba(255,255,255,.1); margin: 20px 0; }
+  .hero-price { text-align: center; }
+  .hero-price .price-label { font-size: 13px; color: #a0c4e8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .hero-price .price-num { font-size: 52px; font-weight: 900; color: var(--green); line-height: 1; }
+  .hero-price .price-sub { font-size: 13px; color: #a0c4e8; margin-top: 4px; }
+
+  /* ── TRUST BAR ── */
+  .trust-bar {
+    background: var(--gray); border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+    padding: 24px 40px;
+  }
+  .trust-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 16px; }
+  .trust-item { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--navy); }
+  .trust-item .icon { font-size: 22px; }
+
+  /* ── SECTIONS ── */
+  .section { padding: 80px 40px; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+  .section-title { font-size: clamp(26px, 3.5vw, 38px); font-weight: 900; color: var(--navy); margin-bottom: 14px; line-height: 1.15; }
+  .section-sub { font-size: 17px; color: var(--mid); line-height: 1.7; max-width: 620px; }
+  .section-alt { background: var(--gray); }
+  .section-dark { background: var(--navy); color: white; }
+  .section-dark .section-title { color: white; }
+  .section-dark .section-sub { color: #a0c4e8; }
+
+  /* ── ABOUT ── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; margin-top: 50px; }
+  .about-text p { font-size: 16px; line-height: 1.8; color: #374151; margin-bottom: 16px; }
+  .about-certs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .cert-badge {
+    background: var(--navy); color: white; font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px; letter-spacing: .5px;
+  }
+  .about-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .fact-card {
+    background: white; border-radius: 14px; padding: 24px; text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07); border-top: 3px solid var(--green);
+  }
+  .fact-card .num { font-size: 40px; font-weight: 900; color: var(--green); line-height: 1; }
+  .fact-card .label { font-size: 13px; color: var(--mid); margin-top: 6px; line-height: 1.4; }
+
+  /* ── PRODUCTS ── */
+  .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 50px; }
+  .product-card {
+    background: white; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,.09); display: flex; flex-direction: column;
+    border: 1px solid #e8f0fe; transition: transform .2s, box-shadow .2s;
+  }
+  .product-card:hover { transform: translateY(-4px); box-shadow: 0 16px 60px rgba(0,0,0,.13); }
+  .product-header { padding: 28px 28px 20px; }
+  .product-icon { font-size: 36px; margin-bottom: 14px; }
+  .product-tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px; }
+  .tag-free { background: #dcfce7; color: #166534; }
+  .tag-course { background: #dbeafe; color: #1e40af; }
+  .tag-mentor { background: #fef3c7; color: #92400e; }
+  .product-card h3 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 10px; }
+  .product-card p { font-size: 14px; color: var(--mid); line-height: 1.7; }
+  .product-features { padding: 0 28px; flex: 1; }
+  .product-features ul { list-style: none; }
+  .product-features li { font-size: 14px; color: #374151; padding: 8px 0; border-bottom: 1px solid #f1f5f9; display: flex; gap: 10px; }
+  .product-features li:last-child { border-bottom: none; }
+  .product-features li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
+  .product-footer { padding: 24px 28px; border-top: 1px solid #f1f5f9; }
+  .product-price { font-size: 28px; font-weight: 900; color: var(--navy); margin-bottom: 14px; }
+  .product-price span { font-size: 14px; font-weight: 400; color: var(--mid); }
+  .product-btn {
+    display: block; text-align: center; padding: 13px; border-radius: 10px;
+    font-size: 15px; font-weight: 800; background: var(--navy); color: white;
+    transition: background .15s;
+  }
+  .product-btn:hover { background: var(--teal); }
+  .product-btn.green { background: var(--green); color: var(--navy); }
+  .product-btn.green:hover { opacity: .85; }
+
+  /* ── CURRICULUM ── */
+  .curriculum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
+  .topic-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06); border-left: 4px solid var(--teal);
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .topic-card.ai { border-left-color: var(--green); }
+  .topic-num { font-size: 12px; font-weight: 900; color: white; background: var(--teal); padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; }
+  .topic-card.ai .topic-num { background: var(--green); color: var(--navy); }
+  .topic-card h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .topic-card p { font-size: 12px; color: var(--mid); line-height: 1.5; }
+  .ai-badge { display: inline-block; font-size: 10px; font-weight: 800; background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 8px; margin-left: 6px; }
+
+  /* ── WEEK TIMELINE ── */
+  .week-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+  .week-card {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px; padding: 22px;
+  }
+  .week-num { font-size: 12px; font-weight: 800; color: var(--green); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .week-card h4 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 8px; line-height: 1.3; }
+  .week-card p { font-size: 12px; color: #8ab0c8; line-height: 1.6; }
+
+  /* ── TESTIMONIAL / STORY ── */
+  .story-box {
+    background: white; border-radius: 18px; padding: 48px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.08); max-width: 860px; margin: 50px auto 0;
+    border-left: 6px solid var(--green); position: relative;
+  }
+  .story-box .quote-mark { font-size: 80px; color: #e8f4ff; line-height: 1; position: absolute; top: 24px; left: 40px; font-family: Georgia, serif; }
+  .story-box p { font-size: 17px; line-height: 1.8; color: #374151; position: relative; z-index: 1; }
+  .story-author { margin-top: 24px; display: flex; align-items: center; gap: 14px; }
+  .story-author .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .story-author .name { font-weight: 800; color: var(--navy); font-size: 15px; }
+  .story-author .title { font-size: 13px; color: var(--mid); }
+
+  /* ── LINKEDIN TESTIMONIALS ── */
+  .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 44px; }
+  .tcard {
+    background: white; border-radius: 16px; padding: 32px 28px 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.07); border-top: 4px solid var(--green);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .tcard-stars { color: #f59e0b; font-size: 18px; letter-spacing: 2px; }
+  .tcard-body { font-size: 15px; line-height: 1.75; color: #374151; flex: 1; }
+  .tcard-footer { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid #f0f4f8; }
+  .tcard-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+  .tcard-name { font-weight: 800; font-size: 14px; color: var(--navy); }
+  .tcard-role { font-size: 12px; color: var(--mid); line-height: 1.4; }
+  .tcard-source { font-size: 11px; color: #0a66c2; font-weight: 600; margin-top: 2px; }
+
+  /* ── FREE RESOURCES ── */
+  .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 40px; }
+  .resource-card {
+    background: white; border-radius: 12px; padding: 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06); border-top: 3px solid var(--teal);
+  }
+  .resource-card h4 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .resource-card p { font-size: 13px; color: var(--mid); line-height: 1.6; }
+
+  /* ── CTA STRIP ── */
+  .cta-strip {
+    background: linear-gradient(135deg, var(--green), #00a070);
+    padding: 70px 40px; text-align: center;
+  }
+  .cta-strip h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 900; color: var(--navy); margin-bottom: 12px; }
+  .cta-strip p { font-size: 18px; color: var(--navy); opacity: .75; margin-bottom: 36px; max-width: 600px; margin-left: auto; margin-right: auto; }
+  .cta-strip .actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-dark { background: var(--navy); color: white; }
+  .btn-white { background: white; color: var(--navy); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy); color: #6b7280; padding: 50px 40px 30px;
+  }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  .footer-brand .logo { font-size: 20px; font-weight: 900; color: white; margin-bottom: 12px; }
+  .footer-brand .logo span { color: var(--green); }
+  .footer-brand p { font-size: 13px; line-height: 1.7; color: #6b7280; }
+  .footer-col h4 { font-size: 13px; font-weight: 700; color: #a0b0c0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .footer-col a { display: block; font-size: 13px; color: #6b7280; margin-bottom: 10px; transition: color .15s; }
+  .footer-col a:hover { color: var(--green); }
+  .footer-bottom { border-top: 1px solid #1e2d40; padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12px; }
+  .footer-certs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fc { background: #1e2d40; color: #6b7280; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-card { display: none; }
+    .about-grid { grid-template-columns: 1fr; }
+    .products-grid { grid-template-columns: 1fr; }
+    .week-grid { grid-template-columns: repeat(2, 1fr); }
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    nav { padding: 0 20px; }
+    .nav-links { gap: 16px; }
+  }
+  @media (max-width: 600px) {
+    .section { padding: 60px 20px; }
+    .hero { padding: 60px 20px 70px; }
+    .week-grid { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .nav-links a:not(.nav-cta) { display: none; }
+  }
+
+  /* ── EMAIL CAPTURE MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(10,22,40,0.82); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 16px; max-width: 480px; width: 100%;
+    overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    animation: modalIn .25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: translateY(20px) scale(.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .modal-header {
+    background: var(--navy); padding: 32px 36px 28px;
+    text-align: center; position: relative;
+  }
+  .modal-header .modal-icon { font-size: 42px; margin-bottom: 12px; }
+  .modal-header h2 { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .modal-header p { color: #a0b8d0; font-size: 14px; line-height: 1.6; }
+  .modal-header .modal-close {
+    position: absolute; top: 14px; right: 18px;
+    background: none; border: none; color: #6b8aaa; font-size: 22px;
+    cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px;
+    transition: color .15s;
+  }
+  .modal-header .modal-close:hover { color: #fff; }
+  .modal-body { padding: 28px 36px 32px; }
+  .modal-bullets { list-style: none; margin-bottom: 24px; }
+  .modal-bullets li {
+    font-size: 14px; color: #374151; padding: 5px 0;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .modal-bullets li::before { content: "✅"; flex-shrink: 0; }
+  .modal-form { display: flex; flex-direction: column; gap: 12px; }
+  .modal-form input[type="text"],
+  .modal-form input[type="email"] {
+    width: 100%; padding: 13px 16px; border: 1.5px solid #d1d5db;
+    border-radius: 8px; font-size: 15px; color: var(--dark);
+    transition: border-color .2s; outline: none; font-family: inherit;
+  }
+  .modal-form input:focus { border-color: var(--green); }
+  .modal-form button[type="submit"] {
+    width: 100%; background: var(--green); color: #0a1628;
+    font-size: 16px; font-weight: 800; padding: 14px;
+    border: none; border-radius: 8px; cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+  .modal-form button[type="submit"]:hover { background: #00b085; transform: translateY(-1px); }
+  .modal-form button[type="submit"]:active { transform: translateY(0); }
+  .modal-disclaimer {
+    font-size: 11px; color: #9ca3af; text-align: center;
+    margin-top: 10px; line-height: 1.5;
+  }
+  /* Success state */
+  .modal-success {
+    display: none; text-align: center; padding: 40px 36px;
+  }
+  .modal-success .success-icon { font-size: 52px; margin-bottom: 16px; }
+  .modal-success h3 { font-size: 20px; font-weight: 800; color: var(--navy); margin-bottom: 10px; }
+  .modal-success p { font-size: 14px; color: #6b7280; margin-bottom: 24px; line-height: 1.6; }
+  .modal-success .btn-download {
+    display: inline-block; background: var(--green); color: #0a1628;
+    font-size: 16px; font-weight: 800; padding: 14px 32px;
+    border-radius: 8px; text-decoration: none; transition: background .2s;
+  }
+  .modal-success .btn-download:hover { background: #00b085; }
+</style>
+</head>
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- EMAIL CAPTURE MODAL -->
+<div class="modal-overlay" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+      <div class="modal-icon">📘</div>
+      <h2 id="modalTitle">Get Your Free Guide</h2>
+      <p>Enter your name and email to instantly download the<br><strong style="color:#00c896;">Break Into Cybersecurity</strong> complete beginner's guide.</p>
+    </div>
+    <div class="modal-body" id="modalFormArea">
+      <ul class="modal-bullets">
+        <li>Full CompTIA certification pathway &amp; salary data</li>
+        <li>Resume &amp; LinkedIn strategy used by 200+ students</li>
+        <li>How to earn college credit for free or near-free</li>
+        <li>Year 1–4+ career roadmap with niche specializations</li>
+      </ul>
+      <form class="modal-form" id="guideForm"
+            name="guide-download"
+            method="POST"
+            data-netlify="true">
+        <input type="hidden" name="form-name" value="guide-download" />
+        <input type="text"  name="name"  placeholder="Your first name" required autocomplete="given-name" />
+        <input type="email" name="email" placeholder="Your best email address" required autocomplete="email" />
+        <button type="submit">Send Me the Free Guide →</button>
+      </form>
+      <p class="modal-disclaimer">No spam, ever. Unsubscribe anytime. By submitting you agree to receive occasional updates from CyberSec Pro Academy.</p>
+    </div>
+    <div class="modal-success" id="modalSuccess">
+      <div class="success-icon">🎉</div>
+      <h3>You're all set!</h3>
+      <p>Your free guide is ready. Click below to open it — and check your inbox for a copy.</p>
+      <a href="https://drive.google.com/file/d/1iEN2F3ssAGP2WUxwOXP3sPNfkPDPRF4Y/view?usp=sharing" class="btn-download" target="_blank" rel="noopener" id="successDriveLink">
+        Open the Free Guide →
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">CyberSec<span>Pro</span> Academy</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#courses">Courses</a>
+    <a href="#curriculum">Curriculum</a>
+    <a href="#labs">AI Labs</a>
+    <a href="#resources">Resources</a>
+    <a href="price-comparison.html">Compare Prices</a>
+    <a href="#" class="nav-cta" onclick="openModal(); return false;">Free Guide</a>
+    <a href="/checkout.html" class="nav-enroll">Enroll — From $19/mo</a>
+  </div>
+  <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<!-- MOBILE DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="#about" onclick="closeDrawer()">About</a>
+  <a href="#courses" onclick="closeDrawer()">Courses</a>
+  <a href="#curriculum" onclick="closeDrawer()">Curriculum</a>
+  <a href="#labs" onclick="closeDrawer()">AI Labs</a>
+  <a href="#resources" onclick="closeDrawer()">Resources</a>
+  <a href="price-comparison.html" onclick="closeDrawer()">Compare Prices</a>
+  <a href="#" onclick="openModal(); closeDrawer(); return false;">Get Free Guide</a>
+  <a href="/checkout.html" class="drawer-enroll">Enroll Now — From $19/mo</a>
+</div>
+<script>
+  function toggleDrawer() {
+    document.getElementById('navDrawer').classList.toggle('open');
+  }
+  function closeDrawer() {
+    document.getElementById('navDrawer').classList.remove('open');
+  }
+</script>
+</nav>
+
+<!-- HERO -->
+<div style="background: linear-gradient(135deg, #0a1628 0%, #0d3b6e 55%, #0e5f7a 100%);">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Break Into <em>Cybersecurity</em> Without a Degree or Experience</h1>
+      <p>A self-paced course built by a mentor who has watched 200+ students try this — and knows exactly what separates the ones who get hired from the ones who don't.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-green" onclick="openModal(); return false;">Get the Free Guide →</a>
+        <a href="#courses" class="btn btn-outline">See the Course</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3>By the Numbers</h3>
+      <div class="hero-stat">
+        <div class="num">200+</div>
+        <div class="desc">Students mentored personally across two major bootcamp programs</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">20+</div>
+        <div class="desc">Years in cybersecurity — from help desk to Sr. Staff at a Fortune 500</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">$300K+</div>
+        <div class="desc">Instructor's current annual salary — this path works</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-price">
+        <div class="price-label">Course starts at</div>
+        <div class="price-num">$19<span style="font-size:18px;color:#a0c4e8">/mo</span></div>
+        <div class="price-sub">or $497 one-time · vs. $10,000–$16,000 at other bootcamps</div>
+        <div style="margin-top:8px;font-size:11px;color:#00c896;font-weight:700;">30-DAY MONEY-BACK GUARANTEE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item"><span class="icon">🎓</span> CompTIA Security+ Aligned</div>
+    <div class="trust-item"><span class="icon">🔬</span> 20 AI Cybersecurity Labs</div>
+    <div class="trust-item"><span class="icon">🤖</span> AI-Integrated Throughout</div>
+    <div class="trust-item"><span class="icon">📚</span> Lifetime Access</div>
+    <div class="trust-item"><span class="icon">💰</span> Fraction of Bootcamp Cost</div>
+    <div class="trust-item"><span class="icon">👨‍💻</span> 1-on-1 Mentorship</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-text">
+        <div class="section-label">About Your Instructor</div>
+        <h2 class="section-title">20+ Years. 200+ Students. Real Data.</h2>
+        <p>I started in 2002 at $48K answering phones on a help desk. I got kicked out of college for a semester for grades under a 2.0. I failed the CISSP the first time. I got laid off once. I figured it out — one cert at a time, one role at a time — and ended up as a Sr. Staff Cybersecurity Professional at a Fortune 500.</p>
+        <p>I've spent years mentoring cybersecurity students through bootcamps — 200+ of them. I know the 4 things that determine whether someone gets hired. I know why 84% of employer-sponsored students fail. And I built this program around everything that actually works.</p>
+        <p>This isn't a course built by a content team. It's built by someone who has read every resume, watched every interview, and seen every mistake — and who is available to work through yours with you directly.</p>
+        <div class="about-certs">
+          <span class="cert-badge">CISM</span>
+          <span class="cert-badge">CISA</span>
+          <span class="cert-badge">CSA</span>
+          <span class="cert-badge">CAD</span>
+          <span class="cert-badge">CIS-VR</span>
+          <span class="cert-badge">20+ Years Industry</span>
+        </div>
+      </div>
+      <div class="about-facts">
+        <div class="fact-card">
+          <div class="num">200+</div>
+          <div class="label">Students personally mentored</div>
+        </div>
+        <div class="fact-card">
+          <div class="num">$300K+</div>
+          <div class="label">Instructor's current annual salary — the path is proven</div>
+        </div>
+        <div class="fact-card">
+          <div class="num">17</div>
+          <div class="label">Core learning topics covering all Security+ domains</div>
+        </div>
+        <div class="fact-card">
+          <div class="num">2002</div>
+          <div class="label">When this journey started — help desk to Fortune 500</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="section section-alt" id="courses">
+  <div class="section-inner">
+    <div class="section-label">What We Offer</div>
+    <h2 class="section-title">Three Ways to Get Started</h2>
+    <p class="section-sub">Start free. Go deeper when you're ready. Get direct access to the instructor when you need it most.</p>
+
+    <div class="products-grid">
+      <!-- FREE -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">📘</div>
+          <div class="product-tag tag-free">Free</div>
+          <h3>The Complete Beginner's Guide</h3>
+          <p>A 10-section PDF guide built from 200+ real student journeys — covering career roadmaps, certifications, salary data, resume tips, and how to get a college degree for free.</p>
+        </div>
+        <div class="product-features">
+          <ul>
+            <li>Full CompTIA certification pathway</li>
+            <li>Salary data by role and experience level</li>
+            <li>How to get a college degree for free or near-free</li>
+            <li>Resume & LinkedIn strategy</li>
+            <li>Year 4+ niche specializations: AI Security, DFIR, AppSec, Cloud</li>
+          </ul>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">Free <span>— email required</span></div>
+          <a href="#" class="product-btn green" onclick="openModal(); return false;">Download the Guide →</a>
+        </div>
+      </div>
+
+      <!-- COURSE -->
+      <div class="product-card" style="border-color: #00c896; border-width: 2px;">
+        <div class="product-header">
+          <div class="product-icon">💻</div>
+          <div class="product-tag tag-course">Most Popular</div>
+          <h3>Break Into Cybersecurity — The Course</h3>
+          <p>8 weeks of self-paced content with 20 AI cybersecurity labs, 17 topics, and AI integrated throughout. Aligned to CompTIA Security+ SY0-701. Lifetime access.</p>
+        </div>
+        <div class="product-features">
+          <ul>
+            <li>17 core learning topics covering all Security+ domains</li>
+            <li>20 AI cybersecurity labs: Wireshark+AI, Splunk ML, Malware Classification, Phishing NLP, and 16 more</li>
+            <li>AI tools integrated in every major topic — not bolted on at the end</li>
+            <li>Week 7 dedicated entirely to resume, LinkedIn & job search</li>
+            <li>Lifetime access — content updates included</li>
+          </ul>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">$19<span>/month</span> <span style="margin-left:8px;font-size:16px;color:#6b7280;">or $497 one-time</span></div>
+          <a href="/checkout.html" class="product-btn green">Enroll Now →</a>
+          <div style="text-align:center;margin-top:8px;font-size:12px;color:#00c896;font-weight:700;">✓ 30-Day Money-Back Guarantee · Cancel Anytime</div>
+        </div>
+      </div>
+
+      <!-- MENTORSHIP -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">🧑‍💻</div>
+          <div class="product-tag tag-mentor">1-on-1</div>
+          <h3>Direct 1-on-1 Mentorship</h3>
+          <p>Book sessions directly with your instructor. Career roadmap, resume review, mock interviews, exam strategy — built around your specific situation.</p>
+        </div>
+        <div class="product-features">
+          <ul>
+            <li>Single sessions — $100 per 30 mins</li>
+            <li>4-session packages with a custom 90-day plan</li>
+            <li>Resume + LinkedIn audit with tracked revisions</li>
+            <li>Mock interview session with recorded feedback</li>
+          </ul>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">$100 <span>per 30 mins</span></div>
+          <a href="https://cybersecurity-education.teachable.com/p/mentorship" class="product-btn">Book a Session →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CURRICULUM -->
+<section class="section" id="curriculum">
+  <div class="section-inner">
+    <div class="section-label">What You'll Learn</div>
+    <h2 class="section-title">17 Core Learning Topics</h2>
+    <p class="section-sub">Every topic maps to a CompTIA Security+ exam domain. AI tools are woven throughout — and every module has a corresponding hands-on lab.</p>
+
+    <div class="curriculum-grid">
+      <div class="topic-card ai">
+        <div class="topic-num">01</div>
+        <div><h4>Introduction to AI in Cybersecurity <span class="ai-badge">AI</span></h4><p>ML fundamentals, supervised vs. unsupervised learning, AI in threat detection</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">02</div>
+        <div><h4>Cybersecurity Basics & Career Orientation</h4><p>Key terms, roles, career paths, salary ranges, Day 1 study plan</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">03</div>
+        <div><h4>Cybersecurity Fundamentals</h4><p>CIA Triad, threat actors, red vs. blue teams, malware taxonomy</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">04</div>
+        <div><h4>AI for Threat Detection & IR <span class="ai-badge">AI</span></h4><p>Anomaly detection, intrusion detection, automated IR playbooks</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">05</div>
+        <div><h4>Attacks & Social Engineering</h4><p>Phishing, vishing, MITM, DoS/DDoS, SQL injection, XSS, buffer overflow</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">06</div>
+        <div><h4>Host-Based Security</h4><p>BIOS, wireless, USB, mobile, patch management, endpoint hardening</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">07</div>
+        <div><h4>Network Security</h4><p>Firewalls, VPNs, Wireshark, wireless security, AWS/Azure cloud assets</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">08</div>
+        <div><h4>AI in Network Security <span class="ai-badge">AI</span></h4><p>AI-driven traffic analysis, anomaly detection, AI-powered attack simulations</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">09</div>
+        <div><h4>Identity & Access Management</h4><p>MFA, SSO, zero-trust, Azure IAM, AWS IAM, Active Directory lab</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">10</div>
+        <div><h4>Cryptography</h4><p>AES, RSA, ECC, PKI, digital certificates, hashing, non-repudiation</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">11</div>
+        <div><h4>Security Architecture</h4><p>Enterprise security design, zero-trust architecture, defense-in-depth</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">12</div>
+        <div><h4>Security Operations & SIEM</h4><p>SOC analyst workflows, Splunk labs, IR lifecycle, Python/PowerShell basics</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">13</div>
+        <div><h4>Application Security & DevSecOps</h4><p>OWASP Top 10, CI/CD pipeline security, SDLC, database security</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">14</div>
+        <div><h4>Explainable AI & Predictive Analytics <span class="ai-badge">AI</span></h4><p>XAI principles, risk assessment, ethical AI, bias in security models</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">15</div>
+        <div><h4>Security Assessment & Pen Testing</h4><p>Red team skills, Nessus, vulnerability scanning, IS audit preparation</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">16</div>
+        <div><h4>AI in Malware Analysis & NLP</h4><p>AI malware detection, NLP for phishing detection, threat intelligence</p></div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-num">17</div>
+        <div><h4>Security+ Exam Prep & Launch</h4><p>Full domain review, mock exams, exam booking, portfolio review, job applications</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI LABS SECTION -->
+<section class="section section-alt" id="labs">
+  <div class="section-inner">
+    <div class="section-label">Hands-On Practice</div>
+    <h2 class="section-title">20 AI Cybersecurity Labs</h2>
+    <p class="section-sub">Every lab uses real tools and AI techniques employers actually look for. You build a portfolio while you learn.</p>
+    <div class="curriculum-grid" style="margin-top:40px;">
+      <div class="topic-card ai">
+        <div class="topic-num">L01</div>
+        <div><h4>Wireshark + AI Traffic Analysis <span class="ai-badge">AI</span></h4><p>Capture live packets, apply ML anomaly detection to flag suspicious flows</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L02</div>
+        <div><h4>AI-Powered SIEM (Splunk) <span class="ai-badge">AI</span></h4><p>Build ML correlation rules in Splunk to auto-detect attack patterns in real logs</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L03</div>
+        <div><h4>Malware Classification with ML <span class="ai-badge">AI</span></h4><p>Train a Python scikit-learn classifier to distinguish benign from malicious binaries</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L04</div>
+        <div><h4>Phishing Detection with NLP <span class="ai-badge">AI</span></h4><p>Build an NLP model that classifies phishing emails with 95%+ accuracy</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L05</div>
+        <div><h4>AI Red Team — Prompt Injection <span class="ai-badge">AI</span></h4><p>Attack and defend LLM-based tools; document prompt injection vulnerabilities</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L06</div>
+        <div><h4>Network Anomaly Detection <span class="ai-badge">AI</span></h4><p>Use Isolation Forest in Python to detect outliers in network traffic datasets</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L07</div>
+        <div><h4>Behavioral Analytics (UEBA) <span class="ai-badge">AI</span></h4><p>Profile normal user behavior and trigger AI alerts on insider threat patterns</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L08</div>
+        <div><h4>AI Incident Response Automation <span class="ai-badge">AI</span></h4><p>Build automated IR playbooks using AI orchestration to cut MTTR by 60%</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L09</div>
+        <div><h4>Cloud Security AI Monitoring <span class="ai-badge">AI</span></h4><p>AWS CloudTrail + AI threat detection — spot privilege escalation in real time</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L10</div>
+        <div><h4>Deepfake & Social Engineering Defense <span class="ai-badge">AI</span></h4><p>Analyze deepfake audio/video samples and build detection workflows</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L11</div>
+        <div><h4>Vulnerability Triage with AI (Nessus) <span class="ai-badge">AI</span></h4><p>Run Nessus scans then use AI to prioritize CVEs by exploitability and business impact</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L12</div>
+        <div><h4>Active Directory Attack & AI Defense <span class="ai-badge">AI</span></h4><p>Kerberoasting, Pass-the-Hash attacks + AI-powered detection and response</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L13</div>
+        <div><h4>PKI & OpenSSL Security Lab <span class="ai-badge">AI</span></h4><p>Generate certs, analyze TLS connections, and use AI to detect certificate anomalies</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L14</div>
+        <div><h4>Zero-Trust Architecture Simulation <span class="ai-badge">AI</span></h4><p>Implement microsegmentation + AI policy enforcement in a virtual enterprise network</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L15</div>
+        <div><h4>DevSecOps Pipeline Security <span class="ai-badge">AI</span></h4><p>Embed SAST, DAST, and AI code review into a GitHub Actions CI/CD pipeline</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L16</div>
+        <div><h4>AI Threat Intelligence Aggregator <span class="ai-badge">AI</span></h4><p>Build a Python tool that pulls OSINT feeds and uses NLP to surface critical IOCs</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L17</div>
+        <div><h4>Password Intelligence Lab <span class="ai-badge">AI</span></h4><p>AI-driven password strength modeling + hashcat GPU cracking and defense strategies</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L18</div>
+        <div><h4>Explainable AI in Security (XAI) <span class="ai-badge">AI</span></h4><p>Use SHAP and LIME to explain ML model decisions — critical for SOC analyst buy-in</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L19</div>
+        <div><h4>Cryptographic Attack Simulation <span class="ai-badge">AI</span></h4><p>AI-assisted cryptanalysis lab + quantum threat modeling and post-quantum algorithms</p></div>
+      </div>
+      <div class="topic-card ai">
+        <div class="topic-num">L20</div>
+        <div><h4>AI SOC Analyst Simulation <span class="ai-badge">AI</span></h4><p>Full SOC workflow: AI-assisted alert triage, threat hunting, and escalation decisions</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8-WEEK ROADMAP (dark) -->
+<section class="section section-dark">
+  <div class="section-inner">
+    <div class="section-label" style="color: var(--green);">The Roadmap</div>
+    <h2 class="section-title">8 Weeks to Job-Ready</h2>
+    <p class="section-sub">Each week has a clear theme, a lab deliverable, and a milestone that proves you're on track.</p>
+    <div class="week-grid">
+      <div class="week-card">
+        <div class="week-num">Week 1</div>
+        <h4>Foundations, Threat Landscape & AI Intro</h4>
+        <p>CIA Triad + threat actors + malware taxonomy + AI fundamentals. Set your 90-day target role and salary.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 2</div>
+        <h4>Network Security & Host-Based Defense</h4>
+        <p>Network hardening lab + endpoint security + Wireshark packet captures + AI-driven traffic analysis.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 3</div>
+        <h4>Cryptography & PKI</h4>
+        <p>OpenSSL lab: generate keys, sign certificates, analyze TLS connections on live sites. Mock exam score 60%+.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 4</div>
+        <h4>Identity, Access & Zero Trust Architecture</h4>
+        <p>Active Directory lab + Azure AD conditional access + MFA configuration + mock exam score 65%+.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 5</div>
+        <h4>SecOps, SIEM & AI-Assisted IR</h4>
+        <p>Splunk lab + AI threat detection + explainable AI exercise + written incident report.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 6</div>
+        <h4>AppSec, Cloud, Compliance & Pen Testing</h4>
+        <p>Nessus vulnerability scan report + AppSec lab + risk assessment for a fictional company.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 7</div>
+        <h4>Job Readiness & Interview Mastery</h4>
+        <p>Resume approved + LinkedIn active + 2 mock interviews + 10 target companies identified.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 8</div>
+        <h4>Sec+ Final Prep & Launch</h4>
+        <p>80%+ on two practice exams + exam booked + portfolio organized + 5 applications sent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="section section-alt">
+  <div class="section-inner">
+    <div style="text-align:center;">
+      <div class="section-label">Why This Program Exists</div>
+      <h2 class="section-title">The Gym Analogy</h2>
+    </div>
+    <div class="story-box">
+      <div class="quote-mark">"</div>
+      <p>Getting into cybersecurity is like joining a gym. Everyone who joins a gym wants to get fit. Very few actually do. The difference isn't the gym — it's what happens after you walk through the door. Did you show up consistently? Did you follow a program? Did you ask for help when you plateaued?</p>
+      <p style="margin-top:16px;">I've watched 200+ people walk through the door. I know who finishes and who doesn't — within the first two sessions. This program is built around the habits, decisions, and mindset of the students who actually got hired — and what separated them from those who didn't.</p>
+      <div class="story-author">
+        <div class="avatar">👨‍💻</div>
+        <div>
+          <div class="name">Your Instructor</div>
+          <div class="title">CISM · CISA · CSA · CAD · CIS-VR · Sr. Staff Cybersecurity Professional · 200+ Students Mentored</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- LINKEDIN TESTIMONIALS -->
+<section class="section" id="reviews">
+  <div class="section-inner">
+    <div style="text-align:center;">
+      <div class="section-label">Verified LinkedIn Recommendations</div>
+      <h2 class="section-title">What Students Say</h2>
+      <p style="color:var(--mid);font-size:16px;margin-top:12px;max-width:560px;margin-left:auto;margin-right:auto;">Real reviews from real students — posted publicly on LinkedIn.</p>
+    </div>
+    <div class="tgrid">
+
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <div class="tcard-body">"I was lucky enough to have been partnered with my instructor when I was enrolled in the THINKFUL cybersecurity program. His expertise helped guide me as I navigated through the course. He was patient and readily available to answers any questions that may arise. My instructor's techniques were valuable in my journey and I was able to finish the program <strong>ahead of time</strong>. Great mentor, highly recommended!"</div>
+        <div class="tcard-footer">
+          <div class="tcard-avatar">V</div>
+          <div>
+            <div class="tcard-name">Vanessa</div>
+            <div class="tcard-role">Information Technology</div>
+            <div class="tcard-source">LinkedIn Recommendation · Apr 2024</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <div class="tcard-body">"My instructor is awesome at what he does! and is very knowledgeable overall with a lot of experience variety in cybersecurity! He was my mentor for my cybersecurity boot camp from April 2023 through September 2023 and helped me with whatever questions I had or needed and also led me to other things such as <strong>creating a roadmap/ideas and advice</strong> that will help me break into the Cyber industry! Glad I can reach out to him for any questions or guidance I may have."</div>
+        <div class="tcard-footer">
+          <div class="tcard-avatar">J</div>
+          <div>
+            <div class="tcard-name">Javonis</div>
+            <div class="tcard-role">SOC & Security Analyst</div>
+            <div class="tcard-source">LinkedIn Recommendation · Oct 2023</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <div class="tcard-body">"My instructor is an amazing resource in the Cybersecurity industry. Having him as a mentor for me showed his aptitude and familiarity with Cybersecurity and all of its facets. Learning from him was a wonderful experience as he explained different systems as well as the process one takes to get into the industry and how to better oneself. <strong>His enthusiasm in teaching this subject ignited a passion in me</strong> for the same industry and keeps me motivated. My instructor is one person I'll always make sure to come back to for any questions and help."</div>
+        <div class="tcard-footer">
+          <div class="tcard-avatar">D</div>
+          <div>
+            <div class="tcard-name">David</div>
+            <div class="tcard-role">Transportation Security Officer</div>
+            <div class="tcard-source">LinkedIn Recommendation · Aug 2023</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <div class="tcard-body">"I had the honor of having my instructor as my mentor during my USF Cybersecurity Bootcamp from Dec–May 2023. My instructor was amazing in many ways. He is very knowledgeable about all aspects in the field, which made it very easy for him to address any of my questions and/or concerns. Our meetings were <strong>always on time and worth my while</strong>. He was always eager to help out with technical issues, cyber questions, and was complementary when he noticed I was doing well. I most definitely recommend my instructor for any mentoring position! He is patient and knows how to explain what is needed to be accomplished."</div>
+        <div class="tcard-footer">
+          <div class="tcard-avatar">K</div>
+          <div>
+            <div class="tcard-name">Kim</div>
+            <div class="tcard-role">Teacher</div>
+            <div class="tcard-source">LinkedIn Recommendation · Aug 2023</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <div class="tcard-body">"My instructor has been more than a mere mentor of mine for the past six months — he has been a great help. He always takes the time out to ensure that I grasp the different concepts and topics <strong>regardless of the level of difficulty or amount of time required</strong>. He is always available, extremely reliable and dedicated to my success. He is evidently very versed in the Cybersecurity field and I am certain that my experience as a student in this bootcamp was so smooth because I had him in my corner."</div>
+        <div class="tcard-footer">
+          <div class="tcard-avatar">A</div>
+          <div>
+            <div class="tcard-name">Andrew</div>
+            <div class="tcard-role">Cybersecurity Specialist | CompTIA Security+</div>
+            <div class="tcard-source">LinkedIn Recommendation · Dec 2022</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <div class="tcard-body">"I was mentored in Cyber Security and my experience was fantastic! <strong>He knows his stuff!</strong>"</div>
+        <div class="tcard-footer">
+          <div class="tcard-avatar">D</div>
+          <div>
+            <div class="tcard-name">Donald</div>
+            <div class="tcard-role">IT Specialist</div>
+            <div class="tcard-source">LinkedIn Recommendation · Aug 2023</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE BANNER -->
+<section style="background:#0a1628;padding:40px 24px;text-align:center;">
+  <div style="max-width:700px;margin:0 auto;">
+    <div style="font-size:48px;margin-bottom:12px;">🛡️</div>
+    <h2 style="color:#00c896;font-size:28px;font-weight:900;margin-bottom:12px;">30-Day Money-Back Guarantee</h2>
+    <p style="color:#a0c4e8;font-size:16px;line-height:1.7;margin-bottom:16px;">Try CyberSec Pro Academy for 30 days. Go through the lessons. Do the labs. Use the community. If you don't feel like this is the best investment you've made in your career — email us and we'll refund every penny. No questions asked.</p>
+    <p style="color:#6b7280;font-size:13px;">We can offer this because we know what happens when people actually go through the program. They don't leave.</p>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<section class="cta-strip" id="enroll">
+  <h2>Ready to Start?</h2>
+  <p>Download the free guide. Enroll in the course. Book a 1-on-1 session. Pick your starting point.</p>
+  <div class="actions">
+    <a href="#" class="btn btn-dark">Download Free Guide</a>
+    <a href="/checkout.html" class="btn btn-white">Enroll — From $19/mo</a>
+    <a href="https://cybersecurity-education.teachable.com/p/mentorship" class="btn btn-dark">Book Mentorship — $100/30 min</a>
+  </div>
+  <p style="margin-top:24px; font-size:14px;">Questions? Email us directly: <strong>bcapuyan@gmail.com</strong></p>
+  <p style="margin-top:14px; font-size:15px;"><a href="https://cybersecurity-education.teachable.com/p/cybersecurity-career-accelerator" style="color:#00c896; font-weight:700; text-decoration:none;">See if you qualify for a job offer guarantee →</a></p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">CyberSec<span>Pro</span> Academy</div>
+      <p>Built by a practitioner, not a content team. Every lesson, every lab, and every piece of career advice comes from 20+ years in the industry and 200+ real student outcomes.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programs</h4>
+      <a href="#enroll">Free Guide</a>
+      <a href="https://cybersecurity-education.teachable.com/p/cybersecurity-career-accelerator">The Course</a>
+      <a href="https://cybersecurity-education.teachable.com/p/mentorship">1-on-1 Mentorship</a>
+      <a href="price-comparison.html">Compare Prices</a>
+    </div>
+    <div class="footer-col">
+      <h4>Learn</h4>
+      <a href="#curriculum">Curriculum</a>
+      <a href="#resources">Free Resources</a>
+      <a href="free-resources.html">Free Labs &amp; Guide</a>
+      <a href="#courses">Pricing</a>
+      <a href="#about">About</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:bcapuyan@gmail.com">bcapuyan@gmail.com</a>
+      <a href="https://cybersecurity-education.teachable.com/p/mentorship">Book a Session</a>
+    </div>
+  </div>
+  <div style="border-top:1px solid #1e2d40; padding-top:16px; margin-top:0; font-size:11px; color:#4b5563; line-height:1.7;">
+    Course support and lab assistance available for one (1) year from date of purchase. Content access is lifetime. Job offer guarantee subject to eligibility requirements — <a href="https://cybersecurity-education.teachable.com/p/cybersecurity-career-accelerator" style="color:#00c896;">see full terms</a>.
+  </div>
+  <div class="footer-bottom" style="margin-top:16px;">
+    <div>© 2026 CyberSec Pro Academy · All rights reserved</div>
+    <div class="footer-certs">
+      <span class="fc">CISM</span>
+      <span class="fc">CISA</span>
+      <span class="fc">CSA</span>
+      <span class="fc">CAD</span>
+      <span class="fc">CIS-VR</span>
+      <span class="fc">20+ Years</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function openModal() {
+    document.getElementById('guideModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    // Reset to form view each time
+    document.getElementById('modalFormArea').style.display = 'block';
+    document.getElementById('modalSuccess').style.display = 'none';
+  }
+
+  function closeModal() {
+    document.getElementById('guideModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Close on overlay click (outside the box)
+  document.getElementById('guideModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Handle form submission: subscribe to Mailchimp (triggers welcome sequence)
+  // AND record in Netlify Forms as a backup ledger. User stays on page.
+  document.getElementById('guideForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var btn  = form.querySelector('button[type="submit"]');
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    // Fire Mailchimp subscription in parallel (no-cors, opaque response is fine).
+    // This is what triggers the "CyberSec Pro - Free Guide Welcome Sequence" journey.
+    try {
+      var emailVal = (form.querySelector('[name="email"]') || {}).value || '';
+      var nameVal  = (form.querySelector('[name="name"]')  || {}).value || '';
+      if (emailVal) {
+        var mcBody = new URLSearchParams();
+        mcBody.append('EMAIL', emailVal.trim());
+        if (nameVal) mcBody.append('FNAME', nameVal.trim());
+        mcBody.append('b_0ecc108bab8be2ee217833cd6_5d6db48326', ''); // honeypot
+        fetch('https://cybersecproacademy.us22.list-manage.com/subscribe/post?u=0ecc108bab8be2ee217833cd6&id=5d6db48326&f_id=00b7c2e1f0', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: mcBody.toString(),
+          keepalive: true
+        }).catch(function(){ /* swallow — Netlify path still runs */ });
+      }
+    } catch (mcErr) { /* never break the user submit flow */ }
+
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(form)).toString()
+    })
+    .then(function(res) {
+      if (res.ok) {
+        // Push Meta Pixel Lead event via GTM dataLayer
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'guide_form_submitted', form_name: 'free_guide' });
+        // Show success panel with the Drive link
+        document.getElementById('modalFormArea').style.display = 'none';
+        document.getElementById('modalSuccess').style.display = 'block';
+      } else {
+        btn.textContent = 'Try Again';
+        btn.disabled = false;
+        alert('Something went wrong — please try again or email bcapuyan@gmail.com');
+      }
+    })
+    .catch(function() {
+      btn.textContent = 'Try Again';
+      btn.disabled = false;
+      alert('Network error — please check your connection and try again.');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Lab Setup — CyberSec Pro Academy</title>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy:  #0a1628;
+    --teal:  #0e5f7a;
+    --green: #00c896;
+    --dark:  #1a202c;
+    --gray:  #f4f6f9;
+    --mid:   #6b7280;
+    --red:   #ef4444;
+    --amber: #f59e0b;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: #fff; }
+  a { text-decoration: none; color: inherit; }
+
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: var(--navy); border-bottom: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 68px;
+  }
+  .nav-logo { font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px; }
+  .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta {
+    background: var(--green); color: var(--navy) !important;
+    font-weight: 800 !important; padding: 10px 22px; border-radius: 8px;
+    font-size: 14px !important;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-banner {
+    background: var(--navy); color: white; padding: 14px 40px;
+    display: flex; align-items: center; gap: 20px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .progress-label { font-size: 13px; font-weight: 700; color: #a0c4e8; white-space: nowrap; }
+  .progress-bar-wrap { flex: 1; background: rgba(255,255,255,.1); border-radius: 8px; height: 8px; }
+  .progress-bar-fill { height: 8px; background: var(--green); border-radius: 8px; transition: width .4s; width: 0%; }
+  .progress-pct { font-size: 13px; font-weight: 800; color: var(--green); white-space: nowrap; min-width: 40px; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, #0d3b6e 55%, var(--teal) 100%);
+    color: white; padding: 70px 40px 80px; text-align: center;
+  }
+  .hero-label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(30px, 4vw, 52px); font-weight: 900; line-height: 1.1; margin-bottom: 18px; }
+  .hero h1 em { color: var(--green); font-style: normal; }
+  .hero p { font-size: 18px; color: #a0c4e8; max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
+  .hero-phases { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .phase-badge {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px; padding: 8px 18px; font-size: 13px; font-weight: 600;
+    color: #c8d8e8; display: flex; align-items: center; gap: 8px;
+  }
+  .phase-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+  /* ── LAYOUT ── */
+  .page-wrap { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+  .section-gap { margin-bottom: 64px; }
+
+  /* ── PHASE HEADER ── */
+  .phase-header {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+    padding-bottom: 16px; border-bottom: 2px solid var(--gray);
+  }
+  .phase-num {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--navy); color: var(--green); font-size: 18px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .phase-title { font-size: 24px; font-weight: 800; color: var(--navy); }
+  .phase-sub { font-size: 14px; color: var(--mid); margin-top: 2px; }
+
+  /* ── ALERT BOXES ── */
+  .alert {
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    display: flex; gap: 12px; font-size: 14px; line-height: 1.6;
+  }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-warn { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+  .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a5f; }
+  .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+  .alert-danger { background: #fef2f2; border: 1px solid #fecaca; color: #7f1d1d; }
+
+  /* ── REQUIREMENTS GRID ── */
+  .req-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .req-card {
+    background: white; border-radius: 14px; padding: 20px;
+    border: 1px solid #e8f0fe; box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  }
+  .req-card h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .req-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--gray); font-size: 13px; }
+  .req-row:last-child { border-bottom: none; }
+  .req-min { color: var(--mid); }
+  .req-rec { color: var(--navy); font-weight: 600; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; background: var(--gray); border-radius: 12px; padding: 4px; margin-bottom: 24px; width: fit-content; }
+  .tab-btn {
+    padding: 10px 24px; border-radius: 9px; font-size: 14px; font-weight: 700;
+    background: transparent; border: none; cursor: pointer; color: var(--mid);
+    transition: all .15s;
+  }
+  .tab-btn.active { background: white; color: var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── VM CARDS ── */
+  .vm-grid { display: flex; flex-direction: column; gap: 20px; }
+  .vm-card {
+    background: white; border-radius: 16px; border: 1px solid #e8f0fe;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06); overflow: hidden;
+  }
+  .vm-header {
+    display: flex; align-items: center; gap: 16px; padding: 20px 24px;
+    cursor: pointer; user-select: none;
+  }
+  .vm-header:hover { background: var(--gray); }
+  .vm-icon { font-size: 32px; }
+  .vm-info { flex: 1; }
+  .vm-info h3 { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .vm-info p { font-size: 13px; color: var(--mid); }
+  .vm-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .vm-badge {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .badge-kali { background: #2d3748; color: #68d391; }
+  .badge-sans { background: #1a365d; color: #90cdf4; }
+  .badge-remnux { background: #2d3a1e; color: #9ae6b4; }
+  .badge-flare { background: #3d1a1a; color: #fc8181; }
+  .badge-vuln { background: #2d1a3d; color: #d6bcfa; }
+  .vm-arrow { font-size: 20px; color: var(--mid); transition: transform .2s; }
+  .vm-card.open .vm-arrow { transform: rotate(90deg); }
+  .vm-body { display: none; padding: 0 24px 24px; border-top: 1px solid var(--gray); }
+  .vm-card.open .vm-body { display: block; }
+  .vm-specs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+  .vm-spec { background: var(--gray); border-radius: 10px; padding: 12px; text-align: center; }
+  .vm-spec .spec-val { font-size: 15px; font-weight: 800; color: var(--navy); }
+  .vm-spec .spec-key { font-size: 11px; color: var(--mid); margin-top: 2px; }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--gray); border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: background .1s;
+  }
+  .step:hover { background: #eef2fb; }
+  .step.done { background: #f0fdf4; }
+  .step-check {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid #d1d5db;
+    flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: transparent; transition: all .15s;
+  }
+  .step.done .step-check { background: var(--green); border-color: var(--green); color: white; }
+  .step-text { font-size: 14px; line-height: 1.6; color: #374151; }
+  .step.done .step-text { color: var(--mid); text-decoration: line-through; }
+  .step-text strong { color: var(--navy); font-weight: 700; }
+  .step-text a { color: var(--teal); font-weight: 600; text-decoration: underline; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px;
+    padding: 16px 20px; margin: 12px 0; font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px; line-height: 1.7; overflow-x: auto; position: relative;
+  }
+  .code-block .comment { color: #64748b; }
+  .code-block .cmd { color: #a5f3fc; }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,255,255,.1); border: none; color: #94a3b8;
+    border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer;
+    font-weight: 600; transition: all .15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,.2); color: white; }
+  .copy-btn.copied { color: var(--green); }
+
+  /* ── NETWORK DIAGRAM ── */
+  .net-diagram {
+    background: #0f172a; border-radius: 16px; padding: 32px;
+    color: white; margin-top: 16px;
+  }
+  .net-row { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+  .net-vm {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px; padding: 12px 20px; text-align: center; min-width: 110px;
+  }
+  .net-vm .vm-name { font-size: 13px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .net-vm .vm-ip { font-size: 12px; font-family: monospace; color: var(--green); }
+  .net-vm .vm-emoji { font-size: 24px; margin-bottom: 6px; }
+  .net-arrow { color: #64748b; font-size: 18px; }
+  .net-zone {
+    border: 1px dashed rgba(255,255,255,.15); border-radius: 12px; padding: 16px;
+    margin-top: 16px; text-align: center;
+  }
+  .net-zone-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+
+  /* ── CHECKLIST TABLE ── */
+  .verify-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .verify-table th { background: var(--navy); color: white; padding: 10px 14px; font-size: 13px; text-align: left; }
+  .verify-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--gray); }
+  .verify-table tr:hover td { background: #eff6ff; }
+  .cmd-inline { background: #0f172a; color: #a5f3fc; padding: 2px 8px; border-radius: 5px; font-family: monospace; font-size: 12px; }
+
+  /* ── TOOL LIST ── */
+  .tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 12px; }
+  .tool-item {
+    background: var(--gray); border-radius: 8px; padding: 8px 12px;
+    font-size: 13px; font-weight: 600; color: var(--navy);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tool-item::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* ── NEXT STEPS ── */
+  .next-section {
+    background: linear-gradient(135deg, var(--navy), #0d3b6e);
+    border-radius: 20px; padding: 48px; text-align: center; color: white;
+    margin-top: 40px;
+  }
+  .next-section h2 { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
+  .next-section p { color: #a0c4e8; margin-bottom: 28px; font-size: 16px; line-height: 1.6; }
+  .next-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 800; transition: transform .15s, opacity .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-green { background: var(--green); color: var(--navy); }
+  .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.35); }
+  .btn-outline:hover { border-color: white; }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .page-wrap { padding: 40px 20px; }
+    .progress-banner { padding: 12px 20px; }
+    .req-grid { grid-template-columns: 1fr; }
+    .vm-specs { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="lab-setup.html" style="color:var(--green)">Lab Setup</a>
+    <a href="labs.html">Labs</a>
+    <a href="checkout.html" class="nav-cta">Enroll Now</a>
+  </div>
+</nav>
+
+<!-- PROGRESS BANNER -->
+<div class="progress-banner">
+  <span class="progress-label">Setup Progress</span>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+  <span class="progress-pct" id="progressPct">0%</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Phase 0 — Before Any Lab</div>
+  <h1>Build Your <em>Home Lab</em></h1>
+  <p>Everything you need to run Kali Linux, SIFT Workstation, REMnux, and Flare-VM locally — free, fully isolated, and ready for real security work.</p>
+  <div class="hero-phases">
+    <div class="phase-badge"><div class="dot"></div> System Check</div>
+    <div class="phase-badge"><div class="dot"></div> Hypervisor</div>
+    <div class="phase-badge"><div class="dot"></div> Virtual Machines</div>
+    <div class="phase-badge"><div class="dot"></div> Network</div>
+    <div class="phase-badge"><div class="dot"></div> Snapshots &amp; Verify</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- PHASE 1: SYSTEM REQUIREMENTS -->
+  <div class="section-gap" id="phase1">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div>
+        <div class="phase-title">System Requirements</div>
+        <div class="phase-sub">Verify your machine can run multiple VMs before downloading anything</div>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠️</span>
+      <div><strong>Virtualization must be enabled in BIOS/UEFI.</strong> On most machines this is off by default. Search "<strong>enable VT-x [your CPU brand]</strong>" or "<strong>enable AMD-V [your motherboard]</strong>" for your specific steps. Without this, no hypervisor will work.</div>
+    </div>
+
+    <div class="req-grid">
+      <div class="req-card">
+        <h4>💾 Memory (RAM)</h4>
+        <div class="req-row"><span>Minimum</span><span class="req-min">16 GB</span></div>
+        <div class="req-row"><span>Recommended</span><span class="req-rec">32 GB</span></div>
+        <div class="req-row"><span>Why</span><span class="req-min">Running 2–3 VMs simultaneously</span></div>
+      </div>
+      <div class="req-card">
+        <h4>🖥️ Storage</h4>
+        <div class="req-row"><span>Minimum free</span><span class="req-min">200 GB</span></div>
+        <div class="req-row"><span>Recommended</span><span class="req-rec">500 GB SSD</span></div>
+        <div class="req-row"><span>Why</span><span class="req-min">VM snapshots consume significant space</span></div>
+      </div>
+      <div class="req-card">
+        <h4>⚙️ CPU</h4>
+        <div class="req-row"><span>Minimum</span><span class="req-min">Quad-core (Intel i5/Ryzen 5)</span></div>
+        <div class="req-row"><span>Recommended</span><span class="req-rec">8-core with VT-x/AMD-V</span></div>
+        <div class="req-row"><span>Required feature</span><span class="req-min">Hardware virtualization enabled</span></div>
+      </div>
+      <div class="req-card">
+        <h4>🖥️ Host OS</h4>
+        <div class="req-row"><span>Windows</span><span class="req-rec">10 / 11 (64-bit)</span></div>
+        <div class="req-row"><span>macOS</span><span class="req-rec">12 Monterey or newer</span></div>
+        <div class="req-row"><span>Linux</span><span class="req-rec">Ubuntu 20.04 / Debian 11+</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div class="steps">
+        <div class="step" onclick="toggleStep(this)" data-id="s1a">
+          <div class="step-check">✓</div>
+          <div class="step-text">Check RAM: open Task Manager (Windows) or Activity Monitor (Mac) → verify 16 GB+ installed</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="s1b">
+          <div class="step-check">✓</div>
+          <div class="step-text">Check free disk space: need 200 GB+ free on an SSD if possible</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="s1c">
+          <div class="step-check">✓</div>
+          <div class="step-text"><strong>Windows:</strong> Open Task Manager → Performance → CPU → confirm <strong>"Virtualization: Enabled"</strong></div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="s1d">
+          <div class="step-check">✓</div>
+          <div class="step-text"><strong>Mac (Apple Silicon):</strong> VirtualBox doesn't support M1/M2. Use <strong>UTM</strong> (free) or <strong>VMware Fusion 13+</strong> instead. <a href="https://mac.getutm.app" target="_blank">Download UTM →</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2: HYPERVISOR -->
+  <div class="section-gap" id="phase2">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <div>
+        <div class="phase-title">Install a Hypervisor</div>
+        <div class="phase-sub">The software that runs your virtual machines. Pick one — both are free.</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('vbox')">VirtualBox (Recommended)</button>
+      <button class="tab-btn" onclick="switchTab('vmware')">VMware Workstation Player</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-vbox">
+      <div class="alert alert-success">
+        <span class="alert-icon">✅</span>
+        <div><strong>Best choice for beginners.</strong> Free, open-source, runs on Windows/Mac/Linux. All lab instructions in this course use VirtualBox commands and settings.</div>
+      </div>
+      <div class="steps">
+        <div class="step" onclick="toggleStep(this)" data-id="vb1">
+          <div class="step-check">✓</div>
+          <div class="step-text">Download VirtualBox for your OS: <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">virtualbox.org/wiki/Downloads →</a></div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="vb2">
+          <div class="step-check">✓</div>
+          <div class="step-text">On the same page, also download the <strong>VirtualBox Extension Pack</strong> — provides USB 2.0/3.0 and better VM performance</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="vb3">
+          <div class="step-check">✓</div>
+          <div class="step-text">Install VirtualBox first, then double-click the Extension Pack to install it</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="vb4">
+          <div class="step-check">✓</div>
+          <div class="step-text">Verify installation — open a terminal and run:</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <span class="comment"># Windows (PowerShell)</span><br>
+        <span class="cmd">vboxmanage --version</span><br>
+        <span class="comment"># Expected output: 7.0.x or similar</span>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-vmware">
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div><strong>Better performance on Windows.</strong> VMware Workstation Player is free for personal use. Mac users need VMware Fusion (also free for personal use).</div>
+      </div>
+      <div class="steps">
+        <div class="step" onclick="toggleStep(this)" data-id="vm1">
+          <div class="step-check">✓</div>
+          <div class="step-text"><strong>Windows/Linux:</strong> Download VMware Workstation Player (free): <a href="https://www.vmware.com/products/workstation-player/workstation-player-evaluation.html" target="_blank">VMware Workstation Player →</a></div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="vm2">
+          <div class="step-check">✓</div>
+          <div class="step-text"><strong>Mac:</strong> Download VMware Fusion Player (free for personal use): <a href="https://customerconnect.vmware.com/en/evalcenter?p=fusion-player-personal-13" target="_blank">VMware Fusion →</a></div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="vm3">
+          <div class="step-check">✓</div>
+          <div class="step-text">Install and create a free account when prompted. Select "Use VMware Workstation Player for free for non-commercial use"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3: VIRTUAL MACHINES -->
+  <div class="section-gap" id="phase3">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div>
+        <div class="phase-title">Download &amp; Import Virtual Machines</div>
+        <div class="phase-sub">Five free VMs covering attack, forensics, malware analysis, and vulnerable targets</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">💡</span>
+      <div>You don't need all VMs on day one. Start with <strong>Kali Linux</strong>. Add SIFT and REMnux before Week 5 labs. Flare-VM is used in the malware analysis module.</div>
+    </div>
+
+    <div class="vm-grid">
+
+      <!-- KALI -->
+      <div class="vm-card" id="vm-kali">
+        <div class="vm-header" onclick="toggleVM('vm-kali')">
+          <div class="vm-icon">🐉</div>
+          <div class="vm-info">
+            <h3>Kali Linux</h3>
+            <p>Penetration testing, network scanning, password cracking, wireless attacks</p>
+            <div class="vm-badges">
+              <span class="vm-badge badge-kali">Attack</span>
+              <span class="vm-badge badge-kali">Pen Testing</span>
+              <span class="vm-badge badge-kali">Network</span>
+            </div>
+          </div>
+          <span class="vm-arrow">›</span>
+        </div>
+        <div class="vm-body">
+          <div class="vm-specs">
+            <div class="vm-spec"><div class="spec-val">4 GB</div><div class="spec-key">RAM</div></div>
+            <div class="vm-spec"><div class="spec-val">2 vCPU</div><div class="spec-key">Processors</div></div>
+            <div class="vm-spec"><div class="spec-val">80 GB</div><div class="spec-key">Storage</div></div>
+            <div class="vm-spec"><div class="spec-val">kali / kali</div><div class="spec-key">Default Creds</div></div>
+          </div>
+          <div class="steps">
+            <div class="step" onclick="toggleStep(this)" data-id="kali1">
+              <div class="step-check">✓</div>
+              <div class="step-text">Download the VirtualBox or VMware pre-built image: <a href="https://www.kali.org/get-kali/#kali-virtual-machines" target="_blank">kali.org/get-kali/#kali-virtual-machines →</a> (choose the .ova or .7z for your hypervisor)</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="kali2">
+              <div class="step-check">✓</div>
+              <div class="step-text"><strong>VirtualBox:</strong> File → Import Appliance → select the .ova file → set RAM to 4 GB → Import</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="kali3">
+              <div class="step-check">✓</div>
+              <div class="step-text">Boot the VM, log in with <strong>kali / kali</strong>, then update all packages:</div>
+            </div>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="cmd">sudo apt update && sudo apt full-upgrade -y</span><br>
+            <span class="comment"># This may take 10-20 minutes on first run</span>
+          </div>
+          <div class="steps" style="margin-top:0">
+            <div class="step" onclick="toggleStep(this)" data-id="kali4">
+              <div class="step-check">✓</div>
+              <div class="step-text">Verify key tools are present: <span class="cmd-inline">nmap --version</span>, <span class="cmd-inline">wireshark --version</span>, <span class="cmd-inline">msfconsole --version</span></div>
+            </div>
+          </div>
+          <div class="alert alert-warn" style="margin-top:12px">
+            <span class="alert-icon">🔑</span>
+            <div>Change the default password immediately: <span class="cmd-inline">passwd</span> in terminal. Never leave kali/kali as credentials on a network-connected VM.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIFT -->
+      <div class="vm-card" id="vm-sift">
+        <div class="vm-header" onclick="toggleVM('vm-sift')">
+          <div class="vm-icon">🔬</div>
+          <div class="vm-info">
+            <h3>SIFT Workstation <span style="font-size:11px;background:#1a365d;color:#90cdf4;padding:2px 8px;border-radius:8px;margin-left:6px;vertical-align:middle;">SANS Free</span></h3>
+            <p>Digital forensics, incident response, memory analysis, timeline analysis</p>
+            <div class="vm-badges">
+              <span class="vm-badge badge-sans">DFIR</span>
+              <span class="vm-badge badge-sans">Forensics</span>
+              <span class="vm-badge badge-sans">Memory Analysis</span>
+            </div>
+          </div>
+          <span class="vm-arrow">›</span>
+        </div>
+        <div class="vm-body">
+          <div class="vm-specs">
+            <div class="vm-spec"><div class="spec-val">8 GB</div><div class="spec-key">RAM</div></div>
+            <div class="vm-spec"><div class="spec-val">4 vCPU</div><div class="spec-key">Processors</div></div>
+            <div class="vm-spec"><div class="spec-val">60 GB</div><div class="spec-key">Storage</div></div>
+            <div class="vm-spec"><div class="spec-val">sansforensics</div><div class="spec-key">Username</div></div>
+          </div>
+          <p style="font-size:13px;color:var(--mid);margin-bottom:14px;">SIFT includes: <strong>Volatility, Autopsy, Sleuth Kit, Plaso, bulk_extractor, Foremost, log2timeline, Wireshark, NetworkMiner, Rekall</strong> and 80+ additional forensics tools.</p>
+          <div class="steps">
+            <div class="step" onclick="toggleStep(this)" data-id="sift1">
+              <div class="step-check">✓</div>
+              <div class="step-text">Free download (SANS account required): <a href="https://www.sans.org/tools/sift-workstation/" target="_blank">sans.org/tools/sift-workstation/ →</a></div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="sift2">
+              <div class="step-check">✓</div>
+              <div class="step-text">Import the OVA file into VirtualBox. Allocate at least 8 GB RAM — Volatility memory analysis is memory-intensive</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="sift3">
+              <div class="step-check">✓</div>
+              <div class="step-text">Default password is <strong>forensics</strong>. Change it immediately after first boot</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="sift4">
+              <div class="step-check">✓</div>
+              <div class="step-text">Verify key tools:</div>
+            </div>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="cmd">volatility --info | head -20</span><br>
+            <span class="cmd">log2timeline.py --version</span><br>
+            <span class="cmd">autopsy &</span><span class="comment">   # opens in browser at localhost:9999</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMNUX -->
+      <div class="vm-card" id="vm-remnux">
+        <div class="vm-header" onclick="toggleVM('vm-remnux')">
+          <div class="vm-icon">🦠</div>
+          <div class="vm-info">
+            <h3>REMnux <span style="font-size:11px;background:#2d3a1e;color:#9ae6b4;padding:2px 8px;border-radius:8px;margin-left:6px;vertical-align:middle;">SANS Free</span></h3>
+            <p>Malware analysis, reverse engineering, static &amp; dynamic analysis of suspicious files</p>
+            <div class="vm-badges">
+              <span class="vm-badge badge-remnux">Malware RE</span>
+              <span class="vm-badge badge-remnux">Static Analysis</span>
+              <span class="vm-badge badge-remnux">Dynamic Analysis</span>
+            </div>
+          </div>
+          <span class="vm-arrow">›</span>
+        </div>
+        <div class="vm-body">
+          <div class="vm-specs">
+            <div class="vm-spec"><div class="spec-val">4 GB</div><div class="spec-key">RAM</div></div>
+            <div class="vm-spec"><div class="spec-val">2 vCPU</div><div class="spec-key">Processors</div></div>
+            <div class="vm-spec"><div class="spec-val">40 GB</div><div class="spec-key">Storage</div></div>
+            <div class="vm-spec"><div class="spec-val">remnux</div><div class="spec-key">Username</div></div>
+          </div>
+          <p style="font-size:13px;color:var(--mid);margin-bottom:14px;">REMnux includes: <strong>FLOSS, Capa, Ghidra, Cutter (radare2), pefile, YARA, PE-bear, oletools, CyberChef, VirusTotal CLI, Detect-It-Easy</strong> and 150+ analysis tools.</p>
+          <div class="steps">
+            <div class="step" onclick="toggleStep(this)" data-id="rem1">
+              <div class="step-check">✓</div>
+              <div class="step-text">Free download: <a href="https://remnux.org/" target="_blank">remnux.org →</a> — choose the OVA for VirtualBox or VMDK for VMware</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="rem2">
+              <div class="step-check">✓</div>
+              <div class="step-text">Import and set network to <strong>Host-Only + Internal Network "malware-net"</strong> — this isolates malware from reaching the internet through your host</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="rem3">
+              <div class="step-check">✓</div>
+              <div class="step-text">Verify tools after boot:</div>
+            </div>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="cmd">floss --version</span><br>
+            <span class="cmd">capa --version</span><br>
+            <span class="cmd">remnux list-installed-packages | grep -c .</span><br>
+            <span class="comment"># Should show 100+ packages</span>
+          </div>
+          <div class="alert alert-danger" style="margin-top:12px">
+            <span class="alert-icon">🚫</span>
+            <div><strong>Never give REMnux a NAT adapter when analyzing real malware.</strong> Samples will phone home. Use Host-Only + INetSim to simulate network responses safely.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLARE-VM -->
+      <div class="vm-card" id="vm-flare">
+        <div class="vm-header" onclick="toggleVM('vm-flare')">
+          <div class="vm-icon">🔥</div>
+          <div class="vm-info">
+            <h3>Flare-VM <span style="font-size:11px;background:#3d1a1a;color:#fc8181;padding:2px 8px;border-radius:8px;margin-left:6px;vertical-align:middle;">Mandiant Free</span></h3>
+            <p>Windows-based malware analysis — debuggers, disassemblers, PE tools, .NET decompilers</p>
+            <div class="vm-badges">
+              <span class="vm-badge badge-flare">Windows RE</span>
+              <span class="vm-badge badge-flare">Debugger</span>
+              <span class="vm-badge badge-flare">.NET Analysis</span>
+            </div>
+          </div>
+          <span class="vm-arrow">›</span>
+        </div>
+        <div class="vm-body">
+          <div class="vm-specs">
+            <div class="vm-spec"><div class="spec-val">8 GB</div><div class="spec-key">RAM</div></div>
+            <div class="vm-spec"><div class="spec-val">4 vCPU</div><div class="spec-key">Processors</div></div>
+            <div class="vm-spec"><div class="spec-val">80 GB</div><div class="spec-key">Storage</div></div>
+            <div class="vm-spec"><div class="spec-val">Windows 10</div><div class="spec-key">Base OS</div></div>
+          </div>
+          <p style="font-size:13px;color:var(--mid);margin-bottom:14px;">Flare-VM includes: <strong>x64dbg, OllyDbg, PE-bear, CFF Explorer, Ghidra, IDA Free, dnSpy, de4dot, FLOSS, Wireshark, Process Monitor, Process Hacker</strong> and 50+ Windows tools.</p>
+          <div class="alert alert-warn">
+            <span class="alert-icon">⚠️</span>
+            <div>Flare-VM installs <em>on top of</em> a clean Windows VM. You need a Windows 10 base image first. A 90-day evaluation version from Microsoft works.</div>
+          </div>
+          <div class="steps">
+            <div class="step" onclick="toggleStep(this)" data-id="flare1">
+              <div class="step-check">✓</div>
+              <div class="step-text">Get a Windows 10 evaluation VM (90-day free): <a href="https://www.microsoft.com/en-us/evalcenter/evaluate-windows-10-enterprise" target="_blank">Microsoft Eval Center →</a></div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="flare2">
+              <div class="step-check">✓</div>
+              <div class="step-text">Import the Windows VM. Allocate 8 GB RAM, 4 vCPU. Take a clean snapshot <em>before</em> running the Flare-VM installer</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="flare3">
+              <div class="step-check">✓</div>
+              <div class="step-text">Disable Windows Defender (Flare will re-configure it). In the Windows VM, open PowerShell as Administrator and run:</div>
+            </div>
+          </div>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="comment"># Step 1: Disable Windows Defender real-time protection first</span><br>
+            <span class="cmd">Set-MpPreference -DisableRealtimeMonitoring $true</span><br><br>
+            <span class="comment"># Step 2: Download and run the Flare-VM installer</span><br>
+            <span class="cmd">(New-Object net.webclient).DownloadFile('https://raw.githubusercontent.com/mandiant/flare-vm/main/install.ps1',"$([Environment]::GetFolderPath('Desktop'))\install.ps1")</span><br>
+            <span class="cmd">Unblock-File .\install.ps1</span><br>
+            <span class="cmd">Set-ExecutionPolicy Unrestricted -Force</span><br>
+            <span class="cmd">.\install.ps1</span><br>
+            <span class="comment"># Installation takes 30-60 minutes — do not interrupt</span>
+          </div>
+          <div class="steps" style="margin-top:0">
+            <div class="step" onclick="toggleStep(this)" data-id="flare4">
+              <div class="step-check">✓</div>
+              <div class="step-text">After install completes and VM reboots, take a "Flare-VM Clean" snapshot — this is your restore point for every malware lab</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METASPLOITABLE -->
+      <div class="vm-card" id="vm-meta">
+        <div class="vm-header" onclick="toggleVM('vm-meta')">
+          <div class="vm-icon">🎯</div>
+          <div class="vm-info">
+            <h3>Metasploitable 3 <span style="font-size:11px;background:#2d1a3d;color:#d6bcfa;padding:2px 8px;border-radius:8px;margin-left:6px;vertical-align:middle;">Rapid7 Free</span></h3>
+            <p>Intentionally vulnerable Linux &amp; Windows targets for practicing attacks and detection</p>
+            <div class="vm-badges">
+              <span class="vm-badge badge-vuln">Vulnerable Target</span>
+              <span class="vm-badge badge-vuln">Practice</span>
+            </div>
+          </div>
+          <span class="vm-arrow">›</span>
+        </div>
+        <div class="vm-body">
+          <div class="vm-specs">
+            <div class="vm-spec"><div class="spec-val">2 GB</div><div class="spec-key">RAM</div></div>
+            <div class="vm-spec"><div class="spec-val">1 vCPU</div><div class="spec-key">Processors</div></div>
+            <div class="vm-spec"><div class="spec-val">40 GB</div><div class="spec-key">Storage</div></div>
+            <div class="vm-spec"><div class="spec-val">vagrant / vagrant</div><div class="spec-key">Default Creds</div></div>
+          </div>
+          <div class="alert alert-danger">
+            <span class="alert-icon">🚨</span>
+            <div><strong>NEVER connect Metasploitable to the internet.</strong> It is full of critical vulnerabilities by design. Host-Only network only.</div>
+          </div>
+          <div class="steps">
+            <div class="step" onclick="toggleStep(this)" data-id="meta1">
+              <div class="step-check">✓</div>
+              <div class="step-text">Pre-built OVA download: <a href="https://sourceforge.net/projects/metasploitable/" target="_blank">SourceForge — Metasploitable →</a></div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="meta2">
+              <div class="step-check">✓</div>
+              <div class="step-text">Import into VirtualBox. Set network adapter to <strong>Host-Only only</strong> (no NAT, no bridged)</div>
+            </div>
+            <div class="step" onclick="toggleStep(this)" data-id="meta3">
+              <div class="step-check">✓</div>
+              <div class="step-text">From Kali, verify you can reach it: <span class="cmd-inline">nmap -sV 192.168.56.101</span> — you should see 20+ open vulnerable services</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PHASE 4: NETWORK CONFIG -->
+  <div class="section-gap" id="phase4">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <div>
+        <div class="phase-title">Configure Lab Networks</div>
+        <div class="phase-sub">Set up isolated networks so VMs can talk to each other without reaching the internet</div>
+      </div>
+    </div>
+
+    <div class="net-diagram">
+      <div style="text-align:center;margin-bottom:24px;font-size:13px;color:#94a3b8;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Lab Network Architecture</div>
+      <div class="net-row">
+        <div class="net-vm"><div class="vm-emoji">🐉</div><div class="vm-name">Kali Linux</div><div class="vm-ip">192.168.56.10</div></div>
+        <div class="net-arrow">⟷</div>
+        <div class="net-vm"><div class="vm-emoji">🔬</div><div class="vm-name">SIFT</div><div class="vm-ip">192.168.56.20</div></div>
+        <div class="net-arrow">⟷</div>
+        <div class="net-vm"><div class="vm-emoji">🎯</div><div class="vm-name">Metasploitable</div><div class="vm-ip">192.168.56.101</div></div>
+      </div>
+      <div class="net-zone">
+        <div class="net-zone-label">Host-Only Network — 192.168.56.0/24</div>
+        <div style="font-size:12px;color:#64748b;">All VMs can see each other • No internet access from this network</div>
+      </div>
+      <div class="net-row" style="margin-top:20px">
+        <div class="net-vm"><div class="vm-emoji">🦠</div><div class="vm-name">REMnux</div><div class="vm-ip">10.0.0.1</div></div>
+        <div class="net-arrow">⟷</div>
+        <div class="net-vm"><div class="vm-emoji">🔥</div><div class="vm-name">Flare-VM</div><div class="vm-ip">10.0.0.2</div></div>
+      </div>
+      <div class="net-zone">
+        <div class="net-zone-label">Internal Network "malware-net" — 10.0.0.0/24 (Air-Gapped)</div>
+        <div style="font-size:12px;color:#64748b;">Completely isolated • Malware cannot reach internet or host network • REMnux acts as fake DNS/gateway</div>
+      </div>
+      <div class="net-row" style="margin-top:20px">
+        <div class="net-vm"><div class="vm-emoji">🐉</div><div class="vm-name">Kali</div><div class="vm-ip">NAT adapter</div></div>
+        <div class="net-arrow">→</div>
+        <div class="net-vm"><div class="vm-emoji">🌐</div><div class="vm-name">Internet</div><div class="vm-ip">Tool updates only</div></div>
+      </div>
+      <div class="net-zone">
+        <div class="net-zone-label">NAT (Kali only) — Internet access for tool updates &amp; research</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px">
+      <h4 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px;">Create Host-Only Network (VirtualBox)</h4>
+      <div class="steps">
+        <div class="step" onclick="toggleStep(this)" data-id="net1">
+          <div class="step-check">✓</div>
+          <div class="step-text">Open VirtualBox → <strong>File → Host Network Manager</strong> → click Create</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="net2">
+          <div class="step-check">✓</div>
+          <div class="step-text">Set IPv4 Address: <strong>192.168.56.1</strong>, Mask: <strong>255.255.255.0</strong> — disable DHCP (we'll assign static IPs)</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="net3">
+          <div class="step-check">✓</div>
+          <div class="step-text">For each VM: Settings → Network → Adapter 1 → <strong>Host-Only Adapter</strong></div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="net4">
+          <div class="step-check">✓</div>
+          <div class="step-text">Kali only: Settings → Network → Adapter 2 → <strong>NAT</strong> (for internet tool updates)</div>
+        </div>
+        <div class="step" onclick="toggleStep(this)" data-id="net5">
+          <div class="step-check">✓</div>
+          <div class="step-text">REMnux + Flare-VM: Add a second adapter → <strong>Internal Network</strong> → name it <strong>malware-net</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5: SNAPSHOTS -->
+  <div class="section-gap" id="phase5">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <div>
+        <div class="phase-title">Take Snapshots &amp; Verify</div>
+        <div class="phase-sub">Snapshots are your undo button — take one before every lab</div>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <span class="alert-icon">📸</span>
+      <div><strong>Golden rule:</strong> Before starting ANY lab, take a snapshot named "Pre-Lab [date]". After the lab, revert to it to get a clean state. This takes 30 seconds and saves hours of rebuilding.</div>
+    </div>
+
+    <div class="steps">
+      <div class="step" onclick="toggleStep(this)" data-id="snap1">
+        <div class="step-check">✓</div>
+        <div class="step-text">Boot each VM, let it fully load, then <strong>right-click the VM → Snapshots → Take</strong>. Name it <strong>"Clean State — [date]"</strong></div>
+      </div>
+      <div class="step" onclick="toggleStep(this)" data-id="snap2">
+        <div class="step-check">✓</div>
+        <div class="step-text">Verify Kali tools are working:</div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <span class="comment"># Run these in your Kali VM</span><br>
+      <span class="cmd">nmap --version</span>        <span class="comment">  # Should show 7.x</span><br>
+      <span class="cmd">wireshark --version</span>   <span class="comment">  # Should show 4.x</span><br>
+      <span class="cmd">msfconsole --version</span>  <span class="comment">  # Should show Metasploit Framework 6.x</span><br>
+      <span class="cmd">python3 --version</span>     <span class="comment">  # Python 3.11+</span><br>
+      <span class="cmd">hashcat --version</span>     <span class="comment">  # Should show 6.x</span>
+    </div>
+
+    <h4 style="font-size:16px;font-weight:700;color:var(--navy);margin:20px 0 14px;">Full Verification Checklist</h4>
+    <table class="verify-table">
+      <thead>
+        <tr><th>VM</th><th>Command to Run</th><th>Expected Result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Kali</td><td><span class="cmd-inline">nmap -sV 192.168.56.101</span></td><td>Sees Metasploitable open ports</td></tr>
+        <tr><td>Kali</td><td><span class="cmd-inline">wireshark -v</span></td><td>Version info shown</td></tr>
+        <tr><td>SIFT</td><td><span class="cmd-inline">volatility --info | head -5</span></td><td>Lists OS profiles</td></tr>
+        <tr><td>SIFT</td><td><span class="cmd-inline">autopsy</span></td><td>Web UI opens on port 9999</td></tr>
+        <tr><td>REMnux</td><td><span class="cmd-inline">floss --version</span></td><td>FLOSS version shown</td></tr>
+        <tr><td>REMnux</td><td><span class="cmd-inline">capa --version</span></td><td>Capa version shown</td></tr>
+        <tr><td>Flare-VM</td><td>Open Start Menu → search "x64dbg"</td><td>x64dbg icon visible</td></tr>
+        <tr><td>Flare-VM</td><td>Open Start Menu → search "Ghidra"</td><td>Ghidra icon visible</td></tr>
+      </tbody>
+    </table>
+
+    <div class="steps" style="margin-top:20px">
+      <div class="step" onclick="toggleStep(this)" data-id="snap3">
+        <div class="step-check">✓</div>
+        <div class="step-text">All tools verified and working on all VMs</div>
+      </div>
+      <div class="step" onclick="toggleStep(this)" data-id="snap4">
+        <div class="step-check">✓</div>
+        <div class="step-text">Clean State snapshot taken on all VMs</div>
+      </div>
+      <div class="step" onclick="toggleStep(this)" data-id="snap5">
+        <div class="step-check">✓</div>
+        <div class="step-text">Lab network verified — Kali can ping Metasploitable: <span class="cmd-inline">ping 192.168.56.101</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="next-section">
+    <h2>Your Lab Is Ready</h2>
+    <p>You now have a professional-grade security lab that rivals what analysts use at Fortune 500 companies — and it cost you nothing but time. Time to put it to work.</p>
+    <div class="next-btns">
+      <a href="labs.html" class="btn btn-green">Start the Labs →</a>
+      <a href="lab-malware.html" class="btn btn-outline">Jump to Malware Analysis Lab</a>
+    </div>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<script>
+// ── STEP TOGGLE ──
+function toggleStep(el) {
+  el.classList.toggle('done');
+  const id = el.dataset.id;
+  const saved = JSON.parse(localStorage.getItem('labSetupSteps') || '{}');
+  saved[id] = el.classList.contains('done');
+  localStorage.setItem('labSetupSteps', JSON.stringify(saved));
+  updateProgress();
+}
+
+// ── VM ACCORDION ──
+function toggleVM(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── PROGRESS ──
+function updateProgress() {
+  const all = document.querySelectorAll('.step');
+  const done = document.querySelectorAll('.step.done');
+  const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ── COPY BUTTON ──
+function copyCode(btn) {
+  const block = btn.parentElement;
+  const text = Array.from(block.childNodes)
+    .filter(n => n.nodeType === Node.TEXT_NODE || (n.tagName === 'SPAN' && n.className === 'cmd'))
+    .map(n => n.textContent).join('').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+// ── RESTORE SAVED STATE ──
+(function init() {
+  const saved = JSON.parse(localStorage.getItem('labSetupSteps') || '{}');
+  document.querySelectorAll('.step').forEach(step => {
+    if (saved[step.dataset.id]) step.classList.add('done');
+  });
+  updateProgress();
+})();
+</script>
+</body>
+</html>

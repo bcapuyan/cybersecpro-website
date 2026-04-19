@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L18: YARA Rule Writing &amp; Testing | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-advanced">Advanced</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Malware Analysis</span>
+    </div>
+    <h1>L18: YARA Rule Writing &amp; Threat Hunting</h1>
+    <p>Master YARA rule development on REMnux — from basic string matching to advanced modules (pe, elf, math, cuckoo). Analyze real malware samples, extract distinguishing patterns, write high-confidence detection rules, and integrate them into a threat hunting workflow.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">YARA 4.x</span>
+      <span class="tool-tag">Python yara-python</span>
+      <span class="tool-tag">REMnux</span>
+      <span class="tool-tag">FLOSS</span>
+      <span class="tool-tag">pefile</span>
+      <span class="tool-tag">yarGen</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 12 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: YARA Fundamentals &amp; String Analysis</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Set up YARA environment on REMnux</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>REMnux has YARA pre-installed. Verify and set up the lab workspace:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">yara --version
+pip3 install yara-python pefile
+
+mkdir ~/yara-lab && cd ~/yara-lab
+mkdir samples rules test_clean test_malware reports
+
+# Install yarGen (automated YARA rule generator)
+git clone https://github.com/Neo23x0/yarGen.git ~/yarGen
+cd ~/yarGen && pip3 install -r requirements.txt
+python3 yarGen.py --update  # Downloads goodware DB
+
+# Download YARA rule sources
+mkdir ~/yara-lab/rule_sources
+# Florian Roth's signature-base rules
+git clone https://github.com/Neo23x0/signature-base.git ~/yara-lab/rule_sources/signature-base
+
+echo "YARA $(yara --version) ready"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">YARA rule structure and basic string matching</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Learn the anatomy of a YARA rule through progressively complex examples:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/yara-lab/rules/01_basic.yar << 'EOF'
+// YARA Rule Structure Reference
+// rule [rule_name] : [tags] {
+//     meta:     // documentation
+//     strings:  // patterns to search for
+//     condition: // logic combining strings
+// }
+
+rule Example_Simple_String {
+    meta:
+        description = "Detect simple string match"
+        author = "CyberSec Pro Academy"
+        severity = "LOW"
+    strings:
+        $s1 = "malware_string_here"  // case-sensitive text
+        $s2 = "MaLwArE" nocase       // case-insensitive
+        $s3 = { 4D 5A 90 00 }        // hex pattern (MZ header)
+        $s4 = /[Mm]alware\d{3}/      // regex
+        $b1 = "cmd.exe" wide         // UTF-16LE (Windows)
+        $b2 = "powershell" wide nocase
+    condition:
+        $s3 at 0 and  // MZ header at byte 0
+        (any of ($s*) or $b1 or $b2)
+}
+
+rule Example_PE_File {
+    meta:
+        description = "Match PE files (executables)"
+    condition:
+        uint16(0) == 0x5A4D and     // MZ magic bytes
+        uint32(uint32(0x3C)) == 0x00004550  // PE signature
+}
+
+rule Example_Packed_PE {
+    meta:
+        description = "Detect possibly packed PE with high entropy"
+    strings:
+        $mz = { 4D 5A }  // MZ header
+    condition:
+        $mz at 0 and
+        pe.number_of_sections < 4 and
+        math.entropy(0, filesize) > 7.0
+}
+EOF
+
+# Test on a sample binary
+yara ~/yara-lab/rules/01_basic.yar /bin/ls
+echo "If /bin/ls matches PE rule, adjust rule — ELF binaries have different magic"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Extract strings from malware samples with FLOSS</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>FLOSS extracts both static strings and deobfuscated strings from malware:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Download a safe malware sample from MalwareBazaar (EICAR test file first)
+curl -O https://secure.eicar.org/eicar.com.txt
+mv eicar.com.txt ~/yara-lab/samples/eicar_test.txt
+
+# For real malware samples, download from MalwareBazaar
+python3 << 'EOF'
+import requests, zipfile, io, os
+
+# Query MalwareBazaar for a sample (e.g., Mirai botnet, well-documented)
+resp = requests.post('https://mb-api.abuse.ch/api/v1/',
+    data={'query': 'get_taginfo', 'tag': 'Mirai', 'limit': 1})
+data = resp.json()
+
+if data.get('query_status') == 'ok' and data.get('data'):
+    sample = data['data'][0]
+    sha256 = sample.get('sha256_hash', '')
+    print(f"Sample: {sample.get('file_name', '')} | SHA256: {sha256[:16]}...")
+
+    # Download sample (password: infected)
+    dl = requests.post('https://mb-api.abuse.ch/api/v1/',
+        data={'query': 'get_file', 'sha256_hash': sha256})
+    if dl.status_code == 200:
+        with open(f"samples/{sha256[:8]}.zip", 'wb') as f:
+            f.write(dl.content)
+        print("Sample downloaded — unzip with password 'infected'")
+else:
+    print("Using EICAR test file for rule development")
+EOF
+
+# Extract strings from sample
+floss ~/yara-lab/samples/eicar_test.txt 2>/dev/null || \
+strings ~/yara-lab/samples/eicar_test.txt
+
+# For real samples (after unzipping):
+# floss --no-filter ~/yara-lab/samples/malware.exe > ~/yara-lab/samples/strings.txt</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Advanced YARA Modules</div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">PE module — analyze PE structure in conditions</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/yara-lab/rules/02_pe_module.yar << 'EOF'
+import "pe"
+
+rule Suspicious_PE_Characteristics {
+    meta:
+        description = "PE with suspicious characteristics"
+        author = "CyberSec Pro Academy - L18"
+    condition:
+        pe.is_pe and
+
+        // Signed but certificate is expired or self-signed
+        // (pe.number_of_signatures == 0 means unsigned)
+        (pe.number_of_signatures == 0 or
+         for any i in (0..pe.number_of_signatures-1):
+            (pe.signatures[i].not_after < pe.timestamp)) and
+
+        // Suspicious section names or characteristics
+        (for any i in (0..pe.number_of_sections-1):
+            (pe.sections[i].name matches /\.text|\.data|code/ and
+             pe.sections[i].characteristics & pe.SECTION_MEM_EXECUTE != 0 and
+             pe.sections[i].characteristics & pe.SECTION_MEM_WRITE != 0))
+}
+
+rule Ransomware_API_Imports {
+    meta:
+        description = "PE importing APIs commonly used by ransomware"
+        author = "CyberSec Pro Academy - L18"
+        mitre = "T1486 - Data Encrypted for Impact"
+        severity = "HIGH"
+    condition:
+        pe.is_pe and
+        // Cryptography APIs
+        pe.imports("advapi32.dll", "CryptEncrypt") and
+        pe.imports("advapi32.dll", "CryptGenKey") and
+        // File enumeration (to find files to encrypt)
+        (pe.imports("kernel32.dll", "FindFirstFileW") or
+         pe.imports("kernel32.dll", "FindFirstFileA")) and
+        // Shadow copy deletion (common ransomware behavior)
+        for any i in (0..pe.resources.length-1):
+            (pe.resources[i].type_string matches /string/i)
+}
+
+rule Cobalt_Strike_Beacon {
+    meta:
+        description = "Cobalt Strike Beacon characteristics"
+        author = "CyberSec Pro Academy - L18"
+        reference = "https://attack.mitre.org/software/S0154/"
+    strings:
+        $config1 = { 00 01 00 01 00 02 [4] 00 02 }  // CS config structure
+        $watermark = { 69 68 69 68 }  // Common CS watermark
+        $pipe_named = "\\\\.\\pipe\\" wide
+        $post_ex = "powershell -nop -exec bypass -EncodedCommand" wide nocase
+    condition:
+        uint16(0) == 0x5A4D and  // MZ header
+        (2 of ($config1, $watermark, $pipe_named, $post_ex))
+}
+EOF
+
+# Test PE module rules (requires actual PE files)
+yara -r ~/yara-lab/rules/02_pe_module.yar ~/yara-lab/samples/ 2>/dev/null || \
+  echo "Add PE files to samples/ to test. PE module requires YARA compiled with PE support."</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Math module — entropy and byte distribution analysis</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/yara-lab/rules/03_entropy.yar << 'EOF'
+import "math"
+
+rule High_Entropy_File_Likely_Packed {
+    meta:
+        description = "File with high entropy suggesting packing or encryption"
+        author = "CyberSec Pro Academy - L18"
+        note = "High entropy alone is not malicious — many legitimate archives/certs qualify"
+    condition:
+        math.entropy(0, filesize) > 7.2 and
+        filesize > 10KB and filesize < 10MB
+}
+
+rule High_Entropy_PE_Section {
+    meta:
+        description = "PE with a high-entropy section (packed code)"
+        mitre = "T1027.002 - Software Packing"
+    condition:
+        uint16(0) == 0x5A4D and  // PE
+        for any i in (0..pe.number_of_sections-1):
+            (math.entropy(pe.sections[i].raw_data_offset,
+                          pe.sections[i].raw_data_size) > 7.5)
+}
+
+rule XOR_Encoded_Payload {
+    meta:
+        description = "Detect XOR encoding patterns in binary"
+    strings:
+        // XOR loop patterns in assembly
+        $xor_loop_x86 = { 8A [1-4] 30 [1-4] 88 [1-4] }
+        $xor_loop_x64 = { 0F B6 [2-5] 30 [2-5] 88 [2-5] }
+    condition:
+        uint16(0) == 0x5A4D and
+        any of ($xor_loop*)
+}
+EOF
+
+# Calculate entropy of known files for reference
+python3 << 'EOF'
+import math, collections
+
+def file_entropy(filepath):
+    with open(filepath, 'rb') as f:
+        data = f.read()
+    if not data: return 0
+    counter = collections.Counter(data)
+    total = len(data)
+    entropy = -sum((count/total) * math.log2(count/total)
+                   for count in counter.values())
+    return entropy
+
+import os, glob
+for path in ['/bin/ls', '/bin/sh', '/dev/urandom'] + \
+             glob.glob('samples/*.txt')[:3]:
+    if os.path.exists(path):
+        try:
+            e = file_entropy(path)
+            print(f"{os.path.basename(path):30} entropy={e:.4f} {'[HIGH]' if e>7 else ''}")
+        except: pass
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Malware-Specific Rules</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleCmd(this)">
+        <span class="step-num">6</span>
+        <span class="step-title">Write rules for ransomware detection</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/yara-lab/rules/04_ransomware.yar << 'EOF'
+import "pe"
+
+rule Ransomware_Note_Patterns {
+    meta:
+        description = "Common ransom note strings across ransomware families"
+        author = "CyberSec Pro Academy - L18"
+        severity = "CRITICAL"
+    strings:
+        // Generic ransom demand language
+        $r1 = "Your files have been encrypted" nocase
+        $r2 = "All your files are encrypted" nocase
+        $r3 = "pay the ransom" nocase wide
+        $r4 = "bitcoin" nocase
+        $r5 = ".onion" nocase
+        $r6 = "decrypt" nocase
+        $r7 = "Your personal ID" nocase
+
+        // Specific families
+        $wannacry = "Wanna Decryptor" nocase
+        $lockbit = "LockBit" nocase
+        $blackcat = "ALPHV" nocase
+        $ryuk = "RyukReadMe" nocase
+    condition:
+        (3 of ($r*)) or any of ($wannacry, $lockbit, $blackcat, $ryuk)
+}
+
+rule Ransomware_Shadow_Delete {
+    meta:
+        description = "Commands to delete shadow copies — ransomware pre-cursor"
+        mitre = "T1490 - Inhibit System Recovery"
+        severity = "HIGH"
+    strings:
+        $vss1 = "vssadmin delete shadows" nocase wide
+        $vss2 = "wmic shadowcopy delete" nocase wide
+        $vss3 = "bcdedit /set {default} recoveryenabled No" nocase wide
+        $vss4 = "wbadmin delete catalog" nocase wide
+        $vss5 = "diskshadow /s" nocase wide
+    condition:
+        any of them
+}
+
+rule Ransomware_WannaCry {
+    meta:
+        description = "WannaCry/WannaCrypt ransomware"
+        author = "CyberSec Pro Academy - L18"
+        hash_md5 = "db349b97c37d22f5ea1d1841e3c89eb4"
+        reference = "https://attack.mitre.org/software/S0366/"
+    strings:
+        $kill_switch = "www.iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com" ascii
+        $ransom_msg = "Wanna Decryptor" ascii wide
+        $mssecsvc = "mssecsvc.exe" ascii
+        $wncry_ext = ".WNCRY" ascii wide
+        $taskdl = "taskdl.exe" ascii
+        $doublep = { 00 00 00 00 00 00 00 00 00 00 00 00 }  // Common padding
+    condition:
+        uint16(0) == 0x5A4D and
+        (($kill_switch and $ransom_msg) or
+         ($wncry_ext and 2 of ($mssecsvc, $taskdl, $ransom_msg)))
+}
+EOF
+yara ~/yara-lab/rules/04_ransomware.yar ~/yara-lab/samples/ 2>/dev/null
+echo "Ransomware rules created"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Use yarGen to auto-generate rules from samples</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>yarGen automatically generates YARA rules by finding strings unique to your samples vs its goodware DB:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cd ~/yarGen
+
+# Generate rules from your malware samples directory
+python3 yarGen.py \
+  --excludegood \
+  -m ~/yara-lab/samples/ \
+  -o ~/yara-lab/rules/auto_generated.yar \
+  --score 60
+
+echo "Auto-generated rules:"
+cat ~/yara-lab/rules/auto_generated.yar | head -80</pre>
+        </div>
+        <p>Review and refine the auto-generated rules — yarGen gives you a starting point, not a finished product.</p>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Testing &amp; Integration</div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Test rules against clean files to measure false positives</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/yara-lab/test_rules.py << 'EOF'
+import yara, os, glob, sys
+
+def test_rules(rule_file, clean_dir, malware_dir=None):
+    print(f"\nTesting: {rule_file}")
+    try:
+        rules = yara.compile(rule_file)
+    except yara.SyntaxError as e:
+        print(f"  [SYNTAX ERROR] {e}")
+        return
+
+    # Test against clean files
+    fp = 0
+    clean_total = 0
+    for filepath in glob.glob(f"{clean_dir}/**/*", recursive=True):
+        if not os.path.isfile(filepath): continue
+        clean_total += 1
+        try:
+            matches = rules.match(filepath)
+            if matches:
+                fp += 1
+                print(f"  [FALSE POSITIVE] {os.path.basename(filepath)}: {[m.rule for m in matches]}")
+        except Exception: pass
+
+    print(f"  Clean files: {clean_total} tested, {fp} false positives ({fp/max(clean_total,1)*100:.1f}% FPR)")
+
+    # Test against malware (if provided)
+    if malware_dir:
+        tp = 0
+        mal_total = 0
+        for filepath in glob.glob(f"{malware_dir}/**/*", recursive=True):
+            if not os.path.isfile(filepath): continue
+            mal_total += 1
+            try:
+                matches = rules.match(filepath)
+                if matches:
+                    tp += 1
+            except Exception: pass
+        if mal_total > 0:
+            print(f"  Malware: {tp}/{mal_total} detected ({tp/mal_total*100:.1f}% detection rate)")
+
+# Run tests
+for rule_file in glob.glob('rules/*.yar'):
+    test_rules(rule_file, 'test_clean', 'test_malware')
+EOF
+
+# Populate test_clean with Linux system binaries
+cp /bin/ls /usr/bin/python3 ~/yara-lab/test_clean/ 2>/dev/null
+find /usr/share/doc -name "*.txt" -size -100k | head -20 | \
+  xargs -I{} cp {} ~/yara-lab/test_clean/ 2>/dev/null
+
+cd ~/yara-lab && python3 test_rules.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Scan a directory recursively with all rules</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Compile all rules into a single scan
+cat > ~/yara-lab/scan_system.sh << 'BASH'
+#!/bin/bash
+# YARA system scan with all rules
+
+RULE_DIR=~/yara-lab/rules
+SCAN_TARGET=${1:-/tmp}
+LOG_FILE=~/yara-lab/reports/scan_$(date +%Y%m%d_%H%M%S).txt
+
+echo "Starting YARA scan of $SCAN_TARGET" | tee "$LOG_FILE"
+echo "Rules: $RULE_DIR" | tee -a "$LOG_FILE"
+echo "Time: $(date -u)" | tee -a "$LOG_FILE"
+echo "---" | tee -a "$LOG_FILE"
+
+# Compile all rules
+RULES=""
+for yar in "$RULE_DIR"/*.yar; do
+    RULES="$RULES $yar"
+done
+
+# Scan with all rules
+yara -r -m \
+  --compiled-rules \
+  $RULES \
+  "$SCAN_TARGET" 2>/dev/null | tee -a "$LOG_FILE"
+
+echo "---" | tee -a "$LOG_FILE"
+echo "Scan complete: $(grep -c 'rule\|found' "$LOG_FILE" 2>/dev/null || echo 0) matches" | tee -a "$LOG_FILE"
+BASH
+chmod +x ~/yara-lab/scan_system.sh
+
+# Run a test scan on /tmp
+~/yara-lab/scan_system.sh /tmp</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Integrate YARA with Splunk for real-time hunting</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Python script to YARA-scan files from Splunk alerts
+cat > ~/yara-lab/splunk_yara_hook.py << 'EOF'
+import yara, sys, json, os
+
+# Load all rules
+RULE_DIR = os.path.expanduser('~/yara-lab/rules')
+rules = yara.compile(filepath=f"{RULE_DIR}/00_combined.yar") if \
+    os.path.exists(f"{RULE_DIR}/00_combined.yar") else None
+
+def scan_file(filepath):
+    """Scan a file path from Splunk alert and return YARA findings."""
+    if not os.path.exists(filepath):
+        return {'error': 'File not found', 'path': filepath}
+    if not rules:
+        return {'error': 'No YARA rules loaded'}
+
+    try:
+        matches = rules.match(filepath)
+        return {
+            'path': filepath,
+            'matches': [{
+                'rule': m.rule,
+                'tags': m.tags,
+                'meta': m.meta,
+                'strings': [(s.identifier, hex(s.instances[0].offset) if s.instances else '')
+                           for s in m.strings]
+            } for m in matches],
+            'hit_count': len(matches)
+        }
+    except Exception as e:
+        return {'error': str(e), 'path': filepath}
+
+if __name__ == '__main__':
+    target = sys.argv[1] if len(sys.argv) > 1 else '/tmp'
+    result = scan_file(target)
+    print(json.dumps(result, indent=2))
+EOF
+
+# In Splunk, you'd call this via:
+# | script python /opt/yara/splunk_yara_hook.py [filepath_field]
+echo "Splunk integration script ready"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Optimize rules — reduce false positives and improve performance</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Key YARA performance and accuracy best practices:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Performance: Use file size and magic byte conditions first (fast reject)
+# Rule: Most restrictive condition FIRST to fail fast
+
+# BAD (scans all files for strings)
+rule Slow_Rule {
+    strings: $s = "malware_string"
+    condition: $s
+}
+
+# GOOD (rejects non-PE files immediately)
+rule Fast_Rule {
+    strings: $s = "malware_string"
+    condition: uint16(0) == 0x5A4D and filesize < 10MB and $s
+}
+
+# Check rule performance with --profile
+yara --profile ~/yara-lab/rules/04_ransomware.yar /tmp 2>/dev/null | head -20
+
+# Measure rule scan time
+time yara -r ~/yara-lab/rules/ /usr/bin/ 2>/dev/null | wc -l</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Document rules and produce YARA detection report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Rules written (manual)</td><td><input type="text" placeholder="e.g., 8 rules across 4 files"></td></tr>
+            <tr><td>Rules auto-generated (yarGen)</td><td><input type="text" placeholder="e.g., 12 rules"></td></tr>
+            <tr><td>False positive rate (clean test)</td><td><input type="text" placeholder="e.g., 1.2%"></td></tr>
+            <tr><td>Malware detection rate</td><td><input type="text" placeholder="e.g., 90%"></td></tr>
+            <tr><td>Families covered</td><td><input type="text" placeholder="e.g., WannaCry, Cobalt Strike, Generic Ransomware"></td></tr>
+            <tr><td>MITRE techniques covered</td><td><input type="text" placeholder="e.g., T1486, T1027.002, T1490"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI YARA Expert</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('write')">Write rule from strings</button>
+      <button onclick="qp('pe')">PE module help</button>
+      <button onclick="qp('entropy')">Entropy/packing detection</button>
+      <button onclick="qp('fp')">Reduce false positives</button>
+      <button onclick="qp('review')">Review my rule</button>
+      <button onclick="qp('family')">Rule for this family</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Paste strings, hex patterns, or YARA rules for review..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L18',
+  totalSteps: 12,
+  modeLabel: 'Malware Analysis Lab',
+  welcomeMsg: `Welcome to Lab L18: YARA Rule Writing & Threat Hunting!
+
+I'm your AI YARA Expert. I can help you:
+- Write YARA rules from string extractions, hex patterns, and behavioral IOCs
+- Use advanced modules: pe (imports, sections, signatures), math (entropy), elf
+- Identify distinguishing strings that won't cause false positives
+- Debug YARA syntax errors and optimize rule performance
+- Review your rules and suggest improvements
+- Generate rules for specific malware families (ransomware, RATs, botnets)
+- Integrate YARA into Splunk, Velociraptor, or endpoint scanning
+
+Paste any strings, hex sequences, or existing rules and I'll help refine them!`,
+  systemPrompt: `You are a senior malware analyst and YARA rule developer at a threat intelligence firm. You're helping a student with Lab L18: YARA Rule Writing on REMnux.
+
+Technical context:
+- YARA 4.x with modules: pe, elf, math, cuckoo, dotnet, macho
+- Tools: yarGen (auto-generation), FLOSS (string extraction), pefile (Python)
+- Lab environment: REMnux (isolated from malware-net network)
+- Rules cover: ransomware (WannaCry, LockBit patterns), Cobalt Strike beacon, packed PE detection, PowerShell obfuscation
+
+YARA module reference:
+- pe.imports("dll.dll", "ApiName") — checks imports table
+- pe.number_of_sections — section count (packers = few sections)
+- pe.sections[i].characteristics — SECTION_MEM_EXECUTE | SECTION_MEM_WRITE = suspicious
+- math.entropy(offset, size) — >7.0 suggests encryption/packing
+- uint16(0) == 0x5A4D — MZ magic bytes (PE file check)
+- uint32(uint32(0x3C)) == 0x00004550 — PE signature at e_lfanew offset
+
+Rule writing best practices:
+1. Always add MZ/PE check first for binary rules (fast reject non-PE)
+2. Use filesize < [limit] to prevent scanning huge files
+3. nocase flag for text strings; wide for UTF-16LE strings
+4. Multiple conditions with all of / 2 of / any of for resilience
+5. Meta: always include description, author, severity, mitre, hash
+
+If student shares strings/hex, help write a rule. If they share a rule, review it for correctness, FP risk, and performance.`,
+  quickPrompts: {
+    write: `I extracted these strings from a malware sample using FLOSS: "C2_CONNECT", "Mozilla/4.0 (compatible; MSIE 6.0)", "USER-AGENT: BOTNET", "cmd.exe /c whoami", hex bytes: 4D 5A 90 00 03 00 00 00. Write me a YARA rule to detect this malware family. Include PE module checks.`,
+    pe: `I want to write a YARA rule that detects PE files that: 1) import CryptEncrypt from advapi32.dll, 2) import FindFirstFileW from kernel32.dll, 3) have less than 5 sections, and 4) the main section has both WRITE and EXECUTE permissions. Help me write this with the pe module.`,
+    entropy: `My malware sample has these section entropies: .text=6.8, .rdata=5.1, .data=7.9, .rsrc=3.2. The high entropy in .data suggests an encrypted payload. Write a YARA rule using the math module to detect PE files with a section entropy > 7.5 that also has both write and execute permissions.`,
+    fp: `My YARA rule matches 15% of clean files in my test set. The rule matches on string "DeleteFiles" which appears in many legitimate uninstallers. Here's my rule: [paste rule]. How do I add conditions to make it more specific to malware? Should I require a minimum score of 3 matches from a larger string set?`,
+    review: `Please review this YARA rule I wrote: rule Ransomware_Generic { strings: $a = "encrypt" $b = "bitcoin" $c = "YOUR FILES" condition: all of them } — Is it correct syntax? Will it have false positives? How do I improve it to be more specific and performant?`,
+    family: `I need to write a YARA rule for Mimikatz (credential dumper). I know it: imports LsaConnectUntrusted and LsaCallAuthenticationPackage from secur32.dll, contains strings "lsadump", "sekurlsa", "kerberos", and "wdigest". Write me a production-quality rule with proper meta, hash reference, and MITRE T1003 attribution.`
+  }
+});
+</script>
+</body>
+</html>

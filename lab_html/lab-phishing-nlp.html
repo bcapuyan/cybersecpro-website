@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L05: AI-Powered Phishing Detection | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-medium">Intermediate</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Detection Engineering</span>
+    </div>
+    <h1>L05: AI-Powered Phishing Detection</h1>
+    <p>Build a machine learning phishing classifier using Python, scikit-learn, and NLP techniques. Analyze email headers, URLs, and body content to detect phishing campaigns at scale — then use AI to refine your model and explain predictions.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">Python 3</span>
+      <span class="tool-tag">scikit-learn</span>
+      <span class="tool-tag">NLTK</span>
+      <span class="tool-tag">pandas</span>
+      <span class="tool-tag">Kali Linux</span>
+      <span class="tool-tag">Jupyter</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 12 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Environment &amp; Dataset Setup</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Install Python ML dependencies on Kali</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On your Kali Linux VM, set up a Python virtual environment and install required packages:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>sudo apt update && sudo apt install -y python3-pip python3-venv jupyter-notebook
+python3 -m venv ~/phishing-lab
+source ~/phishing-lab/bin/activate
+pip install scikit-learn pandas numpy nltk matplotlib seaborn requests beautifulsoup4 imbalanced-learn</pre>
+        </div>
+        <p>Verify installation:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 -c "import sklearn, pandas, nltk; print('All packages installed')"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Download and prepare phishing datasets</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Download the UCI Phishing Websites dataset and SpamAssassin email corpus:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>mkdir ~/phishing-lab/data && cd ~/phishing-lab/data
+
+# Phishing URLs dataset (PhishTank-derived)
+wget -O phishing_urls.csv \
+  "https://web.archive.org/web/2024/https://raw.githubusercontent.com/GregaVrbancic/Phishing-Dataset/master/dataset_full.csv"
+
+# SpamAssassin public corpus (legitimate + spam emails)
+wget https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham.tar.bz2
+wget https://spamassassin.apache.org/old/publiccorpus/20030228_spam_2.tar.bz2
+tar -xjf 20030228_easy_ham.tar.bz2
+tar -xjf 20030228_spam_2.tar.bz2</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Launch Jupyter and create analysis notebook</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Start Jupyter Notebook in your virtual environment:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>source ~/phishing-lab/bin/activate
+cd ~/phishing-lab
+jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser &
+# Access at http://localhost:8888 in browser</pre>
+        </div>
+        <p>Create a new notebook called <code>phishing_detection.ipynb</code> and import libraries:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>import pandas as pd
+import numpy as np
+import re
+import nltk
+from urllib.parse import urlparse
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+nltk.download(['stopwords', 'punkt', 'wordnet'])</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Feature Engineering &amp; URL Analysis</div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Extract URL-based phishing features</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Implement URL feature extraction — phishing URLs have telltale structural patterns:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>def extract_url_features(url):
+    parsed = urlparse(url)
+    domain = parsed.netloc
+    path = parsed.path
+
+    features = {
+        'url_length': len(url),
+        'domain_length': len(domain),
+        'path_length': len(path),
+        'num_dots': url.count('.'),
+        'num_hyphens': url.count('-'),
+        'num_at': url.count('@'),
+        'num_subdomains': domain.count('.'),
+        'has_ip': bool(re.match(r'\d+\.\d+\.\d+\.\d+', domain)),
+        'has_https': int(parsed.scheme == 'https'),
+        'has_port': int(':' in domain),
+        'path_depth': len([p for p in path.split('/') if p]),
+        'num_params': len(parsed.query.split('&')) if parsed.query else 0,
+        'suspicious_keywords': int(bool(re.search(
+            r'login|signin|account|update|verify|secure|bank|paypal|amazon',
+            url.lower()))),
+        'url_entropy': -sum((url.count(c)/len(url)) * np.log2(url.count(c)/len(url))
+                           for c in set(url) if url.count(c) > 0),
+    }
+    return features
+
+# Apply to dataset
+df = pd.read_csv('data/phishing_urls.csv')
+features_df = pd.DataFrame([extract_url_features(u) for u in df['url']])
+print(features_df.describe())</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Parse email headers and body content</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Extract features from raw email files for text-based classification:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>import email
+import os
+from email import policy
+
+def parse_email(filepath):
+    with open(filepath, 'rb') as f:
+        msg = email.message_from_binary_file(f, policy=policy.default)
+
+    body = ''
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == 'text/plain':
+                body += part.get_content()
+    else:
+        body = msg.get_content()
+
+    return {
+        'subject': str(msg.get('Subject', '')),
+        'from': str(msg.get('From', '')),
+        'reply_to': str(msg.get('Reply-To', '')),
+        'body': body,
+        'has_html': int('text/html' in str(msg)),
+        'num_links': len(re.findall(r'https?://', body)),
+        'has_attachment': int(msg.is_multipart()),
+        'subject_urgency': int(bool(re.search(
+            r'urgent|immediately|action required|verify now|suspended',
+            str(msg.get('Subject', '')).lower()))),
+    }
+
+# Load and label emails
+ham_emails = [parse_email(f'data/easy_ham/{f}')
+              for f in os.listdir('data/easy_ham')[:500]]
+spam_emails = [parse_email(f'data/spam_2/{f}')
+               for f in os.listdir('data/spam_2')[:500]]
+
+for e in ham_emails: e['label'] = 0
+for e in spam_emails: e['label'] = 1
+
+email_df = pd.DataFrame(ham_emails + spam_emails)
+print(f"Dataset: {len(ham_emails)} ham, {len(spam_emails)} spam")</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Model Training &amp; Evaluation</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Build TF-IDF + Random Forest pipeline</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Combine TF-IDF text features with structural email features in a unified pipeline:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>from sklearn.pipeline import FeatureUnion
+from sklearn.base import BaseEstimator, TransformerMixin
+import scipy.sparse as sp
+
+class TextExtractor(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None): return self
+    def transform(self, X):
+        return [row['subject'] + ' ' + row['body'] for _, row in X.iterrows()]
+
+class NumericExtractor(BaseEstimator, TransformerMixin):
+    num_cols = ['has_html', 'num_links', 'has_attachment', 'subject_urgency']
+    def fit(self, X, y=None): return self
+    def transform(self, X): return X[self.num_cols].values
+
+X = email_df.drop('label', axis=1)
+y = email_df['label']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
+
+tfidf = TfidfVectorizer(max_features=5000, ngram_range=(1,2), stop_words='english')
+
+from sklearn.preprocessing import FunctionTransformer
+pipeline = Pipeline([
+    ('rf', RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42))
+])
+
+# Fit text features separately then combine
+text_features = tfidf.fit_transform(
+    [row['subject'] + ' ' + row['body'] for _, row in X_train.iterrows()])
+numeric_features = X_train[['has_html','num_links','has_attachment','subject_urgency']].values
+
+X_combined = sp.hstack([text_features, numeric_features])
+
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42)
+clf.fit(X_combined, y_train)
+print("Model trained!")</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Evaluate model performance and ROC curve</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Generate classification metrics and visualize the ROC curve:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>from sklearn.metrics import roc_curve, auc
+
+# Transform test set
+text_test = tfidf.transform(
+    [row['subject'] + ' ' + row['body'] for _, row in X_test.iterrows()])
+numeric_test = X_test[['has_html','num_links','has_attachment','subject_urgency']].values
+X_test_combined = sp.hstack([text_test, numeric_test])
+
+y_pred = clf.predict(X_test_combined)
+y_prob = clf.predict_proba(X_test_combined)[:, 1]
+
+print(classification_report(y_test, y_pred, target_names=['Legitimate','Phishing']))
+print(f"ROC-AUC: {roc_auc_score(y_test, y_prob):.4f}")
+
+# Confusion matrix heatmap
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Reds',
+            xticklabels=['Legit','Phishing'], yticklabels=['Legit','Phishing'])
+plt.title('Confusion Matrix'); plt.tight_layout(); plt.savefig('confusion_matrix.png')
+
+# ROC curve
+fpr, tpr, _ = roc_curve(y_test, y_prob)
+plt.figure(); plt.plot(fpr, tpr, label=f'AUC = {auc(fpr,tpr):.3f}')
+plt.plot([0,1],[0,1],'--'); plt.xlabel('FPR'); plt.ylabel('TPR')
+plt.title('ROC Curve — Phishing Classifier'); plt.legend(); plt.savefig('roc_curve.png')</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Analyze feature importance and top indicators</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Identify which features drive phishing predictions most strongly:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre># Get TF-IDF vocabulary + numeric column names
+tfidf_features = tfidf.get_feature_names_out()
+numeric_cols = ['has_html', 'num_links', 'has_attachment', 'subject_urgency']
+all_features = list(tfidf_features) + numeric_cols
+
+importances = clf.feature_importances_
+top_idx = np.argsort(importances)[::-1][:20]
+
+print("\nTop 20 phishing indicators:")
+for i in top_idx:
+    print(f"  {all_features[i]:<40} {importances[i]:.4f}")
+
+# Plot top features
+plt.figure(figsize=(10,6))
+plt.barh([all_features[i] for i in top_idx[::-1]],
+         [importances[i] for i in top_idx[::-1]], color='#0e5f7a')
+plt.xlabel('Feature Importance'); plt.title('Top Phishing Detection Features')
+plt.tight_layout(); plt.savefig('feature_importance.png')</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Real-Time Detection &amp; AI Enhancement</div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Build real-time phishing URL scanner</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Create a command-line tool that scores URLs in real time:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/phishing-lab/url_scanner.py << 'EOF'
+import sys, pickle, re, numpy as np
+from urllib.parse import urlparse
+
+# Load trained URL model (train separately on UCI dataset)
+# For now use heuristic scoring
+def score_url(url):
+    parsed = urlparse(url)
+    domain = parsed.netloc
+    score = 0
+    reasons = []
+
+    if len(url) > 75:
+        score += 20; reasons.append(f"Long URL ({len(url)} chars)")
+    if re.match(r'\d+\.\d+\.\d+\.\d+', domain):
+        score += 30; reasons.append("IP address as domain")
+    if domain.count('.') > 3:
+        score += 15; reasons.append(f"Excessive subdomains ({domain.count('.')})")
+    if '@' in url:
+        score += 25; reasons.append("@ symbol in URL")
+    if re.search(r'login|signin|account|verify|secure|bank', url.lower()):
+        score += 20; reasons.append("Suspicious keywords")
+    if parsed.scheme != 'https':
+        score += 10; reasons.append("Non-HTTPS")
+    if '-' in domain and domain.count('-') > 2:
+        score += 15; reasons.append("Multiple hyphens in domain")
+
+    verdict = "PHISHING" if score >= 50 else "SUSPICIOUS" if score >= 25 else "LEGITIMATE"
+    return {'score': score, 'verdict': verdict, 'reasons': reasons}
+
+if __name__ == '__main__':
+    url = sys.argv[1] if len(sys.argv) > 1 else input("Enter URL to scan: ")
+    result = score_url(url)
+    print(f"\nURL: {url}")
+    print(f"Score: {result['score']}/100")
+    print(f"Verdict: {result['verdict']}")
+    if result['reasons']:
+        print("Indicators:")
+        for r in result['reasons']: print(f"  - {r}")
+EOF
+python3 ~/phishing-lab/url_scanner.py "http://paypa1-verify.ru/login/account?id=12345"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Test against live phishing samples from PhishTank</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Fetch recent phishing URLs from PhishTank API and batch-test your scanner:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/phishing-lab/batch_test.py << 'EOF'
+import requests, json
+from url_scanner import score_url
+
+# PhishTank verified phishing URLs (free API, no key required for limited use)
+resp = requests.get('http://data.phishtank.com/data/online-valid.json',
+                    headers={'User-Agent': 'phishing-lab-research/1.0'},
+                    timeout=30)
+phishing_urls = [entry['url'] for entry in resp.json()[:50]]
+
+results = {'phishing_detected': 0, 'missed': 0, 'scores': []}
+for url in phishing_urls:
+    r = score_url(url)
+    results['scores'].append(r['score'])
+    if r['verdict'] in ('PHISHING', 'SUSPICIOUS'):
+        results['phishing_detected'] += 1
+    else:
+        results['missed'] += 1
+        print(f"MISSED: {url} (score={r['score']})")
+
+print(f"\n--- Batch Results ---")
+print(f"Detected: {results['phishing_detected']}/50")
+print(f"Missed:   {results['missed']}/50")
+print(f"Avg score: {sum(results['scores'])/len(results['scores']):.1f}")
+EOF
+cd ~/phishing-lab && python3 batch_test.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Generate YARA rules from phishing email patterns</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Convert your ML feature findings into actionable YARA rules for email gateways:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/phishing-lab/phishing_rules.yar << 'EOF'
+rule Phishing_Urgency_Language {
+    meta:
+        description = "Detects urgency language common in phishing emails"
+        author = "CyberSec Pro Academy - L05"
+        severity = "MEDIUM"
+    strings:
+        $u1 = "action required" nocase
+        $u2 = "verify your account" nocase
+        $u3 = "suspended" nocase
+        $u4 = "immediately" nocase
+        $u5 = "unusual activity" nocase
+        $u6 = "click here to confirm" nocase
+    condition:
+        2 of ($u*)
+}
+
+rule Phishing_Credential_Harvest {
+    meta:
+        description = "Phishing page requesting credentials"
+        severity = "HIGH"
+    strings:
+        $c1 = "password" nocase
+        $c2 = "username" nocase
+        $c3 = "login" nocase
+        $link = /https?:\/\/[^\s"']{0,20}(paypal|amazon|microsoft|apple|google)[^\s"']{0,50}\.(ru|cn|tk|ml|ga)/
+    condition:
+        $link and (2 of ($c*))
+}
+
+rule Phishing_Fake_Brand_URL {
+    meta:
+        description = "URL contains brand name in non-official domain"
+    strings:
+        $b = /https?:\/\/[a-z0-9-]{0,30}(paypal|amazon|netflix|microsoft|apple|google|facebook)[a-z0-9-]{0,30}\.(xyz|top|tk|ml|ga|cf|gq|pw)/
+    condition:
+        $b
+}
+EOF
+# Test against spam corpus
+pip install yara-python
+python3 -c "
+import yara, os
+rules = yara.compile('phishing_rules.yar')
+for f in os.listdir('data/spam_2')[:20]:
+    try:
+        matches = rules.match(f'data/spam_2/{f}')
+        if matches: print(f'{f}: {[m.rule for m in matches]}')
+    except: pass
+"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Document findings and export detection report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Compile your findings into a detection engineering report. Ask the AI analyst for help structuring your recommendations.</p>
+        <div class="findings-table">
+          <h4>Lab Findings Summary</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Model Accuracy</td><td><input type="text" placeholder="e.g., 94.2%"></td></tr>
+            <tr><td>ROC-AUC Score</td><td><input type="text" placeholder="e.g., 0.978"></td></tr>
+            <tr><td>False Positive Rate</td><td><input type="text" placeholder="e.g., 2.1%"></td></tr>
+            <tr><td>Top Phishing Indicator</td><td><input type="text" placeholder="e.g., subject_urgency"></td></tr>
+            <tr><td>PhishTank Detection Rate</td><td><input type="text" placeholder="e.g., 46/50 (92%)"></td></tr>
+            <tr><td>YARA Rules Created</td><td><input type="text" placeholder="e.g., 3"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Detection Engineer</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('features')">Feature engineering</button>
+      <button onclick="qp('model')">Model selection help</button>
+      <button onclick="qp('fp')">Reduce false positives</button>
+      <button onclick="qp('yara')">YARA from ML features</button>
+      <button onclick="qp('explain')">Explain prediction</button>
+      <button onclick="qp('report')">Write detection report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about NLP features, model tuning, false positives..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div><!-- end lab-layout -->
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L05',
+  totalSteps: 12,
+  modeLabel: 'Detection Engineering Lab',
+  welcomeMsg: `Welcome to Lab L05: AI-Powered Phishing Detection!
+
+I'm your AI Detection Engineer. I can help you with:
+- Feature engineering for NLP phishing classification
+- Scikit-learn pipeline design and hyperparameter tuning
+- Reducing false positives while maintaining detection rates
+- Converting ML model insights to YARA/Sigma rules
+- Interpreting ROC curves and confusion matrices
+- Writing detection engineering documentation
+
+What aspect of the phishing classifier would you like to work on?`,
+  systemPrompt: `You are a senior detection engineer and data scientist helping a cybersecurity student with Lab L05: AI-Powered Phishing Detection. The lab uses Python, scikit-learn, NLTK, and pandas on a Kali Linux VM to build an ML-based phishing email and URL classifier.
+
+Key technical context:
+- Using TF-IDF vectorization for text features combined with structural features (URL length, IP usage, subdomain count, urgency language)
+- Model: RandomForestClassifier with class_weight='balanced' for imbalanced data
+- Datasets: SpamAssassin corpus for emails, PhishTank/UCI for URLs
+- Evaluation: classification_report, ROC-AUC, confusion matrix
+- Output: YARA rules derived from ML feature importance, detection report
+
+Help the student understand: feature importance, bias-variance tradeoff, class imbalance handling, precision vs recall tradeoffs for security (prefer high recall), converting statistical findings to actionable detection rules.
+
+When they share results (accuracy, AUC, FPR), give concrete guidance on what to improve.`,
+  quickPrompts: {
+    features: `I'm building features for my phishing classifier. My current URL features include: url_length, num_dots, has_ip, has_https, suspicious_keywords, url_entropy. What additional features would most improve detection accuracy?`,
+    model: `I've tried Random Forest and got 94% accuracy. Should I try Gradient Boosting, SVM, or a neural network? What are the tradeoffs for a phishing detection use case where false negatives are costly?`,
+    fp: `My classifier has a 4% false positive rate — legitimate marketing emails are being flagged. They share urgency language and many links with phishing emails. How do I reduce FPR without hurting recall?`,
+    yara: `My top 5 Random Forest features by importance are: 1) contains 'verify account', 2) url_with_ip, 3) has_html_form, 4) reply_to_mismatch, 5) num_external_links > 5. How do I translate these into a YARA rule for an email gateway?`,
+    explain: `My model flagged this email as phishing with 87% confidence. Subject: "Your account has been limited". It has 3 external links, HTML content, and no-reply@paypa1-support.ru sender. Can you explain what likely drove the prediction and what IOCs to extract?`,
+    report: `I've completed my phishing detection analysis. Model achieved 94.2% accuracy, 0.978 AUC, 2.1% FPR. Top indicators: urgency language, IP-based URLs, reply-to mismatch. Help me write an executive detection engineering report with recommendations for deployment.`
+  }
+});
+</script>
+</body>
+</html>

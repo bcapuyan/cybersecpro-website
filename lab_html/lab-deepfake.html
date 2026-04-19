@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L10: Deepfake Detection | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-advanced">Advanced</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">AI Security</span>
+    </div>
+    <h1>L10: Deepfake Detection &amp; Media Forensics</h1>
+    <p>Analyze synthetic media using Python-based deepfake detection tools, frequency analysis, and metadata forensics. Learn to identify GAN artifacts, JPEG compression inconsistencies, and audio manipulation — critical skills as synthetic media becomes a primary vector for fraud and disinformation.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">Python 3</span>
+      <span class="tool-tag">OpenCV</span>
+      <span class="tool-tag">FaceForensics++</span>
+      <span class="tool-tag">ExifTool</span>
+      <span class="tool-tag">FFmpeg</span>
+      <span class="tool-tag">Kali Linux</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 11 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Environment Setup &amp; Sample Acquisition</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Install deepfake detection dependencies</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On Kali Linux, set up the detection environment:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>sudo apt update && sudo apt install -y python3-pip ffmpeg exiftool libgl1
+pip3 install opencv-python-headless numpy matplotlib scipy \
+    Pillow imageio scikit-learn torch torchvision
+
+mkdir ~/deepfake-lab && cd ~/deepfake-lab
+mkdir samples/real samples/fake analysis reports
+
+# Install py-feat for facial action unit analysis (optional)
+pip3 install py-feat
+
+# Verify
+python3 -c "import cv2, torch, PIL; print(f'OpenCV {cv2.__version__}, PyTorch {torch.__version__}')"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Obtain sample images and deepfakes for analysis</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Download sample media from the FaceForensics++ dataset (research use) and public deepfake samples:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cd ~/deepfake-lab
+
+# Download FaceForensics++ sample (requires academic registration at github.com/ondyari/FaceForensics)
+# Alternative: use this public deepfake detection dataset subset
+wget -P samples/ \
+  "https://github.com/yuezunli/celeb-deepfakeforensics/raw/master/README.md"
+
+# Generate synthetic "deepfake" test images using StyleGAN-generated faces
+# thispersondoesnotexist.com API (public faces, no real person)
+python3 << 'EOF'
+import requests, os, time
+
+print("Downloading GAN-generated faces (this-person-does-not-exist.com)...")
+for i in range(10):
+    resp = requests.get("https://thispersondoesnotexist.com/",
+                        headers={"User-Agent": "Mozilla/5.0"})
+    if resp.status_code == 200:
+        with open(f"samples/fake/gan_face_{i:03d}.jpg", 'wb') as f:
+            f.write(resp.content)
+        print(f"  Downloaded fake face {i+1}/10")
+    time.sleep(2)  # Rate limit
+
+# Real photos: download from Flickr Creative Commons (public domain faces)
+print("\nNote: Add real photos to samples/real/ for comparison")
+print("Source: commons.wikimedia.org/wiki/Category:Photographs_of_people")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Image Forensics — GAN Artifact Detection</div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Frequency domain analysis — detect GAN fingerprints</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>GAN-generated images have characteristic frequency artifacts visible in the DFT spectrum:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/deepfake-lab/frequency_analysis.py << 'EOF'
+import cv2, numpy as np, matplotlib.pyplot as plt
+import os, glob
+
+def analyze_frequency(image_path, label):
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img is None: return None
+
+    # Resize to standard size
+    img = cv2.resize(img, (256, 256))
+
+    # 2D Discrete Fourier Transform
+    f = np.fft.fft2(img)
+    fshift = np.fft.fftshift(f)
+    magnitude = 20 * np.log(np.abs(fshift) + 1)
+
+    # GAN artifact: periodic grid pattern at specific frequencies
+    # Compute radial power spectrum
+    h, w = magnitude.shape
+    cy, cx = h//2, w//2
+    radial_power = []
+    for r in range(1, min(h,w)//2):
+        mask = np.zeros((h,w), bool)
+        for y in range(h):
+            for x in range(w):
+                if abs(np.sqrt((y-cy)**2 + (x-cx)**2) - r) < 1:
+                    mask[y,x] = True
+        radial_power.append(magnitude[mask].mean())
+
+    return {
+        'path': image_path,
+        'label': label,
+        'magnitude': magnitude,
+        'radial_power': np.array(radial_power),
+        'mean_high_freq': np.array(radial_power[50:]).mean(),
+        'std_magnitude': magnitude.std(),
+    }
+
+# Analyze samples
+results = []
+for f in glob.glob('samples/fake/*.jpg')[:5]:
+    r = analyze_frequency(f, 'DEEPFAKE')
+    if r: results.append(r)
+
+# Plot DFT spectrums side by side
+fig, axes = plt.subplots(2, len(results), figsize=(15, 6))
+for i, r in enumerate(results):
+    axes[0,i].imshow(cv2.imread(r['path'])[:,:,::-1])
+    axes[0,i].set_title(f"{r['label']}", fontsize=8)
+    axes[0,i].axis('off')
+    axes[1,i].imshow(r['magnitude'], cmap='hot')
+    axes[1,i].set_title(f"DFT (σ={r['std_magnitude']:.1f})", fontsize=8)
+    axes[1,i].axis('off')
+plt.suptitle('Frequency Domain Analysis — GAN Artifact Detection')
+plt.tight_layout()
+plt.savefig('analysis/frequency_analysis.png', dpi=150)
+print("Saved frequency_analysis.png")
+
+for r in results:
+    print(f"\n{os.path.basename(r['path'])}")
+    print(f"  Mean high-freq power: {r['mean_high_freq']:.2f}")
+    print(f"  DFT std deviation:    {r['std_magnitude']:.2f}")
+    print(f"  GAN artifacts: {'LIKELY' if r['std_magnitude'] > 80 else 'UNCLEAR'}")
+EOF
+python3 frequency_analysis.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Error Level Analysis (ELA) for manipulation detection</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>ELA reveals image regions with different compression histories — common in spliced or manipulated photos:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/deepfake-lab/ela_analysis.py << 'EOF'
+import cv2, numpy as np, matplotlib.pyplot as plt
+import io
+from PIL import Image
+
+def ela(image_path, quality=95, scale=20):
+    """Error Level Analysis — detect re-saved JPEG regions."""
+    original = Image.open(image_path).convert('RGB')
+
+    # Re-save at known quality level
+    buffer = io.BytesIO()
+    original.save(buffer, 'JPEG', quality=quality)
+    buffer.seek(0)
+    recompressed = Image.open(buffer).convert('RGB')
+
+    # Compute pixel-wise difference
+    orig_arr = np.array(original, dtype=float)
+    recomp_arr = np.array(recompressed, dtype=float)
+
+    ela_arr = np.abs(orig_arr - recomp_arr) * scale
+    ela_arr = np.clip(ela_arr, 0, 255).astype(np.uint8)
+
+    # Metrics
+    ela_mean = ela_arr.mean()
+    ela_std = ela_arr.std()
+
+    return ela_arr, ela_mean, ela_std
+
+import glob, os
+fig, axes = plt.subplots(2, 5, figsize=(15,6))
+for i, path in enumerate(glob.glob('samples/fake/*.jpg')[:5]):
+    ela_img, ela_mean, ela_std = ela(path)
+    img = cv2.imread(path)[:,:,::-1]
+    axes[0,i].imshow(img); axes[0,i].axis('off')
+    axes[0,i].set_title(os.path.basename(path)[:15], fontsize=7)
+    axes[1,i].imshow(ela_img); axes[1,i].axis('off')
+    axes[1,i].set_title(f"ELA μ={ela_mean:.1f} σ={ela_std:.1f}", fontsize=7)
+
+plt.suptitle('Error Level Analysis (ELA)')
+plt.tight_layout()
+plt.savefig('analysis/ela_results.png', dpi=150)
+print("ELA analysis complete — saved ela_results.png")
+
+# Interpretation guide
+print("\nInterpretation:")
+print("  Uniform ELA = consistent compression history (real or fully GAN-generated)")
+print("  Bright patches in ELA = regions with different compression = SPLICED/MANIPULATED")
+print("  GAN images: often uniform ELA (no splicing) but unusual DFT spectrum")
+EOF
+python3 ela_analysis.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Facial Inconsistency &amp; Metadata Analysis</div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Detect facial inconsistencies with OpenCV</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>GAN-generated faces often have artifacts around eyes, teeth, hair edges, and accessories:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/deepfake-lab/face_analysis.py << 'EOF'
+import cv2, numpy as np, matplotlib.pyplot as plt, glob, os
+
+face_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + 'haarcascade_eye.xml')
+
+def analyze_face(image_path):
+    img = cv2.imread(image_path)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    faces = face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(100,100))
+    if len(faces) == 0:
+        return {'face_detected': False}
+
+    x, y, w, h = faces[0]
+    face_roi = gray[y:y+h, x:x+w]
+    face_color = img[y:y+h, x:x+w]
+
+    # Detect eyes in face region
+    eyes = eye_cascade.detectMultiScale(face_roi, 1.1, 5)
+
+    # Laplacian for blur detection (deepfakes often have uneven sharpness)
+    laplacian = cv2.Laplacian(face_roi, cv2.CV_64F)
+    sharpness = laplacian.var()
+
+    # Symmetry analysis (deepfakes can have L-R asymmetry artifacts)
+    left_half = face_roi[:, :w//2]
+    right_half = cv2.flip(face_roi[:, w//2:], 1)
+    if left_half.shape == right_half.shape:
+        symmetry_score = cv2.matchTemplate(
+            left_half.astype(float), right_half.astype(float),
+            cv2.TM_CCOEFF_NORMED)[0][0]
+    else:
+        symmetry_score = 0
+
+    return {
+        'face_detected': True,
+        'face_size': (w, h),
+        'eyes_detected': len(eyes),
+        'sharpness': sharpness,
+        'symmetry_score': float(symmetry_score),
+        'face_img': face_color,
+    }
+
+results = []
+for path in glob.glob('samples/fake/*.jpg')[:5]:
+    r = analyze_face(path)
+    r['path'] = path
+    results.append(r)
+    if r['face_detected']:
+        print(f"\n{os.path.basename(path)}")
+        print(f"  Eyes detected:  {r['eyes_detected']} (expect 2)")
+        print(f"  Sharpness:      {r['sharpness']:.1f}")
+        print(f"  L-R Symmetry:   {r['symmetry_score']:.3f}")
+        if r['eyes_detected'] != 2:
+            print(f"  [!] Unusual eye count — possible GAN artifact")
+        if r['symmetry_score'] < 0.7:
+            print(f"  [!] Low facial symmetry — possible manipulation")
+EOF
+python3 face_analysis.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Metadata forensics with ExifTool</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Genuine photos from cameras contain rich EXIF data. GAN-generated images have none or suspicious metadata:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">for img in samples/fake/*.jpg; do
+  echo "=== $(basename $img) ==="
+  exiftool "$img" | grep -E "File Type|Image Size|Camera Model|GPS|Software|Create Date|Modify Date|Color Space|Focal Length"
+  echo ""
+done
+
+# Key red flags in EXIF metadata:
+# - No Camera Model / Make → likely GAN-generated or screenshot
+# - Software field contains "GIMP", "Photoshop", "Stable Diffusion", etc.
+# - Create Date = Modify Date exactly → no camera processing
+# - GPS coordinates absent → untraceable origin
+# - Color Space = sRGB only (cameras use Adobe RGB or camera-specific profiles)
+
+# Compare with a known real photo
+exiftool samples/real/reference_photo.jpg 2>/dev/null || \
+  echo "Add a real JPEG to samples/real/ for comparison"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Video Deepfake &amp; Audio Analysis</div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Extract and analyze frames from deepfake video</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/deepfake-lab/video_analysis.py << 'EOF'
+import cv2, numpy as np, subprocess, os
+
+def analyze_video(video_path, output_dir='analysis/frames'):
+    os.makedirs(output_dir, exist_ok=True)
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f"Video: {os.path.basename(video_path)}")
+    print(f"  FPS: {fps:.1f}, Total frames: {total}")
+
+    face_cascade = cv2.CascadeClassifier(
+        cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+    frame_results = []
+    for frame_idx in range(0, total, max(1, total//20)):  # Sample 20 frames
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame = cap.read()
+        if not ret: break
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+
+        laplacian = cv2.Laplacian(gray, cv2.CV_64F).var()
+        frame_results.append({
+            'frame': frame_idx,
+            'faces': len(faces),
+            'sharpness': laplacian,
+        })
+
+    cap.release()
+
+    # Detect temporal inconsistencies
+    sharpness = [r['sharpness'] for r in frame_results]
+    sharpness_std = np.std(sharpness)
+    print(f"  Sharpness variance across frames: {sharpness_std:.1f}")
+    if sharpness_std > 500:
+        print(f"  [!] HIGH sharpness variance — possible face-swap seams")
+
+    face_counts = [r['faces'] for r in frame_results]
+    if max(face_counts, default=0) == 0:
+        print(f"  [!] No faces detected — may need different cascade")
+    return frame_results
+
+# Usage (provide a sample video)
+# analyze_video('samples/deepfake_sample.mp4')
+print("Video analysis module ready. Provide a video file path.")
+print("Download FaceForensics++ samples or use: youtube-dl [public deepfake sample]")
+EOF
+
+# Extract key video metadata with ffprobe
+ffprobe -v quiet -print_format json -show_streams -show_format \
+  samples/deepfake_video.mp4 2>/dev/null || \
+  echo "Add a video to samples/ to analyze. FFprobe ready."
+
+# Look for encoding inconsistencies
+# Real cameras: consistent keyframe intervals, single codec
+# Deepfakes: often re-encoded multiple times, irregular keyframes</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Audio forensics — detect voice cloning artifacts</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Cloned voices show artifacts in the spectrogram — unnatural pitch, formant discontinuities:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">pip3 install librosa soundfile
+cat > ~/deepfake-lab/audio_analysis.py << 'EOF'
+import librosa, librosa.display, numpy as np, matplotlib.pyplot as plt
+
+def analyze_audio(audio_path):
+    y, sr = librosa.load(audio_path, sr=None, mono=True)
+    print(f"\nAudio: {audio_path}")
+    print(f"  Duration: {len(y)/sr:.2f}s, Sample rate: {sr}Hz")
+
+    # Mel spectrogram (visual fingerprint of voice)
+    S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmax=8000)
+    S_dB = librosa.power_to_db(S, ref=np.max)
+
+    # Spectral features
+    spec_centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+    spec_rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, roll_percent=0.85)[0]
+    zero_crossing = librosa.feature.zero_crossing_rate(y)[0]
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+
+    print(f"  Spectral centroid mean: {spec_centroid.mean():.1f}Hz")
+    print(f"  Spectral rolloff mean:  {spec_rolloff.mean():.1f}Hz")
+    print(f"  Zero crossing rate:     {zero_crossing.mean():.4f}")
+
+    # Plot
+    fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+    librosa.display.specshow(S_dB, x_axis='time', y_axis='mel',
+                              sr=sr, fmax=8000, ax=axes[0])
+    axes[0].set_title('Mel Spectrogram (Voice Fingerprint)')
+    axes[0].colorbar(format='%+2.0f dB')
+
+    librosa.display.specshow(mfcc, x_axis='time', ax=axes[1])
+    axes[1].set_title('MFCC Features (look for discontinuities)')
+    axes[1].colorbar()
+
+    plt.tight_layout()
+    plt.savefig('analysis/audio_spectrogram.png', dpi=150)
+
+    # Cloning artifacts: sudden spectral jumps, unnatural pauses
+    centroid_diff = np.diff(spec_centroid)
+    jumps = (np.abs(centroid_diff) > centroid_diff.std() * 3).sum()
+    print(f"  Spectral discontinuities: {jumps}")
+    if jumps > len(centroid_diff) * 0.05:
+        print(f"  [!] HIGH discontinuity rate — possible voice clone splice")
+
+print("Audio analysis module ready.")
+print("Provide an MP3/WAV file path to analyze_audio()")
+EOF
+python3 audio_analysis.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Build a composite deepfake scoring rubric</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Combine all signals into a structured assessment framework:</p>
+        <div class="findings-table">
+          <table>
+            <tr><th>Detection Method</th><th>Indicator</th><th>Weight</th><th>Score</th></tr>
+            <tr><td>EXIF Metadata</td><td>No camera make/model</td><td>HIGH</td><td><input type="text" placeholder="0-10"></td></tr>
+            <tr><td>ELA Analysis</td><td>Inconsistent compression</td><td>HIGH</td><td><input type="text" placeholder="0-10"></td></tr>
+            <tr><td>DFT Spectrum</td><td>GAN grid artifacts</td><td>MEDIUM</td><td><input type="text" placeholder="0-10"></td></tr>
+            <tr><td>Facial Analysis</td><td>Eye count, symmetry</td><td>MEDIUM</td><td><input type="text" placeholder="0-10"></td></tr>
+            <tr><td>Audio Spectrogram</td><td>Splice discontinuities</td><td>HIGH</td><td><input type="text" placeholder="0-10"></td></tr>
+            <tr><td>Video Temporal</td><td>Sharpness variance</td><td>MEDIUM</td><td><input type="text" placeholder="0-10"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase-header">Phase 5: Reporting &amp; Threat Landscape</div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Assess deepfake threat scenarios for organizations</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Document the real-world threat landscape and organizational risks:</p>
+        <div class="findings-table">
+          <table>
+            <tr><th>Threat Scenario</th><th>Vector</th><th>Example</th></tr>
+            <tr><td>CEO Fraud / BEC</td><td>Voice clone in video call</td><td>CFO instructed to wire $25M</td></tr>
+            <tr><td>Political Disinformation</td><td>Face-swap video</td><td>Fake speech of official</td></tr>
+            <tr><td>Fake Evidence</td><td>Image manipulation</td><td>Planted in legal/HR case</td></tr>
+            <tr><td>Identity Fraud</td><td>GAN-generated ID photo</td><td>Bypasses KYC system</td></tr>
+            <tr><td>Synthetic Phishing</td><td>Cloned voice/video</td><td>IT helpdesk impersonation</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Document findings and produce forensic media report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Images analyzed</td><td><input type="text" placeholder="e.g., 10 GAN-generated faces"></td></tr>
+            <tr><td>EXIF anomalies found</td><td><input type="text" placeholder="e.g., 10/10 — no camera data"></td></tr>
+            <tr><td>ELA inconsistencies</td><td><input type="text" placeholder="e.g., uniform ELA (GAN, not spliced)"></td></tr>
+            <tr><td>DFT artifacts detected</td><td><input type="text" placeholder="e.g., 8/10 had grid patterns"></td></tr>
+            <tr><td>Facial anomalies</td><td><input type="text" placeholder="e.g., 3/10 had &lt;2 eyes detected"></td></tr>
+            <tr><td>Composite verdict</td><td><input type="text" placeholder="e.g., 9/10 classified as synthetic"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Media Forensics Analyst</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('gan')">GAN artifact patterns</button>
+      <button onclick="qp('ela')">Interpret ELA results</button>
+      <button onclick="qp('audio')">Audio clone detection</button>
+      <button onclick="qp('exif')">EXIF red flags</button>
+      <button onclick="qp('scenarios')">Org threat scenarios</button>
+      <button onclick="qp('report')">Forensic report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about deepfake detection, GAN artifacts, media forensics..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L10',
+  totalSteps: 11,
+  modeLabel: 'AI Security Lab',
+  welcomeMsg: `Welcome to Lab L10: Deepfake Detection & Media Forensics!
+
+I'm your AI Media Forensics Analyst. I can help you:
+- Understand GAN-generated image artifacts in DFT frequency analysis
+- Interpret Error Level Analysis (ELA) for image manipulation detection
+- Analyze EXIF metadata red flags that distinguish synthetic from real media
+- Detect voice cloning artifacts in audio spectrograms
+- Build a composite deepfake scoring framework
+- Assess organizational risks from deepfake threats (BEC, disinformation)
+- Write forensic media analysis reports
+
+What aspect of deepfake detection would you like to explore?`,
+  systemPrompt: `You are a senior digital forensics examiner and AI security researcher specializing in synthetic media detection. You're helping a cybersecurity student with Lab L10: Deepfake Detection on Kali Linux.
+
+Technical context:
+- Tools: OpenCV, numpy, scipy, ExifTool, FFmpeg, librosa
+- Detection methods: DFT frequency analysis (GAN grid artifacts), ELA (JPEG compression inconsistency), facial cascade analysis, EXIF metadata examination, audio spectrogram analysis
+- Sample media: GAN-generated faces from StyleGAN (thispersondoesnotexist.com)
+
+Key technical concepts:
+- GAN artifacts: periodic grid patterns at specific frequencies in DFT; upsampling artifacts from transpose convolution ("checkerboard" pattern)
+- ELA: re-saves image at known quality, high ELA in a region = recent editing; uniform ELA = consistent history (real or fully synthetic)
+- EXIF forensics: real cameras have Make/Model, GPS possible, software = camera firmware; GAN = no Make, Software = "Adobe" or absent, no GPS
+- Audio cloning: TTS and voice clone models have artifacts at frame boundaries (typically every 512-2048 samples), unnatural formant transitions, pitch that doesn't vary naturally
+- Temporal video: face-swap creates sharpness discontinuities at face boundary; blink rate often unnatural
+
+Always explain the forensic reasoning behind each indicator — not just what to look for but why it occurs at the technical level.`,
+  quickPrompts: {
+    gan: `My DFT analysis of a GAN-generated face shows a regular grid pattern at frequency intervals of about 32 pixels. The standard deviation of the magnitude spectrum is 95. Is this definitively a GAN artifact? What specific GAN architectures produce this pattern and why?`,
+    ela: `My ELA analysis shows: real photo has bright patches in sky and clothing areas (high ELA). GAN-generated face has very uniform, low ELA throughout. I expected the GAN to show high ELA. Why is GAN ELA uniform? Does this mean ELA is ineffective against GANs?`,
+    audio: `I ran librosa analysis on a suspicious audio clip. Results: spectral centroid mean = 2,847 Hz, zero crossing rate = 0.085, MFCC discontinuities = 47 in 15 seconds. The speaker's pitch jumps suddenly at 0:08 and 0:23. Is this voice-cloned? What additional analysis should I do?`,
+    exif: `I'm analyzing a suspicious image. ExifTool shows: File Type=JPEG, Image Size=1024x1024, no Camera Make/Model, no GPS, Create Date = 2024-03-01 14:22:31 UTC, Software = absent, Color Space = sRGB. Is this definitely AI-generated? What's the probability, and what else should I check?`,
+    scenarios: `A company executive received a video call from someone who looked and sounded like their CFO, asking them to approve a $500K wire transfer. The "CFO" was on vacation. What forensic evidence should they gather immediately? How would they detect if this was a deepfake call vs a real call? What policies should the company implement?`,
+    report: `I've analyzed 10 GAN-generated faces. Findings: 10/10 had no EXIF camera data, 8/10 had DFT grid artifacts, 3/10 had unusual eye detection results, ELA was uniformly low for all (confirming fully synthetic, not spliced). Write a 1-page forensic media analysis report suitable for a legal/HR case.`
+  }
+});
+</script>
+</body>
+</html>

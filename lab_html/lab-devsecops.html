@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L19: DevSecOps — Secure Pipeline | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-advanced">Advanced</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">DevSecOps</span>
+    </div>
+    <h1>L19: DevSecOps — Secure CI/CD Pipeline</h1>
+    <p>Build a security-integrated CI/CD pipeline using GitHub Actions, Semgrep (SAST), OWASP Dependency-Check (SCA), and OWASP ZAP (DAST). Learn to shift security left — catching vulnerabilities in code before they reach production — and write custom Semgrep rules for your application stack.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">GitHub Actions</span>
+      <span class="tool-tag">Semgrep</span>
+      <span class="tool-tag">OWASP ZAP</span>
+      <span class="tool-tag">Docker</span>
+      <span class="tool-tag">Python/Node.js</span>
+      <span class="tool-tag">Kali Linux</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 12 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Vulnerable Application Setup</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Set up vulnerable test application</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Create a deliberately vulnerable Python Flask application to practice scanning against:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">mkdir ~/devsecops-lab && cd ~/devsecops-lab
+git init
+mkdir src tests
+
+cat > src/app.py << 'EOF'
+# DELIBERATELY VULNERABLE APP — FOR LAB USE ONLY
+from flask import Flask, request, render_template_string, redirect
+import sqlite3, subprocess, os, pickle, hashlib
+
+app = Flask(__name__)
+app.secret_key = "hardcoded_secret_key_12345"  # VULN: CWE-798
+
+DB = '/tmp/lab.db'
+
+def get_db():
+    conn = sqlite3.connect(DB)
+    return conn
+
+@app.route('/login', methods=['POST'])
+def login():
+    user = request.form['username']
+    pwd = request.form['password']
+    # VULN: SQL Injection (CWE-89)
+    conn = get_db()
+    query = f"SELECT * FROM users WHERE username='{user}' AND password='{pwd}'"
+    result = conn.execute(query).fetchone()
+    return "ok" if result else "fail"
+
+@app.route('/render')
+def render():
+    # VULN: Server-Side Template Injection (CWE-94)
+    template = request.args.get('template', '')
+    return render_template_string(template)
+
+@app.route('/ping')
+def ping():
+    # VULN: Command Injection (CWE-78)
+    host = request.args.get('host', 'localhost')
+    result = subprocess.run(f"ping -c 1 {host}", shell=True,
+                            capture_output=True, text=True)
+    return result.stdout
+
+@app.route('/load')
+def load():
+    # VULN: Insecure Deserialization (CWE-502)
+    data = request.args.get('data', '')
+    obj = pickle.loads(bytes.fromhex(data))
+    return str(obj)
+
+@app.route('/hash')
+def weak_hash():
+    # VULN: Weak cryptography (CWE-327)
+    data = request.args.get('data', '')
+    return hashlib.md5(data.encode()).hexdigest()
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+EOF
+
+cat > requirements.txt << 'EOF'
+flask==2.0.1
+requests==2.26.0
+cryptography==3.3.0
+PyYAML==5.3.1
+Pillow==8.2.0
+EOF
+
+echo "Vulnerable app created — DO NOT deploy outside lab environment"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Run Semgrep SAST scan on source code</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">pip3 install semgrep
+
+cd ~/devsecops-lab
+
+# Run Semgrep with auto-rules (OWASP Top 10 + security audit)
+semgrep scan \
+  --config=p/owasp-top-ten \
+  --config=p/python \
+  --config=p/secrets \
+  --json \
+  --output=reports/semgrep_results.json \
+  src/
+
+# Human-readable output
+semgrep scan \
+  --config=p/owasp-top-ten \
+  --config=p/python \
+  --config=p/secrets \
+  src/ 2>&1 | tee reports/semgrep_readable.txt
+
+echo "Semgrep findings:"
+python3 -c "
+import json
+with open('reports/semgrep_results.json') as f:
+    results = json.load(f)
+findings = results.get('results', [])
+print(f'Total findings: {len(findings)}')
+by_severity = {}
+for f in findings:
+    sev = f.get('extra', {}).get('severity', 'INFO')
+    by_severity[sev] = by_severity.get(sev, 0) + 1
+for sev, count in sorted(by_severity.items()):
+    print(f'  {sev}: {count}')
+"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Write custom Semgrep rules for your stack</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">mkdir -p ~/devsecops-lab/semgrep_rules
+
+cat > ~/devsecops-lab/semgrep_rules/flask_security.yml << 'EOF'
+rules:
+  - id: flask-debug-mode
+    patterns:
+      - pattern: |
+          app.run(..., debug=True, ...)
+    message: >
+      Flask debug mode is enabled. This exposes the Werkzeug debugger,
+      which allows arbitrary code execution. Never enable in production.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: CWE-94
+      owasp: A05:2021 - Security Misconfiguration
+      mitre: T1190
+
+  - id: flask-hardcoded-secret
+    patterns:
+      - pattern: |
+          $APP.secret_key = "..."
+      - pattern: |
+          $APP.secret_key = '...'
+    message: >
+      Hardcoded Flask secret key detected. Use environment variables instead:
+      app.secret_key = os.environ.get('SECRET_KEY')
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: CWE-798
+      owasp: A02:2021 - Cryptographic Failures
+
+  - id: sqlite-string-format
+    patterns:
+      - pattern: |
+          $CONN.execute(f"...{$VAR}...")
+      - pattern: |
+          $CONN.execute("..." + $VAR + "...")
+    message: >
+      String formatting in SQL query — potential SQL injection.
+      Use parameterized queries: conn.execute("SELECT * WHERE x=?", (value,))
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: CWE-89
+      owasp: A03:2021 - Injection
+      mitre: T1190
+
+  - id: subprocess-shell-true
+    patterns:
+      - pattern: |
+          subprocess.run(..., shell=True, ...)
+      - pattern: |
+          subprocess.call(..., shell=True, ...)
+      - pattern: |
+          os.system($X)
+    message: >
+      Command executed with shell=True or os.system — potential command injection
+      if user input is included. Use shell=False and pass args as list.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: CWE-78
+      owasp: A03:2021 - Injection
+      mitre: T1059.006
+
+  - id: pickle-deserialization
+    patterns:
+      - pattern: |
+          pickle.loads($DATA)
+      - pattern: |
+          pickle.load($FILE)
+    message: >
+      Deserialization of untrusted data with pickle. Pickle can execute
+      arbitrary code. Use JSON or msgpack instead.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: CWE-502
+      owasp: A08:2021 - Software and Data Integrity Failures
+
+  - id: weak-hash-md5
+    patterns:
+      - pattern: hashlib.md5(...)
+      - pattern: hashlib.sha1(...)
+    message: >
+      MD5 and SHA1 are cryptographically weak. Use SHA-256 or better:
+      hashlib.sha256(data).hexdigest()
+    languages: [python]
+    severity: WARNING
+    metadata:
+      cwe: CWE-327
+      owasp: A02:2021 - Cryptographic Failures
+EOF
+
+# Test custom rules
+semgrep --config ~/devsecops-lab/semgrep_rules/flask_security.yml src/</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Software Composition Analysis (SCA)</div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Run OWASP Dependency-Check for vulnerable libraries</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Scan your requirements.txt for known CVEs in dependencies:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Install OWASP Dependency-Check (Java required)
+sudo apt install -y default-jre
+wget -O /tmp/dc.zip \
+  https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.7/dependency-check-9.0.7-release.zip
+unzip /tmp/dc.zip -d /opt/
+export PATH=$PATH:/opt/dependency-check/bin
+
+# Run SCA scan on Python dependencies
+dependency-check.sh \
+  --project "DevSecOps Lab" \
+  --scan ~/devsecops-lab/requirements.txt \
+  --format HTML \
+  --format JSON \
+  --out ~/devsecops-lab/reports/ \
+  --enableExperimental
+
+# Alternative: pip-audit (simpler, Python-native)
+pip3 install pip-audit
+pip-audit -r ~/devsecops-lab/requirements.txt \
+  --format json > ~/devsecops-lab/reports/pip_audit.json
+
+python3 -c "
+import json
+with open('reports/pip_audit.json') as f:
+    data = json.load(f)
+vulns = data.get('vulnerabilities', [])
+print(f'Vulnerable packages: {len(set(v[\"package\"] for v in vulns))}')
+for v in vulns:
+    print(f'  {v[\"package\"]} {v[\"installed_version\"]}: {v[\"id\"]}')
+"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Scan Docker images for CVEs with Trivy</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Create Dockerfile for the lab app
+cat > ~/devsecops-lab/Dockerfile << 'EOF'
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY src/ .
+EXPOSE 5000
+CMD ["python", "app.py"]
+EOF
+
+# Build the image
+docker build -t devsecops-lab:latest ~/devsecops-lab/
+
+# Install Trivy (container image scanner)
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" | \
+  sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt update && sudo apt install -y trivy
+
+# Scan the Docker image
+trivy image \
+  --format json \
+  --output ~/devsecops-lab/reports/trivy_image.json \
+  devsecops-lab:latest
+
+trivy image --severity HIGH,CRITICAL devsecops-lab:latest
+
+# Scan base OS packages too
+trivy image --scanners vuln,config,secret devsecops-lab:latest</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Dynamic Analysis (DAST) with OWASP ZAP</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Run OWASP ZAP baseline scan against running app</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Start the vulnerable app
+cd ~/devsecops-lab && python3 src/app.py &
+APP_PID=$!
+sleep 3  # Wait for app to start
+
+# Run OWASP ZAP baseline scan (Docker — easiest method)
+docker run --rm \
+  --network="host" \
+  -v ~/devsecops-lab/reports:/zap/wrk:rw \
+  ghcr.io/zaproxy/zaproxy:stable \
+  zap-baseline.py \
+  -t http://localhost:5000 \
+  -r zap_baseline_report.html \
+  -J zap_baseline_report.json \
+  -l WARN
+
+# Full active scan (finds more, takes longer)
+docker run --rm \
+  --network="host" \
+  -v ~/devsecops-lab/reports:/zap/wrk:rw \
+  ghcr.io/zaproxy/zaproxy:stable \
+  zap-full-scan.py \
+  -t http://localhost:5000 \
+  -r zap_full_report.html \
+  -J zap_full_report.json
+
+kill $APP_PID 2>/dev/null
+echo "ZAP scan complete — see reports/zap_*.html"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Analyze ZAP findings and CVSS scoring</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">python3 << 'EOF'
+import json
+
+try:
+    with open('reports/zap_full_report.json') as f:
+        data = json.load(f)
+except FileNotFoundError:
+    print("ZAP report not found — run Step 6 first")
+    exit()
+
+alerts = data.get('site', [{}])[0].get('alerts', [])
+print(f"Total ZAP alerts: {len(alerts)}")
+
+# Risk breakdown
+risk_levels = {'High': [], 'Medium': [], 'Low': [], 'Informational': []}
+for alert in alerts:
+    risk = alert.get('riskdesc', 'Informational').split()[0]
+    risk_levels.get(risk, risk_levels['Informational']).append(alert)
+
+for risk, items in risk_levels.items():
+    print(f"\n[{risk.upper()}] ({len(items)} findings)")
+    for item in items[:3]:
+        print(f"  - {item.get('alert', '')}")
+        print(f"    CWE: {item.get('cweid', 'N/A')} | WASC: {item.get('wascid', 'N/A')}")
+        print(f"    URL: {item.get('instances', [{}])[0].get('uri', 'N/A')}")
+        print(f"    Solution: {item.get('solution','')[:100]}")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: GitHub Actions CI/CD Pipeline</div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Build GitHub Actions security pipeline</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">mkdir -p ~/devsecops-lab/.github/workflows
+
+cat > ~/devsecops-lab/.github/workflows/devsecops.yml << 'EOF'
+name: DevSecOps Security Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # SAST — Static Analysis
+  sast:
+    name: SAST - Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/python
+            p/secrets
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+  # SCA — Dependency Scanning
+  sca:
+    name: SCA - Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt \
+            --format cyclonedx-json \
+            --output dependency-report.json || true
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: dependency-report.json
+
+  # Container Scanning
+  container:
+    name: Container - Trivy Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t app:${{ github.sha }} .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'app:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'  # Fail pipeline on CRITICAL/HIGH
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # DAST — Dynamic Testing
+  dast:
+    name: DAST - OWASP ZAP
+    runs-on: ubuntu-latest
+    needs: [sast, sca]  # Only run DAST if SAST/SCA pass
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start application
+        run: |
+          pip install -r requirements.txt
+          python src/app.py &
+          sleep 5  # Wait for startup
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.11.0
+        with:
+          target: 'http://localhost:5000'
+          fail_action: true
+          artifact_name: 'zap-results'
+          allow_issue_writing: false
+
+  # Security gate — aggregate and enforce thresholds
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: [sast, sca, container, dast]
+    steps:
+      - name: Evaluate security posture
+        run: |
+          echo "All security scans passed!"
+          echo "SAST: Semgrep — passed"
+          echo "SCA: pip-audit — passed"
+          echo "Container: Trivy — passed"
+          echo "DAST: ZAP — passed"
+          echo "Deployment approved."
+EOF
+
+echo "GitHub Actions pipeline created at .github/workflows/devsecops.yml"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Fix vulnerabilities and verify with re-scan</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Fix the SQL injection and command injection vulnerabilities found by Semgrep:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/devsecops-lab/src/app_fixed.py << 'EOF'
+# FIXED version of the vulnerable app
+from flask import Flask, request
+import sqlite3, subprocess, os
+
+app = Flask(__name__)
+# FIX: Secret from environment variable
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(32))
+
+def get_db():
+    return sqlite3.connect('/tmp/lab.db')
+
+@app.route('/login', methods=['POST'])
+def login():
+    user = request.form.get('username', '')
+    pwd = request.form.get('password', '')
+    # FIX: Parameterized query — no SQL injection
+    conn = get_db()
+    result = conn.execute(
+        "SELECT * FROM users WHERE username=? AND password=?",
+        (user, pwd)).fetchone()
+    return "ok" if result else "fail"
+
+@app.route('/ping')
+def ping():
+    host = request.args.get('host', '')
+    # FIX: Validate input, no shell=True, args as list
+    import re
+    if not re.match(r'^[a-zA-Z0-9.-]+$', host):
+        return "Invalid host", 400
+    result = subprocess.run(
+        ['ping', '-c', '1', host],
+        capture_output=True, text=True, timeout=5)
+    return result.stdout
+
+@app.route('/hash')
+def strong_hash():
+    import hashlib
+    data = request.args.get('data', '')
+    # FIX: Use SHA-256 instead of MD5
+    return hashlib.sha256(data.encode()).hexdigest()
+EOF
+
+# Verify fixed code with Semgrep
+semgrep --config p/owasp-top-ten \
+  --config ~/devsecops-lab/semgrep_rules/flask_security.yml \
+  ~/devsecops-lab/src/app_fixed.py
+
+echo "Fixed version should show fewer/no findings"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Add secret scanning with gitleaks</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Install gitleaks (detects secrets in git history and current code)
+docker pull zricethezav/gitleaks:latest
+
+# Scan the git repository for secrets
+cd ~/devsecops-lab
+docker run --rm \
+  -v $(pwd):/path \
+  zricethezav/gitleaks:latest detect \
+  --source /path \
+  --report-format json \
+  --report-path /path/reports/gitleaks_report.json \
+  --verbose
+
+# Also install pre-commit hooks to catch secrets before they're committed
+pip3 install pre-commit
+
+cat > ~/devsecops-lab/.pre-commit-config.yaml << 'EOF'
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ["-ll"]
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+EOF
+
+cd ~/devsecops-lab && pre-commit install
+echo "Pre-commit hooks installed — will scan on every git commit"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Map all findings to OWASP Top 10 &amp; MITRE</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <table>
+            <tr><th>Vulnerability</th><th>Tool Detected</th><th>OWASP</th><th>CWE</th></tr>
+            <tr><td>SQL Injection</td><td>Semgrep</td><td>A03:2021 Injection</td><td>CWE-89</td></tr>
+            <tr><td>Command Injection</td><td>Semgrep + ZAP</td><td>A03:2021 Injection</td><td>CWE-78</td></tr>
+            <tr><td>Hardcoded Secret</td><td>Semgrep + Gitleaks</td><td>A02:2021 Crypto</td><td>CWE-798</td></tr>
+            <tr><td>Weak Hash (MD5)</td><td>Semgrep</td><td>A02:2021 Crypto</td><td>CWE-327</td></tr>
+            <tr><td>Insecure Deserialization</td><td>Semgrep</td><td>A08:2021 Integrity</td><td>CWE-502</td></tr>
+            <tr><td>Vulnerable Dependencies</td><td>pip-audit/Trivy</td><td>A06:2021 Components</td><td>CVE-specific</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Document pipeline and produce DevSecOps report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Semgrep findings (total)</td><td><input type="text" placeholder="e.g., 6 HIGH, 2 MEDIUM"></td></tr>
+            <tr><td>Vulnerable dependencies</td><td><input type="text" placeholder="e.g., 4 CVEs found"></td></tr>
+            <tr><td>Container CVEs (CRITICAL)</td><td><input type="text" placeholder="e.g., 3 CRITICAL in base image"></td></tr>
+            <tr><td>ZAP findings (HIGH)</td><td><input type="text" placeholder="e.g., 2 HIGH — SQL Inj, Cmd Inj"></td></tr>
+            <tr><td>Secrets found in code</td><td><input type="text" placeholder="e.g., 1 — hardcoded secret_key"></td></tr>
+            <tr><td>Vulnerabilities after fix</td><td><input type="text" placeholder="e.g., 0 HIGH remaining"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI DevSecOps Engineer</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('semgrep')">Write Semgrep rule</button>
+      <button onclick="qp('fix')">Fix this vulnerability</button>
+      <button onclick="qp('pipeline')">Pipeline advice</button>
+      <button onclick="qp('threshold')">Security gates</button>
+      <button onclick="qp('sbom')">SBOM generation</button>
+      <button onclick="qp('report')">DevSecOps report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about SAST rules, CI/CD pipeline design, vulnerability fixes..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L19',
+  totalSteps: 12,
+  modeLabel: 'DevSecOps Lab',
+  welcomeMsg: `Welcome to Lab L19: DevSecOps — Secure CI/CD Pipeline!
+
+I'm your AI DevSecOps Engineer. I can help you:
+- Write custom Semgrep rules for Python, JavaScript, or Go codebases
+- Interpret SAST findings and prioritize which to fix first
+- Design GitHub Actions workflows with security gates
+- Fix code vulnerabilities detected by SAST/DAST
+- Configure ZAP scans for different application types
+- Build SBOM (Software Bill of Materials) for compliance
+- Understand OWASP Top 10 in the context of your findings
+- Design security thresholds for pipeline fail/pass decisions
+
+What would you like to work on?`,
+  systemPrompt: `You are a senior DevSecOps engineer and application security expert. You're helping a student with Lab L19: Secure CI/CD Pipeline on Kali Linux.
+
+Technical context:
+- Tools: Semgrep (SAST), pip-audit (SCA), Trivy (container scanning), OWASP ZAP (DAST), Gitleaks (secret scanning), GitHub Actions
+- Vulnerable app: Flask Python app with SQL injection, command injection, insecure deserialization, weak crypto, hardcoded secrets
+- Fixed version: parameterized queries, no shell=True, SHA-256, environment variable secrets
+- Pipeline: GitHub Actions workflow with SAST→SCA→Container→DAST stages, SARIF upload to GitHub Security tab
+
+Key DevSecOps concepts:
+- Shift-left: find vulnerabilities in code (SAST) before runtime (DAST) — cheaper to fix
+- SARIF format: industry standard for security findings, integrates with GitHub/Azure DevOps
+- Security gates: fail CI on CRITICAL findings, warn on HIGH — don't block PRs on LOW/INFO
+- False positive management: baseline files (.semgrepignore, .trivyignore) to suppress known-safe findings
+- SBOM: CycloneDX or SPDX format; required for NIST 800-218 and some government contracts
+
+OWASP Top 10 2021 mapping:
+- A03 Injection: SQL, Command, SSTI — found by SAST
+- A02 Crypto Failures: MD5, hardcoded secrets — found by SAST + Gitleaks
+- A06 Vulnerable Components: CVEs in libraries — found by SCA/Trivy
+- A08 Software Integrity: insecure deserialization — found by SAST
+
+If the student pastes Semgrep findings or code, help them understand the vulnerability and provide the corrected code.`,
+  quickPrompts: {
+    semgrep: `I need a custom Semgrep rule to detect: JavaScript code that uses eval() with any user-controlled input (document.location, window.location.search, req.query, req.body). The rule should flag the eval call and suggest using a safer alternative. Write the Semgrep YAML rule.`,
+    fix: `Semgrep flagged this Python code with "sql-injection": result = db.execute(f"SELECT * FROM users WHERE id={user_id}"). The user_id comes from request.args.get('id'). Provide the fixed code using parameterized queries and explain why the original is vulnerable.`,
+    pipeline: `I want to add a DevSecOps pipeline to my existing GitHub Actions workflow. My app is a Node.js Express API. What tools should I use for: 1) SAST, 2) SCA, 3) Container scanning, 4) DAST? Give me a complete GitHub Actions YAML with all four stages.`,
+    threshold: `My team argues about security gates — blocking PRs on HIGH findings frustrates developers and slows delivery. My manager wants zero friction. How do I design security gates that catch real risks without becoming a bottleneck? What severity thresholds should block vs warn?`,
+    sbom: `My organization needs to produce a Software Bill of Materials (SBOM) for a government contract (NIST 800-218). My app has Python dependencies in requirements.txt and a Docker base image. How do I generate a CycloneDX-format SBOM, and what does the SBOM need to include for compliance?`,
+    report: `I ran all four scan types on my Flask app. Results: Semgrep found 6 HIGH (SQLi, CMDi, hardcoded key, pickle, MD5, debug=True), pip-audit found 4 CVEs (2 CRITICAL), Trivy found 3 CRITICAL in base image, ZAP found 2 HIGH. After fixes, re-scan showed 0 CRITICAL. Write an executive DevSecOps security report for my CISO.`
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Cybersecurity Resources - CyberSec Pro Academy</title>
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<style>
+        :root {
+            --navy: #0a1628;
+            --teal: #0e5f7a;
+            --green: #00c896;
+            --dark: #1a202c;
+            --gray: #f4f6f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #ffffff;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: var(--navy);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-pro {
+            color: var(--green);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Resource Cards Grid */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .resource-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resource-card:hover {
+            border-color: var(--green);
+            box-shadow: 0 8px 24px rgba(0, 200, 150, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .resource-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .resource-card h3 {
+            font-size: 1.4rem;
+            color: var(--navy);
+            margin-bottom: 1rem;
+        }
+
+        .resource-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .value-tag {
+            display: inline-block;
+            background-color: #fef08a;
+            color: #854d0e;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--green);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .cta-button:hover {
+            background-color: #00a870;
+            transform: translateX(4px);
+        }
+
+        .cta-button-secondary {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--green);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid var(--green);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .cta-button-secondary:hover {
+            background-color: var(--green);
+            color: white;
+        }
+
+        /* Why We Give This Away Section */
+        .why-section {
+            background-color: var(--gray);
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 4rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .why-section h2 {
+            font-size: 1.8rem;
+            color: var(--navy);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .why-section p {
+            font-size: 1.05rem;
+            color: #333;
+            line-height: 1.8;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Soft CTA Section */
+        .soft-cta {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--navy) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 4rem;
+            text-align: center;
+        }
+
+        .soft-cta h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .soft-cta p {
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.95;
+        }
+
+        .pricing-highlight {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 1rem;
+        }
+
+        .value-stack {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: left;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 0.95rem;
+        }
+
+        .value-stack li {
+            list-style: none;
+            padding: 0.5rem 0;
+        }
+
+        .value-stack li:before {
+            content: "✓ ";
+            color: var(--green);
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+
+        .soft-cta-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .soft-cta-buttons a {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #00a870;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--green);
+            border: 2px solid var(--green);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--green);
+            color: var(--navy);
+        }
+
+        .btn-linkedin {
+            background-color: #0077b5;
+            color: white;
+        }
+
+        .btn-linkedin:hover {
+            background-color: #005a8b;
+        }
+
+        .guarantee {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-top: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--navy);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        footer p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        footer a {
+            color: var(--green);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: var(--dark);
+            float: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--green);
+        }
+
+        .modal h2 {
+            color: var(--navy);
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .modal-form input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .modal-form input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 8px rgba(0, 200, 150, 0.2);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .soft-cta-buttons {
+                flex-direction: column;
+            }
+
+            .soft-cta-buttons a {
+                width: 100%;
+                text-align: center;
+            }
+
+            .value-stack {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">CyberSecPro <span class="logo-pro">Academy</span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="lab-setup.html">Labs</a></li>
+                <li><a href="price-comparison.html">Pricing</a></li>
+                <li><a href="checkout.html">Enroll</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1>Free Cybersecurity Resources — No Catch</h1>
+            <p>We give away more for free than most programs charge for. See for yourself.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Resource Cards -->
+        <section class="resources-grid">
+            <!-- Card 1: Free Guide -->
+            <div class="resource-card">
+                <div class="resource-icon">📘</div>
+                <h3>The Complete Beginner's Guide to Cybersecurity</h3>
+                <p>10-section PDF covering career roadmaps, certifications, salary data, and professional resume tips. Everything you need to start your cybersecurity career on the right foot.</p>
+                <div class="value-tag">Others charge $50+ for this</div>
+                <button class="cta-button" onclick="openModal(); return false;">Download Free Guide</button>
+            </div>
+
+            <!-- Card 2: Free Labs -->
+            <div class="resource-card">
+                <div class="resource-icon">🔬</div>
+                <h3>Hands-On Cybersecurity Labs</h3>
+                <p>Real-world security scenarios in a fully equipped lab environment. The exact same labs our paid students use to build practical, job-ready skills.</p>
+                <div class="value-tag">Bootcamps charge $500+ for lab access</div>
+                <a href="lab-setup.html" class="cta-button">Start the Free Labs →</a>
+            </div>
+
+            <!-- Card 3: Career Roadmap -->
+            <div class="resource-card">
+                <div class="resource-icon">🗺️</div>
+                <h3>Cybersecurity Career Roadmap</h3>
+                <p>Step-by-step path from zero experience to hired. Includes certification order, skill progression, salary expectations by role, and job market insights.</p>
+                <div class="value-tag">Career coaches charge $200/hr for this advice</div>
+                <button class="cta-button" onclick="openModal(); return false;">Included in the Free Guide →</button>
+            </div>
+        </section>
+
+        <!-- Why Section -->
+        <section class="why-section">
+            <h2>Why We Give This Away for Free</h2>
+            <p>"We believe the best way to earn your trust is to give you so much value for free that you think 'if the free stuff is this good, the paid program must be incredible.' And it is. Our philosophy: create such helpful, actionable free resources that joining our full program becomes an obvious next step."</p>
+        </section>
+
+        <!-- Soft CTA Section -->
+        <section class="soft-cta">
+            <h2>Ready for the Full Program?</h2>
+            <div class="pricing-highlight">Just $19/month</div>
+
+            <ul class="value-stack">
+                <li>Video courses + hands-on labs</li>
+                <li>Career guidance & job placement support</li>
+                <li>Live instructor Q&A sessions</li>
+                <li>Industry-recognized certifications</li>
+                <li>Community of 5,000+ cybersecurity students</li>
+            </ul>
+
+            <div class="soft-cta-buttons">
+                <a href="checkout.html" class="btn-primary">Enroll Now</a>
+                <a href="price-comparison.html" class="btn-secondary">Compare Plans</a>
+                <a href="https://www.linkedin.com/in/boncapuyan/" class="btn-linkedin">Connect on LinkedIn</a>
+            </div>
+
+            <p class="guarantee">30-day money-back guarantee. No questions asked.</p>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 CyberSec Pro Academy. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+    </footer>
+
+    <!-- Modal for Guide Download -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Get Your Free Guide</h2>
+            <p>Enter your email below and we'll send you "The Complete Beginner's Guide to Cybersecurity" instantly.</p>
+            <form class="modal-form" onsubmit="handleGuideSubmit(event)">
+                <input type="email" placeholder="Your email address" required>
+                <button type="submit" class="cta-button" style="width: 100%; padding: 1rem; font-size: 1rem;">Download Now</button>
+            </form>
+        </div>
+    </div>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6T7DPEWEP7"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-6T7DPEWEP7');
+
+        function openModal() {
+            document.getElementById('guideModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('guideModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('guideModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function handleGuideSubmit(event) {
+            event.preventDefault();
+            const email = event.target.querySelector('input[type="email"]').value;
+            // In a real implementation, this would send the email to a backend service
+            console.log('Guide download requested for:', email);
+            alert('Check your email for your free guide!');
+            closeModal();
+        }
+    </script>
+</body>
+</html>

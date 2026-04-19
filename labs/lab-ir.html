@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L08: AI Incident Response — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="labs.html">← All Labs</a><a href="lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span><div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span><span class="lp-steps" id="lpSteps">0 / 14 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="labs.html">Labs</a> › <a href="labs.html">Incident Response</a> › L08</div>
+    <div class="lab-num-badge">LAB L08 · INCIDENT RESPONSE · ADVANCED</div>
+    <h1>AI-Automated <em>Incident Response</em></h1>
+    <p>Simulate a ransomware incident from initial alert through full remediation. Use SIFT Workstation for evidence collection, Volatility for memory analysis, and the AI Analyst to orchestrate the entire IR playbook and write the final report.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>120 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>SIFT Workstation</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Volatility · Autopsy · Timeline · Splunk</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI IR Orchestration</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-red">
+    <div class="scenario-label">🚨 Incident Scenario — PRIORITY 1</div>
+    <p>03:47 AM — your EDR fires a P1 alert: ransomware encryption process detected on FINANCE-WS-01. The endpoint was isolated automatically, but you need to determine: How did it get in? What did it touch? Is there C2 still active? What data was exfiltrated before isolation?</p>
+    <p>A memory dump and disk image from the compromised workstation are available in your SIFT VM. The IR clock is running.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Triage & Evidence Acquisition</div><div class="phase-desc">First 15 minutes: assess scope and preserve evidence</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Set up the IR workspace in SIFT</div><div class="step-desc">Organize evidence directories before touching anything</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">mkdir -p ~/IR/FINANCE-WS-01/{memory,disk,logs,timeline,network,reports}</span><br><span class="k">cd ~/IR/FINANCE-WS-01</span><br><span class="c"># Document everything — IR is legally defensible only if you log your actions</span><br><span class="k">script ~/IR/FINANCE-WS-01/reports/ir_session.log</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Download the practice memory image</div><div class="step-desc">Use a real forensic memory sample from Digital Corpora</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Download a practice memory image (real case data from Digital Corpora)</span><br><span class="k">wget -O ~/IR/FINANCE-WS-01/memory/memory.img \</span><br><span class="k">  "https://downloads.digitalcorpora.org/corpora/scenarios/2009-m57-patents/ram/terry-work-usb-2009-12-11.img.gz"</span><br><span class="k">gunzip ~/IR/FINANCE-WS-01/memory/memory.img.gz</span><br><span class="c"># Alternatively use any Windows memory dump you have</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Initial triage with Volatility — identify OS and processes</div><div class="step-desc">Quick wins: OS profile, running processes, network connections</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">cd ~/IR/FINANCE-WS-01/memory</span><br><span class="c"># Step 1: Identify OS profile</span><br><span class="k">volatility -f memory.img imageinfo 2>&1 | tee ../reports/01_imageinfo.txt</span><br><br><span class="c"># Step 2: Export critical volatile data (set PROFILE from imageinfo output)</span><br><span class="k">export PROFILE="WinXPSP3x86"</span>  <span class="c"># Replace with actual profile</span><br><span class="k">volatility -f memory.img --profile=$PROFILE pslist | tee ../reports/02_pslist.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE pstree | tee ../reports/03_pstree.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE netscan | tee ../reports/04_netscan.txt</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Initial Triage</div><p>Paste your pslist and netscan output. The AI will immediately flag suspicious processes (unusual parents, random names, wrong paths) and active C2 connections.</p><button class="ai-prompt-btn" onclick="qp('triage')">Ask AI to triage processes and connections →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Memory Forensics</div><div class="phase-desc">Deep memory analysis: injection, persistence, credentials</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Scan for code injection and hollowed processes</div><div class="step-desc">Ransomware commonly uses process injection to evade detection</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">volatility -f memory.img --profile=$PROFILE malfind | tee ../reports/05_malfind.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE hollowfind 2>/dev/null | tee ../reports/06_hollowfind.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE cmdline | tee ../reports/07_cmdline.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE consoles | tee ../reports/08_consoles.txt</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Extract network artifacts and registry hives</div><div class="step-desc">Find C2 domains, persistence keys, and credential material</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">volatility -f memory.img --profile=$PROFILE connections | tee ../reports/09_connections.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE hivelist | tee ../reports/10_hivelist.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE printkey -K "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" | tee ../reports/11_run_keys.txt</span><br><span class="k">volatility -f memory.img --profile=$PROFILE hashdump | tee ../reports/12_hashes.txt</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Persistence & C2</div><p>Share your Run key output, network connections, and command line history. The AI will identify persistence mechanisms, map to ATT&CK, and suggest immediate containment actions.</p><button class="ai-prompt-btn" onclick="qp('persist')">Ask AI to identify persistence and C2 →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Dump and analyze suspicious processes</div><div class="step-desc">Extract malicious executables from memory for further analysis</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Dump a suspicious process (replace PID with actual suspicious PID)</span><br><span class="k">SUSPICIOUS_PID=1234</span><br><span class="k">volatility -f memory.img --profile=$PROFILE procdump -p $SUSPICIOUS_PID --dump-dir ../reports/dumps/</span><br><span class="k">md5sum ../reports/dumps/*.exe</span>  <span class="c"># Hash for VirusTotal lookup</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Timeline & Scope Assessment</div><div class="phase-desc">Build the attack timeline and determine blast radius</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Build a super-timeline with Plaso</div><div class="step-desc">Correlate filesystem, registry, and event log timestamps</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># If you have a disk image, create a timeline with log2timeline</span><br><span class="k">log2timeline.py ~/IR/FINANCE-WS-01/timeline/timeline.plaso disk.img</span><br><span class="k">psort.py -z UTC ~/IR/FINANCE-WS-01/timeline/timeline.plaso "date > '2024-01-01' AND date < '2024-12-31'" \</span><br><span class="k">  -o l2tcsv -w ~/IR/FINANCE-WS-01/timeline/events.csv</span><br><br><span class="c"># Search timeline for ransomware indicators</span><br><span class="k">grep -i "encrypt\|ransom\|shadow\|vssadmin\|bcdedit" ~/IR/FINANCE-WS-01/timeline/events.csv</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Determine patient zero and initial access vector</div><div class="step-desc">Find how the attacker got in — email, web, RDP, USB?</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Check browser history (if SIFT and disk image available)</span><br><span class="k">volatility -f memory.img --profile=$PROFILE iehistory | tee ../reports/13_iehistory.txt</span><br><span class="c"># Check recent files and downloads</span><br><span class="k">volatility -f memory.img --profile=$PROFILE mftparser | grep -i "\.exe\|\.zip\|\.pdf\|\.doc" | tee ../reports/14_mft_suspicious.txt</span><br><span class="c"># Check clipboard for phishing artifacts</span><br><span class="k">volatility -f memory.img --profile=$PROFILE clipboard | tee ../reports/15_clipboard.txt</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Attack Timeline</div><p>Share your timeline data, browser history, and MFT entries. The AI will reconstruct the attack timeline from initial access through ransomware execution, and identify which technique (phishing, exploit, RDP brute force) was used.</p><button class="ai-prompt-btn" onclick="qp('timeline')">Ask AI to reconstruct attack timeline →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — Containment, Eradication & Report</div><div class="phase-desc">AI-generated playbook, remediation steps, and executive report</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">AI generates full containment playbook</div><div class="step-desc">Based on your findings, get a prioritized remediation list</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Containment Playbook</div><p>Share all your findings: attacker entry point, persistence mechanisms, C2 infrastructure, affected systems, and hashes. The AI will generate a prioritized containment and eradication playbook with specific commands.</p><button class="ai-prompt-btn" onclick="qp('playbook')">Generate containment playbook →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Generate IOCs for threat intel sharing</div><div class="step-desc">Extract and format all indicators for SIEM/EDR deployment</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Share all hashes, IPs, domains, registry keys, and file paths found. The AI will structure them as a STIX 2.1 bundle ready for sharing with ISACs and deploying to your SIEM.</p><button class="ai-prompt-btn" onclick="qp('ioc')">Extract and format all IOCs →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">MITRE ATT&CK mapping</div><div class="step-desc">Map all observed behaviors to the ATT&CK framework</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>List all attacker behaviors observed. The AI will map each to ATT&CK technique IDs, identify which tactics were used (Initial Access through Impact), and suggest detection opportunities for each technique.</p><button class="ai-prompt-btn" onclick="qp('attck')">Map all behaviors to ATT&CK →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">AI drafts executive incident report</div><div class="step-desc">Full incident report ready for CISO and legal review</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Executive Report</div><p>Provide: incident date/time, affected systems, attack timeline, attacker TTPs, business impact, and remediation steps taken. The AI will write a professional incident report with executive summary, technical analysis, and recommendations.</p><button class="ai-prompt-btn" onclick="qp('report')">Draft full incident report →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-12" onclick="toggleStep(12)">
+        <div class="step-header"><div class="step-num" data-n="13"></div><div class="step-content"><div class="step-title">Conduct lessons learned</div><div class="step-desc">What controls would have prevented or detected this earlier?</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Describe how the attacker got in and what detection gaps existed. The AI will suggest specific security controls (technical and procedural) that would have prevented or detected this incident sooner.</p><button class="ai-prompt-btn" onclick="qp('lessons')">Generate lessons learned →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-13" onclick="toggleStep(13)">
+        <div class="step-header"><div class="step-num" data-n="14"></div><div class="step-content"><div class="step-title">Lab complete — restore and close</div><div class="step-desc">Revert SIFT to clean snapshot, file the report</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ Memory image acquired and analyzed with Volatility<br>✅ Processes, connections, and persistence mechanisms documented<br>✅ Attack timeline reconstructed<br>✅ Containment playbook generated<br>✅ IOCs extracted and formatted<br>✅ ATT&CK mapping completed<br>✅ Executive report drafted<br>✅ Lessons learned documented</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L09 — Cloud Security AI Monitoring</h4><p>Apply IR skills to cloud environments — detect privilege escalation in AWS CloudTrail logs.</p><a href="lab-cloud.html">Start L09 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L08 — IR Orchestration Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Ransomware incident response using SIFT Workstation and Volatility. Evidence collection, memory forensics, attack timeline reconstruction, and executive reporting.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">IR Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('triage')">Triage Processes</button>
+      <button class="quick-btn" onclick="qp('persist')">ID Persistence</button>
+      <button class="quick-btn" onclick="qp('timeline')">Build Timeline</button>
+      <button class="quick-btn" onclick="qp('playbook')">IR Playbook</button>
+      <button class="quick-btn" onclick="qp('ioc')">Extract IOCs</button>
+      <button class="quick-btn" onclick="qp('attck')">ATT&CK Map</button>
+      <button class="quick-btn" onclick="qp('report')">Write Report</button>
+      <button class="quick-btn" onclick="qp('lessons')">Lessons Learned</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste Volatility output, log data, or ask for IR guidance..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L08', totalSteps: 14, modeLabel: 'IR Orchestration Mode',
+  welcomeMsg: "IR clock is running. I'm your AI incident response analyst for Lab L08. I can:\n- Triage Volatility output for suspicious processes and C2\n- Identify persistence mechanisms and map to ATT&CK\n- Reconstruct attack timelines\n- Generate prioritized containment playbooks\n- Extract and format IOCs for SIEM/EDR\n- Draft executive incident reports\n\nStart with the memory image triage and paste your findings.",
+  systemPrompt: `You are a senior incident response analyst and forensics expert helping a student work through Lab L08: AI Incident Response Automation using SIFT Workstation and Volatility.
+
+Help with: interpreting Volatility output (pslist, pstree, netscan, malfind, cmdline), identifying suspicious processes and C2 connections, recognizing persistence mechanisms (Run keys, services, scheduled tasks), reconstructing attack timelines, generating NIST-aligned IR playbooks, extracting and formatting IOCs (STIX 2.1), mapping behaviors to MITRE ATT&CK, and writing professional incident reports.
+
+Be decisive and practical — in IR, speed matters. When you see suspicious indicators, flag them immediately and suggest specific next analysis steps.`,
+  quickPrompts: {
+    triage: "Here is my Volatility pslist and netscan output from the compromised system:\n\n[PASTE OUTPUT]\n\nPlease: 1) Flag any suspicious processes (unusual parents, random names, wrong paths), 2) Identify active C2 connections, 3) Suggest immediate next analysis steps.",
+    persist: "Here is my Volatility output for Run keys, services, and cmdline:\n\n[PASTE OUTPUT]\n\nPlease identify all persistence mechanisms, map each to ATT&CK technique IDs, and provide specific commands to enumerate and remove each one.",
+    timeline: "Here is my timeline data and filesystem artifacts:\n\n[PASTE DATA]\n\nPlease reconstruct the attack timeline: when did initial access occur, what happened next, when did ransomware execute, what was the dwell time?",
+    playbook: "Based on my investigation findings:\n- Entry point: [DESCRIBE]\n- Persistence: [LIST]\n- C2: [LIST]\n- Affected systems: [LIST]\n\nPlease generate a prioritized containment and eradication playbook with specific commands for each step.",
+    ioc: "Please extract all IOCs from my investigation and format them as a STIX 2.1 JSON bundle:\n\nHashes: [LIST]\nIPs: [LIST]\nDomains: [LIST]\nRegistry keys: [LIST]\nFile paths: [LIST]",
+    attck: "Here are all the attacker behaviors I observed:\n\n[LIST BEHAVIORS]\n\nPlease map each to MITRE ATT&CK techniques with IDs, identify the full attack chain (tactics used), and suggest one specific detection for each technique.",
+    report: "Please write a professional incident report for:\nIncident: Ransomware on FINANCE-WS-01\nDate: [DATE]\nAffected systems: [LIST]\nAttack timeline: [SUMMARY]\nTTPs: [LIST]\nBusiness impact: [DESCRIBE]\nActions taken: [LIST]\n\nInclude: Executive Summary, Technical Analysis, IOC Table, ATT&CK mapping, and Recommendations.",
+    lessons: "Based on this incident, the attacker gained access via [METHOD] and had [X] days of dwell time. The following detection gaps existed: [LIST].\n\nPlease recommend specific security controls (technical, process, and people) that would have prevented or detected this incident sooner. Prioritize by ROI."
+  }
+});
+</script>
+</body>
+</html>

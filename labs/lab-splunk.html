@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L02: AI-Powered SIEM (Splunk) — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="labs.html">← All Labs</a><a href="lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="labs.html">Labs</a> › <a href="labs.html">Detection</a> › L02</div>
+    <div class="lab-num-badge">LAB L02 · DETECTION ENGINEERING · INTERMEDIATE</div>
+    <h1>AI-Powered <em>SIEM with Splunk</em></h1>
+    <p>Install Splunk Free, ingest real security logs, write SPL detection queries, build dashboards, and use AI to write correlation rules that automate threat detection.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Kali Linux or Host Machine</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Splunk Free · SPL · Python</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI Query Builder</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-teal">
+    <div class="scenario-label">📊 Lab Scenario</div>
+    <p>Your organization's SIEM is producing thousands of raw alerts per day with no prioritization. You've been asked to build ML-based correlation rules that reduce noise and surface real threats. You'll use Splunk Free with sample security logs to build detection logic, then use AI to write and refine SPL queries.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Install & Configure Splunk</div><div class="phase-desc">Get Splunk Free running and ingest sample security logs</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Download and install Splunk Free</div><div class="step-desc">Free tier supports 500MB/day — more than enough for labs</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Download from <strong>splunk.com/en_us/download/splunk-enterprise.html</strong> (requires free account). Install on your Kali VM or directly on your Windows host.</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Linux install</span><br><span class="k">wget -O splunk.deb 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-deb.deb'</span><br><span class="k">sudo dpkg -i splunk.deb</span><br><span class="k">sudo /opt/splunk/bin/splunk start --accept-license</span><br><span class="c"># Then navigate to http://localhost:8000</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Download the Boss of the SOC (BOTS) sample dataset</div><div class="step-desc">BOTS is a free, realistic security dataset used by SOC analysts worldwide</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">The BOTS dataset contains real attack logs: web attacks, malware, AD attacks, and more. Download from GitHub:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">git clone https://github.com/splunk/botsv3.git</span><br><span class="c"># Upload the data via Splunk UI:</span><br><span class="c"># Settings → Add Data → Upload → select botsv3 files</span><br><span class="c"># Or use the Splunk Add-on for BOTS from Splunkbase (free)</span></div></div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>Alternatively, generate your own logs by running attacks against Metasploitable from Kali while logging with rsyslog or Windows Event Forwarding.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Verify data is searchable</div><div class="step-desc">Confirm Splunk has indexed your logs before building detections</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># In Splunk Search (http://localhost:8000/en-US/app/search/search)</span><br><span class="k">index=* | head 20</span>                        <span class="c"># Show first 20 events</span><br><span class="k">index=* | stats count by sourcetype</span>       <span class="c"># List all sourcetypes</span><br><span class="k">index=* | stats count by index</span>            <span class="c"># List all indexes with counts</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Threat Hunting with SPL</div><div class="phase-desc">Write SPL queries to detect real attack patterns</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Detect brute force attacks</div><div class="step-desc">Find authentication failures indicating credential stuffing</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Detect brute force: 10+ failed logins from same IP in 5 min</span><br><span class="k">index=* (EventCode=4625 OR "authentication failure" OR "Invalid user")</span><br><span class="k">| bucket _time span=5m</span><br><span class="k">| stats count by src_ip, user, _time</span><br><span class="k">| where count > 10</span><br><span class="k">| sort -count</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your query results. The AI will identify the source IPs, explain the attack pattern, and suggest SPL refinements to reduce false positives.</p><button class="ai-prompt-btn" onclick="qp('brute')">Ask AI to refine this detection →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Detect lateral movement</div><div class="step-desc">Find internal hosts making unusual connections to other hosts</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Lateral movement: internal IPs connecting to multiple hosts</span><br><span class="k">index=* sourcetype=syslog OR sourcetype=firewall</span><br><span class="k">| where src_ip!="0.0.0.0" AND match(src_ip,"^192\.168\.")</span><br><span class="k">| stats dc(dest_ip) as unique_dests, values(dest_port) as ports by src_ip</span><br><span class="k">| where unique_dests > 5</span><br><span class="k">| sort -unique_dests</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Detect DNS tunneling</div><div class="step-desc">High-volume or long DNS queries can indicate C2 communication</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># DNS tunneling indicators: long subdomain queries or high frequency</span><br><span class="k">index=* sourcetype=dns OR sourcetype="stream:dns"</span><br><span class="k">| eval query_length=len(query)</span><br><span class="k">| where query_length > 50</span><br><span class="k">| stats count, avg(query_length) as avg_len by src, dest, query</span><br><span class="k">| sort -count</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Dashboards & Alerts</div><div class="phase-desc">Turn queries into automated alerts and security dashboards</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Create a SOC security dashboard</div><div class="step-desc">Visualize key security metrics in one view</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Splunk: <strong>Dashboards → Create New Dashboard → Classic Dashboards</strong>. Add panels using your SPL queries. Recommended panels:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Panel 1: Failed logins over time (time chart)</span><br><span class="k">index=* EventCode=4625 | timechart count span=1h</span><br><br><span class="c"># Panel 2: Top attacking IPs (bar chart)</span><br><span class="k">index=* EventCode=4625 | stats count by src_ip | sort -count | head 10</span><br><br><span class="c"># Panel 3: Geographic source map (choropleth)</span><br><span class="k">index=* | iplocation src_ip | geostats count by Country</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Set up a real-time alert</div><div class="step-desc">Trigger notifications when brute force threshold is exceeded</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">From your brute force search: <strong>Save As → Alert</strong>. Configure: Schedule = Real-time, Trigger when = Number of results &gt; 0, Action = Send email or webhook.</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Tell the AI what alert you're building and how many false positives you're seeing. It will suggest threshold tuning, exclusion lists, and risk-based scoring to reduce noise.</p><button class="ai-prompt-btn" onclick="qp('alert')">Ask AI to tune alert thresholds →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — AI-Written Detection Rules</div><div class="phase-desc">Use AI to generate advanced SPL correlations you couldn't easily write manually</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">AI generates composite attack detection</div><div class="step-desc">Multi-stage detections that correlate events across different log sources</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — SPL Generation</div><p>Describe the attack scenario (e.g., "brute force → successful login → new user created → data exfiltration within 30 minutes"). The AI will write a correlated SPL query that detects the full attack chain across multiple log sources.</p><button class="ai-prompt-btn" onclick="qp('chain')">Ask AI to write attack chain detection →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Implement Splunk MLTK anomaly detection</div><div class="step-desc">Use machine learning to baseline normal behavior and flag deviations</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Install Splunk MLTK (free from Splunkbase)</span><br><span class="c"># Then use fit/apply commands for anomaly detection:</span><br><span class="k">index=* sourcetype=access_combined</span><br><span class="k">| timechart span=1h count as requests</span><br><span class="k">| fit DensityFunction requests by date_hour dist=auto into traffic_model</span><br><span class="k">| eval isAnomaly=if(BoundaryRanges=="[-Inf, Inf]",0,1)</span><br><span class="k">| where isAnomaly=1</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Export detections as Sigma rules</div><div class="step-desc">Convert your Splunk detections to vendor-neutral Sigma format</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your most effective SPL detection query. The AI will convert it to a Sigma rule in YAML format that works with Elastic, QRadar, Microsoft Sentinel, and other SIEMs.</p><button class="ai-prompt-btn" onclick="qp('sigma')">Convert SPL to Sigma rule →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — document your detection library</div><div class="step-desc">Save all queries as a detection runbook</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ Splunk Free installed and ingesting logs<br>✅ Brute force, lateral movement, and DNS tunneling detections written<br>✅ Dashboard built with key security panels<br>✅ Real-time alert configured<br>✅ At least one AI-generated composite detection<br>✅ Sigma rule exported from best detection</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L03 — Static Malware Analysis with AI</h4><p>Take the suspicious file flagged by your SIEM and perform a full static analysis.</p><a href="../lab-malware.html">Start L03 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L02 — SIEM Detection Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Splunk SIEM — writing SPL detection queries, building dashboards, and generating correlation rules for brute force, lateral movement, and DNS tunneling.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('spl')">Write SPL Query</button>
+      <button class="quick-btn" onclick="qp('brute')">Tune Brute Force</button>
+      <button class="quick-btn" onclick="qp('alert')">Tune Alert</button>
+      <button class="quick-btn" onclick="qp('chain')">Attack Chain</button>
+      <button class="quick-btn" onclick="qp('sigma')">To Sigma</button>
+      <button class="quick-btn" onclick="qp('explain')">Explain SPL</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste SPL queries, results, or ask for help writing detections..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L02', totalSteps: 12, modeLabel: 'SIEM Detection Mode',
+  welcomeMsg: "I'm your SIEM analyst for Lab L02. I can:\n- Write and optimize SPL queries\n- Explain Splunk search commands\n- Build multi-stage attack correlation rules\n- Convert SPL to Sigma format\n- Tune alert thresholds to reduce false positives\n\nPaste any SPL query or results for analysis.",
+  systemPrompt: `You are a senior SOC analyst and Splunk expert helping a student with Lab L02: AI-Powered SIEM using Splunk. Help with: writing and optimizing SPL (Splunk Processing Language) queries, building dashboards, creating correlation rules for brute force/lateral movement/DNS tunneling/exfiltration, converting SPL to Sigma YAML rules, tuning alert thresholds, and using Splunk MLTK for anomaly detection. Be practical — generate working SPL code that can be copy-pasted. Explain what each command does.`,
+  quickPrompts: {
+    spl: "I need a Splunk SPL query to detect the following attack pattern:\n\n[DESCRIBE THE ATTACK]\n\nPlease write the full SPL query with comments explaining each pipe command.",
+    brute: "My brute force detection query is returning too many false positives. Here are the results:\n\n[PASTE RESULTS]\n\nPlease suggest threshold tuning, exclusion lists, and SPL refinements.",
+    alert: "I'm setting up a Splunk alert for the following detection:\n\n[DESCRIBE DETECTION]\n\nWhat schedule, trigger conditions, and throttling settings should I use to minimize false positives while not missing real attacks?",
+    chain: "Please write a Splunk SPL query that detects this multi-stage attack chain:\n1. Multiple failed logins from same IP\n2. Followed by successful login within 10 minutes\n3. Followed by new account creation or privilege change\n4. Followed by large data transfer\n\nCorrelate across Windows Event Logs and network logs.",
+    sigma: "Please convert this Splunk SPL query to a Sigma rule in YAML format:\n\n[PASTE SPL QUERY]\n\nMake it compatible with Elastic, Sentinel, and QRadar.",
+    explain: "Please explain what this Splunk SPL query does, step by step:\n\n[PASTE SPL QUERY]"
+  }
+});
+</script>
+</body>
+</html>

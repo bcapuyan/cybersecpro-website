@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L13: Memory Forensics with Volatility — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="labs.html">← All Labs</a><a href="lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span><div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span><span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="labs.html">Labs</a> › <a href="labs.html">Forensics</a> › L13</div>
+    <div class="lab-num-badge">LAB L13 · DIGITAL FORENSICS · INTERMEDIATE</div>
+    <h1>Memory Forensics <em>with Volatility</em></h1>
+    <p>Analyze a Windows memory dump using Volatility 3 on SIFT Workstation. Extract running processes, network connections, injected shellcode, registry artifacts, and use AI to identify malware families and map to ATT&CK.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>SIFT Workstation</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Volatility 3 · Python · vol.py</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI Forensics Analysis</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-teal">
+    <div class="scenario-label">🔬 Lab Scenario</div>
+    <p>A workstation was behaving strangely — high CPU, unusual outbound connections. The endpoint was isolated and a memory dump taken before shutdown. You have the raw memory image and need to determine what was running, what network connections were active, and whether malware was present — all without booting the system.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Setup & Memory Acquisition</div><div class="phase-desc">Get your memory image and verify Volatility is ready</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Install Volatility 3 and download a practice memory image</div><div class="step-desc">Volatility 3 works on Python 3 and doesn't require profile selection</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Volatility 3 is pre-installed on SIFT, or install manually:</span><br><span class="k">pip3 install volatility3</span><br><br><span class="c"># Download practice images from volatility's own test suite:</span><br><span class="k">mkdir -p ~/labs/L13 && cd ~/labs/L13</span><br><span class="c"># Option 1: Volatility Foundation sample images</span><br><span class="k">wget "https://downloads.volatilityfoundation.org/security/2014/cridex.raw.gz" -O cridex.raw.gz && gunzip cridex.raw.gz</span><br><span class="c"># Option 2: Digital Corpora (requires registration)</span><br><span class="c"># Option 3: Use a memory dump you created from your own lab VM</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Verify image integrity and identify OS</div><div class="step-desc">Always hash evidence files — chain of custody starts here</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">sha256sum cridex.raw | tee hash_log.txt</span><br><span class="c"># Volatility 3 auto-detects OS — no profile needed</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.info.Info</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Process & Network Analysis</div><div class="phase-desc">Map what was running and what was communicating</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">List processes and build the process tree</div><div class="step-desc">Spot anomalous parents, hidden processes, and masquerading</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">python3 -m volatility3 -f cridex.raw windows.pslist.PsList | tee pslist.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.pstree.PsTree | tee pstree.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.cmdline.CmdLine | tee cmdline.txt</span><br><span class="c"># Look for: svchost without parent services.exe, explorer spawning cmd, random names</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your pslist and pstree output. The AI will flag processes with suspicious parents, unusual names, wrong image paths, or characteristics of known malware families.</p><button class="ai-prompt-btn" onclick="qp('pslist')">Ask AI to analyze processes →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Analyze network connections</div><div class="step-desc">Find active C2 channels and listening backdoor ports</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">python3 -m volatility3 -f cridex.raw windows.netscan.NetScan | tee netscan.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.netstat.NetStat | tee netstat.txt</span><br><span class="c"># Look for: ESTABLISHED connections to external IPs, unusual ports, processes not normally networked</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your netscan output including all external connections. The AI will identify potential C2 IPs, explain why certain process→network combinations are suspicious, and suggest threat intel lookups.</p><button class="ai-prompt-btn" onclick="qp('network')">Ask AI to analyze network connections →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Extract DLLs and loaded modules for a suspicious process</div><div class="step-desc">See exactly what code a process has loaded</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Replace 1484 with the PID of your suspicious process</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.dlllist.DllList --pid 1484 | tee dlllist_1484.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.handles.Handles --pid 1484 | tee handles_1484.txt</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Malware Detection</div><div class="phase-desc">Find injected code, hollowed processes, and rootkit artifacts</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Scan for code injection with malfind</div><div class="step-desc">Malfind identifies memory regions with suspicious characteristics</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Malfind looks for memory regions that are: executable, not backed by a file on disk, and contain code (PE headers or shellcode patterns).</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">python3 -m volatility3 -f cridex.raw windows.malfind.Malfind | tee malfind.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.malfind.Malfind --dump --dump-dir ./dumps/</span><br><span class="c"># Hash the dumps for VirusTotal lookup</span><br><span class="k">md5sum ./dumps/*.dmp 2>/dev/null</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your malfind output (especially the hex dump sections). The AI will identify shellcode patterns, PE artifacts, and known malware injection signatures.</p><button class="ai-prompt-btn" onclick="qp('malfind')">Ask AI to analyze injected code →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Analyze registry artifacts in memory</div><div class="step-desc">Find persistence keys without mounting a disk image</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">python3 -m volatility3 -f cridex.raw windows.registry.hivelist.HiveList | tee hivelist.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.registry.printkey.PrintKey --key "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" | tee run_keys.txt</span><br><span class="k">python3 -m volatility3 -f cridex.raw windows.registry.printkey.PrintKey --key "SYSTEM\CurrentControlSet\Services" | tee services.txt</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Extract strings from a suspicious process memory</div><div class="step-desc">Find URLs, IPs, and configuration data embedded in process memory</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">python3 -m volatility3 -f cridex.raw windows.memmap.Memmap --pid 1484 --dump --dump-dir ./dumps/</span><br><span class="k">strings ./dumps/pid.1484.dmp | grep -iE "(http|ftp|\.exe|\.dll|HKEY|192\.168|10\.|password|cmd\.exe)" | sort -u | tee strings_1484.txt</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste the interesting strings extracted from the suspicious process. The AI will identify C2 domains, configuration data, malware family indicators, and extract actionable IOCs.</p><button class="ai-prompt-btn" onclick="qp('strings')">Ask AI to analyze process strings →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — AI Synthesis & Reporting</div><div class="phase-desc">Compile findings into a forensic analysis report</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Identify the malware family</div><div class="step-desc">Use all gathered evidence to fingerprint the malware</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Malware Identification</div><p>Share: suspicious process names and PIDs, network connections (IPs/domains), strings found in memory, injection artifacts from malfind, and registry persistence keys. The AI will identify the probable malware family and explain the evidence.</p><button class="ai-prompt-btn" onclick="qp('family')">Ask AI to identify malware family →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Map to MITRE ATT&CK</div><div class="step-desc">Document techniques observed for threat intel and detection</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>List all malware behaviors observed (process injection, persistence, C2, credential access). The AI will map each to ATT&CK technique IDs and suggest detection opportunities.</p><button class="ai-prompt-btn" onclick="qp('attck')">Map findings to MITRE ATT&CK →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Generate YARA rule from memory artifacts</div><div class="step-desc">Create a detection rule from the unique strings and patterns you found</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Share the unique strings, byte patterns from malfind, and process characteristics. The AI will write a YARA rule to detect this malware family in memory dumps or on disk.</p><button class="ai-prompt-btn" onclick="qp('yara')">Generate YARA rule from memory artifacts →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — write the forensic analysis report</div><div class="step-desc">Document your methodology and findings</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ Memory image hashed and verified<br>✅ Process list analyzed — suspicious processes flagged<br>✅ Network connections mapped — C2 identified<br>✅ Malfind ran — injected code located<br>✅ Registry persistence keys extracted<br>✅ Process strings analyzed for IOCs<br>✅ Malware family identified<br>✅ ATT&CK mapping completed<br>✅ YARA rule generated</div>
+          <div class="ai-prompt" style="margin-top:12px"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Share all your findings and the AI will draft a complete memory forensics report.</p><button class="ai-prompt-btn" onclick="qp('report')">Draft forensics report →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L14 — Disk Forensics &amp; Timeline Analysis</h4><p>Move from memory to disk — forensic imaging, Autopsy, and super-timeline creation.</p><a href="lab-disk-forensics.html">Start L14 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L13 — Memory Forensics Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Memory forensics using Volatility 3 on SIFT Workstation. Analyzing Windows memory images for malware, C2, injection, and persistence artifacts.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Forensics Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('pslist')">Analyze Processes</button>
+      <button class="quick-btn" onclick="qp('network')">Analyze Network</button>
+      <button class="quick-btn" onclick="qp('malfind')">Analyze Injection</button>
+      <button class="quick-btn" onclick="qp('strings')">Analyze Strings</button>
+      <button class="quick-btn" onclick="qp('family')">ID Malware Family</button>
+      <button class="quick-btn" onclick="qp('attck')">ATT&CK Map</button>
+      <button class="quick-btn" onclick="qp('yara')">Write YARA</button>
+      <button class="quick-btn" onclick="qp('report')">Write Report</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste Volatility output, strings, or hex dumps for analysis..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L13', totalSteps: 12, modeLabel: 'Memory Forensics Mode',
+  welcomeMsg: "I'm your forensics analyst for Lab L13. I specialize in Volatility 3 output interpretation. Paste any plugin output and I'll:\n- Flag suspicious processes and their parents\n- Identify C2 connections\n- Detect process injection signatures\n- Identify malware families from artifacts\n- Write YARA rules from memory patterns\n- Draft forensics reports\n\nStart with your pslist and netscan output.",
+  systemPrompt: `You are a senior digital forensics analyst specializing in Windows memory forensics with Volatility 3. Help with: interpreting all Volatility 3 plugins (pslist, pstree, netscan, malfind, cmdline, dlllist, handles, hivelist, printkey, memmap), identifying suspicious processes (wrong parent, unusual paths, random names, masquerading), finding C2 connections (process→external IP correlations), detecting code injection (malfind hex patterns, PE artifacts, shellcode), extracting registry persistence artifacts, identifying malware families from behavioral indicators, writing YARA rules, mapping to MITRE ATT&CK, and drafting forensic reports.
+
+Be specific about which Volatility plugin fields matter most and why. When identifying malware, cite observable evidence. When writing YARA rules, make them precise to avoid false positives.`,
+  quickPrompts: {
+    pslist: "Here is my Volatility 3 pslist and pstree output:\n\n[PASTE OUTPUT]\n\nPlease: 1) Flag any suspicious processes with unusual parents or image paths, 2) Identify masquerading (e.g., svchost without services.exe parent), 3) Note any processes that shouldn't be running, 4) Suggest which PIDs to investigate further.",
+    network: "Here is my Volatility 3 netscan output:\n\n[PASTE OUTPUT]\n\nPlease: 1) Identify all external IP connections, 2) Flag any process→IP combinations that are suspicious, 3) Note any listening ports that indicate backdoors, 4) Suggest threat intel lookups for flagged IPs.",
+    malfind: "Here is my Volatility 3 malfind output including hex dumps:\n\n[PASTE OUTPUT]\n\nPlease: 1) Identify any shellcode or PE injection artifacts in the hex dumps, 2) Explain what each MZ header or suspicious memory region indicates, 3) Suggest which dumps to submit to VirusTotal.",
+    strings: "Here are the strings I extracted from the suspicious process memory:\n\n[PASTE STRINGS]\n\nPlease extract all IOCs (URLs, IPs, domains, file paths, registry keys), identify what they tell us about malware behavior, and flag anything that indicates the malware family.",
+    family: "Here is a summary of all my findings from the memory analysis:\n- Suspicious processes: [LIST]\n- Network connections: [LIST]\n- Injection artifacts: [DESCRIBE]\n- Registry persistence: [LIST]\n- Strings found: [PASTE KEY STRINGS]\n\nPlease identify the probable malware family and explain what evidence supports your conclusion.",
+    attck: "Based on my memory forensics findings, the malware exhibited these behaviors:\n[LIST ALL BEHAVIORS]\n\nPlease map each behavior to MITRE ATT&CK technique IDs and suggest specific detections for each.",
+    yara: "Please write a YARA rule to detect this malware based on:\n- Unique strings: [LIST]\n- PE characteristics: [DESCRIBE]\n- Injection pattern: [DESCRIBE]\n\nMake it specific enough to avoid false positives.",
+    report: "Please draft a memory forensics analysis report:\nCase: [CASE NAME]\nImage: [FILENAME AND HASH]\nKey findings: [SUMMARIZE]\nMalware identified: [FAMILY]\nIOCs: [LIST]\nATT&CK techniques: [LIST]\n\nInclude: Executive Summary, Methodology, Detailed Findings, IOC Table, and Recommendations."
+  }
+});
+</script>
+</body>
+</html>

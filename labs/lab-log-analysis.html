@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L17: Log Analysis &amp; IOC Extraction | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-progress-bar">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 11 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-guide">
+
+    <div class="lab-header"><div class="lab-meta">
+      <span class="lab-badge badge-medium">Intermediate</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Log Analysis</span>
+    </div>
+    <h1>L17: Log Analysis &amp; Automated IOC Extraction</h1>
+    <p>Parse Windows EVTX, Linux syslog, Apache access logs, and firewall logs using Python on SIFT Workstation. Automate IOC extraction with regex and NLP, correlate events across log sources, and feed results into your Splunk detection pipeline.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">Python 3</span>
+      <span class="tool-tag">python-evtx</span>
+      <span class="tool-tag">Splunk</span>
+      <span class="tool-tag">SIFT Workstation</span>
+      <span class="tool-tag">pandas</span>
+      <span class="tool-tag">regex</span>
+    </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Log Collection &amp; Parsing</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Set up log analysis environment on SIFT</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">pip3 install python-evtx pandas matplotlib ipaddress
+
+mkdir ~/log-lab && cd ~/log-lab
+mkdir logs iocs reports
+
+# Generate synthetic log data for practice
+cat > generate_logs.py << 'EOF'
+import random, datetime, ipaddress
+
+# --- Windows Security EVTX (simulated CSV) ---
+users = ['alice','bob','svc_backup','SYSTEM','admin']
+events = []
+base = datetime.datetime(2024, 3, 1, 8, 0, 0)
+
+for i in range(2000):
+    t = base + datetime.timedelta(seconds=random.randint(0, 86400))
+    user = random.choice(users)
+    eid = random.choices([4624,4625,4672,4688,4648,4698,7045,4104],
+                          weights=[50,10,5,20,3,2,1,1])[0]
+    events.append(f"{t.isoformat()}|{eid}|{user}|WS{random.randint(1,20):02d}|"
+                  f"192.168.56.{random.randint(10,50)}\n")
+
+# Inject malicious events
+for i in range(30):
+    t = datetime.datetime(2024, 3, 1, 22, random.randint(0,59), random.randint(0,59))
+    events.append(f"{t.isoformat()}|4688|admin|WS01|192.168.56.10|"
+                  f"cmd.exe /c powershell -enc [BASE64PAYLOAD]\n")
+    events.append(f"{t.isoformat()}|4698|admin|WS01|192.168.56.10|"
+                  f"New scheduled task: WindowsUpdate\n")
+
+with open('logs/windows_events.txt', 'w') as f:
+    f.writelines(random.sample(events, len(events)))
+
+# --- Apache access log ---
+attacks = [
+    'GET /wp-admin/admin-ajax.php?action=revslider_show_image&img=../wp-config.php',
+    'GET /.env HTTP/1.1',
+    'GET /etc/passwd HTTP/1.1',
+    'POST /index.php?s=/Index/\\think\\app/invokefunction&function=call_user_func_array',
+]
+with open('logs/apache_access.log', 'w') as f:
+    for i in range(500):
+        t = base + datetime.timedelta(seconds=random.randint(0,86400))
+        ip = f"192.168.1.{random.randint(1,254)}"
+        status = random.choices([200,304,404,500],[60,20,15,5])[0]
+        f.write(f'{ip} - - [{t.strftime("%d/%b/%Y:%H:%M:%S +0000")}] '
+                f'"GET /page{random.randint(1,20)}.html HTTP/1.1" {status} {random.randint(500,50000)}\n')
+    # Inject attacks
+    attack_ip = "185.234.219.44"
+    for attack in attacks:
+        f.write(f'{attack_ip} - - [{base.strftime("%d/%b/%Y:%H:%M:%S +0000")}] '
+                f'"{attack}" 200 512\n')
+
+print("Synthetic logs generated in logs/")
+EOF
+python3 generate_logs.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Parse Windows EVTX files with python-evtx</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/log-lab/parse_evtx.py << 'EOF'
+import Evtx.Evtx as evtx
+import Evtx.Views as e_views
+from lxml import etree
+import pandas as pd, json, glob
+
+def parse_evtx_file(evtx_path):
+    records = []
+    with evtx.Evtx(evtx_path) as log:
+        for record in log.records():
+            try:
+                xml = etree.fromstring(record.xml())
+                ns = {'ns': 'http://schemas.microsoft.com/win/2004/08/events/event'}
+
+                system = xml.find('ns:System', ns)
+                eid = system.findtext('ns:EventID', namespaces=ns)
+                time_created = system.find('ns:TimeCreated', ns)
+                time = time_created.get('SystemTime') if time_created is not None else ''
+                computer = system.findtext('ns:Computer', namespaces=ns, default='')
+
+                event_data = xml.find('ns:EventData', ns)
+                data = {}
+                if event_data is not None:
+                    for item in event_data:
+                        name = item.get('Name', f'Data_{len(data)}')
+                        data[name] = item.text or ''
+
+                records.append({
+                    'time': time,
+                    'event_id': eid,
+                    'computer': computer,
+                    'subject_user': data.get('SubjectUserName', ''),
+                    'target_user': data.get('TargetUserName', ''),
+                    'logon_type': data.get('LogonType', ''),
+                    'process_name': data.get('NewProcessName', ''),
+                    'command_line': data.get('CommandLine', ''),
+                    'source_ip': data.get('IpAddress', data.get('WorkstationName', '')),
+                    'raw_data': json.dumps(data),
+                })
+            except Exception:
+                continue
+    return pd.DataFrame(records)
+
+# Process all EVTX files
+evtx_files = glob.glob('logs/*.evtx')
+if not evtx_files:
+    print("No EVTX files found. Using synthetic log data instead.")
+    # Parse the synthetic text-based log
+    import io
+    df = pd.read_csv('logs/windows_events.txt', sep='|',
+                     names=['time','event_id','user','workstation','source_ip'],
+                     on_bad_lines='skip')
+else:
+    dfs = [parse_evtx_file(f) for f in evtx_files]
+    df = pd.concat(dfs, ignore_index=True)
+
+df['time'] = pd.to_datetime(df.get('time', df.get('time')), errors='coerce')
+print(f"Parsed {len(df)} events")
+print(df.groupby('event_id').size().sort_values(ascending=False).head())
+df.to_csv('logs/parsed_events.csv', index=False)
+EOF
+python3 parse_evtx.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: IOC Extraction &amp; Pattern Recognition</div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Build regex-based IOC extractor</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/log-lab/ioc_extractor.py << 'EOF'
+import re, json
+from collections import defaultdict
+
+# IOC regex patterns
+PATTERNS = {
+    'ipv4': re.compile(
+        r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+        r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'),
+    'ipv6': re.compile(
+        r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b'),
+    'domain': re.compile(
+        r'\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+'
+        r'(?:com|net|org|io|ru|cn|tk|ml|info|biz|xyz|top|pw|ga|cf|gq)\b'),
+    'url': re.compile(
+        r'https?://[^\s"\'<>\]\)]+'),
+    'md5': re.compile(r'\b[a-fA-F0-9]{32}\b'),
+    'sha256': re.compile(r'\b[a-fA-F0-9]{64}\b'),
+    'email': re.compile(
+        r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),
+    'base64_cmd': re.compile(
+        r'-enc(?:odedcommand)?\s+([A-Za-z0-9+/]{20,}={0,2})', re.IGNORECASE),
+    'cve': re.compile(r'CVE-\d{4}-\d{4,7}', re.IGNORECASE),
+    'mitre': re.compile(r'T\d{4}(?:\.\d{3})?'),
+}
+
+# Private IP ranges to filter
+import ipaddress
+PRIVATE_RANGES = [
+    ipaddress.ip_network('10.0.0.0/8'),
+    ipaddress.ip_network('172.16.0.0/12'),
+    ipaddress.ip_network('192.168.0.0/16'),
+    ipaddress.ip_network('127.0.0.0/8'),
+]
+
+def is_private(ip):
+    try:
+        addr = ipaddress.ip_address(ip)
+        return any(addr in net for net in PRIVATE_RANGES)
+    except: return False
+
+def extract_iocs(text):
+    found = defaultdict(set)
+    for ioc_type, pattern in PATTERNS.items():
+        for match in pattern.finditer(text):
+            value = match.group(0)
+            if ioc_type == 'ipv4' and is_private(value):
+                continue  # Filter private IPs
+            if ioc_type == 'domain' and '.' not in value:
+                continue
+            found[ioc_type].add(value)
+    return {k: list(v) for k, v in found.items() if v}
+
+# Process log files
+import glob, os
+all_iocs = defaultdict(set)
+
+for log_file in glob.glob('logs/*.log') + glob.glob('logs/*.txt') + glob.glob('logs/*.csv'):
+    with open(log_file, errors='ignore') as f:
+        content = f.read()
+    iocs = extract_iocs(content)
+    print(f"\n{os.path.basename(log_file)}:")
+    for ioc_type, values in iocs.items():
+        print(f"  {ioc_type}: {len(values)} found")
+        for v in list(values)[:3]:
+            print(f"    {v}")
+        all_iocs[ioc_type].update(values)
+
+# Save results
+with open('iocs/extracted_iocs.json', 'w') as f:
+    json.dump({k: list(v) for k, v in all_iocs.items()}, f, indent=2)
+
+print(f"\nTotal unique IOCs extracted:")
+for t, v in all_iocs.items():
+    print(f"  {t}: {len(v)}")
+EOF
+python3 ioc_extractor.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Decode PowerShell encoded commands</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/log-lab/decode_powershell.py << 'EOF'
+import base64, re, json
+
+def decode_ps_encoded(encoded_str):
+    """Decode PowerShell -EncodedCommand (UTF-16LE base64)."""
+    # Add padding if needed
+    padded = encoded_str + '=' * (4 - len(encoded_str) % 4)
+    try:
+        decoded = base64.b64decode(padded).decode('utf-16-le')
+        return decoded
+    except Exception as e:
+        # Try standard base64
+        try:
+            return base64.b64decode(padded).decode('utf-8', errors='replace')
+        except:
+            return f"[Decode error: {e}]"
+
+def analyze_powershell_line(line):
+    """Analyze a PowerShell command for suspicious patterns."""
+    line_lower = line.lower()
+    indicators = []
+
+    # Suspicious patterns
+    if re.search(r'-enc(?:odedcommand)?', line_lower):
+        indicators.append("EncodedCommand — obfuscation technique")
+    if 'iex' in line_lower or 'invoke-expression' in line_lower:
+        indicators.append("IEX/Invoke-Expression — code injection")
+    if 'downloadstring' in line_lower or 'downloadfile' in line_lower:
+        indicators.append("Download from internet")
+    if 'net.webclient' in line_lower or 'invoke-webrequest' in line_lower:
+        indicators.append("Network download client")
+    if 'bypass' in line_lower:
+        indicators.append("ExecutionPolicy Bypass")
+    if 'hidden' in line_lower:
+        indicators.append("Hidden window")
+    if 'mimikatz' in line_lower:
+        indicators.append("Mimikatz reference")
+    if re.search(r'\$env:temp', line_lower):
+        indicators.append("Writing to TEMP directory")
+
+    # Extract and decode encoded segments
+    enc_matches = re.findall(r'-enc(?:odedcommand)?\s+([A-Za-z0-9+/]{20,}={0,2})',
+                              line, re.IGNORECASE)
+    decoded_cmds = []
+    for match in enc_matches:
+        decoded = decode_ps_encoded(match)
+        decoded_cmds.append(decoded)
+        indicators.extend(analyze_powershell_line(decoded))  # Recursive!
+
+    return indicators, decoded_cmds
+
+# Read logs and find PowerShell
+with open('logs/windows_events.txt', errors='ignore') as f:
+    content = f.read()
+
+ps_lines = [line for line in content.split('\n') if 'powershell' in line.lower()]
+print(f"Found {len(ps_lines)} PowerShell-related log entries\n")
+
+for line in ps_lines[:10]:
+    indicators, decoded = analyze_powershell_line(line)
+    if indicators:
+        print(f"[!] Suspicious PowerShell:")
+        print(f"    {line[:120]}")
+        for ind in indicators:
+            print(f"    → {ind}")
+        for d in decoded:
+            print(f"    DECODED: {d[:200]}")
+        print()
+EOF
+python3 decode_powershell.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Analyze Apache logs for web attack patterns</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/log-lab/apache_analyzer.py << 'EOF'
+import re, pandas as pd
+from collections import Counter
+
+APACHE_PATTERN = re.compile(
+    r'(?P<ip>\d+\.\d+\.\d+\.\d+) .+ \[(?P<time>[^\]]+)\] '
+    r'"(?P<method>\w+) (?P<uri>[^ ]+) HTTP/[\d.]+" '
+    r'(?P<status>\d+) (?P<size>\d+)')
+
+ATTACK_PATTERNS = {
+    'Path Traversal': re.compile(r'\.\./|%2e%2e|%252e%252e', re.IGNORECASE),
+    'SQL Injection': re.compile(r"union.*select|' or '1'='1|drop table", re.IGNORECASE),
+    'XSS': re.compile(r'<script|javascript:|onerror=|onload=', re.IGNORECASE),
+    'LFI/RFI': re.compile(r'/etc/passwd|/etc/shadow|/proc/self', re.IGNORECASE),
+    'Env File Probe': re.compile(r'/\.env|/\.git/|/\.htaccess|wp-config\.php', re.IGNORECASE),
+    'Webshell': re.compile(r'cmd=|exec=|passthru|shell_exec|system\(', re.IGNORECASE),
+    'Scanner': re.compile(r'nikto|sqlmap|nessus|masscan|dirbuster|gobuster', re.IGNORECASE),
+}
+
+records = []
+with open('logs/apache_access.log') as f:
+    for line in f:
+        m = APACHE_PATTERN.match(line)
+        if m:
+            r = m.groupdict()
+            r['status'] = int(r['status'])
+            r['size'] = int(r['size'])
+            # Check for attacks
+            attacks = []
+            for name, pattern in ATTACK_PATTERNS.items():
+                if pattern.search(r['uri']): attacks.append(name)
+            r['attacks'] = attacks
+            records.append(r)
+
+df = pd.DataFrame(records)
+print(f"Parsed {len(df)} Apache access log entries")
+
+# Attack summary
+attacked = df[df['attacks'].apply(len) > 0]
+print(f"\nAttack attempts: {len(attacked)} requests from {attacked['ip'].nunique()} IPs")
+print("\nTop attacking IPs:")
+print(attacked['ip'].value_counts().head(10))
+
+print("\nAttack types detected:")
+all_attacks = [a for attacks in attacked['attacks'] for a in attacks]
+for attack, count in Counter(all_attacks).most_common():
+    print(f"  {attack}: {count}")
+
+# Save attacker IPs as IOCs
+attacker_ips = attacked['ip'].unique()
+with open('iocs/web_attacker_ips.txt', 'w') as f:
+    for ip in attacker_ips:
+        f.write(f"{ip}\n")
+print(f"\n{len(attacker_ips)} attacker IPs saved to iocs/web_attacker_ips.txt")
+EOF
+python3 apache_analyzer.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Cross-Source Correlation</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Correlate IOCs across log sources</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/log-lab/correlate_logs.py << 'EOF'
+import pandas as pd, json
+from datetime import datetime, timedelta
+
+# Load all parsed log sources
+windows_df = pd.read_csv('logs/parsed_events.csv', on_bad_lines='skip')
+windows_df['time'] = pd.to_datetime(windows_df.get('time',''), errors='coerce')
+windows_df['source'] = 'Windows'
+
+# Load extracted IOCs
+with open('iocs/extracted_iocs.json') as f:
+    iocs = json.load(f)
+
+malicious_ips = set(iocs.get('ipv4', []))
+
+# Cross-source correlation: find IPs that appear in BOTH Apache attacks AND Windows events
+web_attacker_ips = set()
+try:
+    with open('iocs/web_attacker_ips.txt') as f:
+        web_attacker_ips = {line.strip() for line in f}
+except FileNotFoundError:
+    pass
+
+# Find Windows events from known-bad IPs
+windows_df_ip_col = None
+for col in ['source_ip', 'IpAddress', 'workstation']:
+    if col in windows_df.columns:
+        windows_df_ip_col = col
+        break
+
+if windows_df_ip_col and web_attacker_ips:
+    correlated = windows_df[windows_df[windows_df_ip_col].isin(web_attacker_ips)]
+    print(f"Windows events from web attacker IPs: {len(correlated)}")
+    if len(correlated) > 0:
+        print("\n[!] Correlation found — web attacker has Windows activity!")
+        print(correlated[['time', windows_df_ip_col, 'event_id',
+                           'user' if 'user' in correlated.columns else windows_df_ip_col
+                           ]].head(10))
+else:
+    print("Correlation: loading synthesized data")
+    print("In production, this would join firewall, web, and endpoint logs by IP")
+
+# Timeline correlation: find suspicious sequences
+suspicious_eids = ['4688', '4698', '4104', '7045']  # Process, scheduled task, PS, service
+if 'event_id' in windows_df.columns:
+    suspicious = windows_df[windows_df['event_id'].astype(str).isin(suspicious_eids)]
+    print(f"\nSuspicious event types: {len(suspicious)}")
+    print(suspicious.groupby('event_id').size())
+EOF
+python3 correlate_logs.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Parse Linux syslog for suspicious authentication</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Analyze /var/log/auth.log for SSH brute force and privilege escalation
+cat > ~/log-lab/syslog_analyzer.py << 'EOF'
+import re, pandas as pd
+from collections import defaultdict
+
+# Parse auth.log
+AUTH_PATTERN = re.compile(
+    r'(?P<month>\w+)\s+(?P<day>\d+)\s+(?P<time>[\d:]+)\s+'
+    r'(?P<host>\S+)\s+(?P<process>[^:]+):\s+(?P<message>.+)')
+
+# Analyze from /var/log/auth.log (local SIFT) or uploaded file
+import os
+auth_file = '/var/log/auth.log' if os.path.exists('/var/log/auth.log') else 'logs/auth.log'
+
+if not os.path.exists(auth_file):
+    # Generate synthetic auth log
+    import datetime, random
+    lines = []
+    base = datetime.datetime(2024, 3, 1)
+    ips = ['192.168.56.10', '185.234.219.44']
+    for i in range(200):
+        t = base + datetime.timedelta(seconds=random.randint(0,3600))
+        ts = t.strftime("%b %d %H:%M:%S")
+        ip = random.choice(ips)
+        user = random.choice(['root','admin','ubuntu','pi','oracle'])
+        if random.random() < 0.8:
+            lines.append(f"{ts} sift sshd[1234]: Failed password for invalid user {user} from {ip} port {random.randint(40000,60000)} ssh2\n")
+        else:
+            lines.append(f"{ts} sift sshd[1234]: Accepted password for {user} from {ip} port {random.randint(40000,60000)} ssh2\n")
+    with open('logs/auth.log', 'w') as f:
+        f.writelines(lines)
+    auth_file = 'logs/auth.log'
+
+failed_attempts = defaultdict(list)
+successful = []
+
+with open(auth_file, errors='ignore') as f:
+    for line in f:
+        m = AUTH_PATTERN.match(line)
+        if not m: continue
+        msg = m.group('message')
+        ip_match = re.search(r'from (\d+\.\d+\.\d+\.\d+)', msg)
+        user_match = re.search(r'for (?:invalid user )?(\S+)', msg)
+        ip = ip_match.group(1) if ip_match else 'unknown'
+        user = user_match.group(1) if user_match else 'unknown'
+
+        if 'Failed password' in msg or 'authentication failure' in msg:
+            failed_attempts[ip].append(user)
+        elif 'Accepted' in msg:
+            successful.append({'ip': ip, 'user': user})
+
+print("SSH Brute Force Analysis:")
+for ip, attempts in sorted(failed_attempts.items(), key=lambda x: -len(x[1])):
+    users = list(set(attempts))
+    print(f"  {ip}: {len(attempts)} failures targeting {users[:5]}")
+    if len(attempts) >= 10:
+        print(f"    [!] BRUTE FORCE DETECTED — MITRE T1110")
+
+print(f"\nSuccessful logins: {len(successful)}")
+for s in successful:
+    print(f"  {s['user']} from {s['ip']}")
+EOF
+python3 syslog_analyzer.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Splunk Integration &amp; Reporting</div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Build Splunk SPL queries for detected patterns</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Splunk SPL query for encoded PowerShell detection
+index=wineventlog EventCode=4688 (CommandLine="*-enc*" OR CommandLine="*-EncodedCommand*")
+| rex field=CommandLine "-enc(?:odedcommand)?\s+(?P<encoded>[A-Za-z0-9+/]{20,}={0,2})"
+| where isnotnull(encoded)
+| eval decoded=base64decode(encoded)
+| table _time, ComputerName, SubjectUserName, CommandLine, decoded
+| sort -_time
+
+# Scheduled task creation (T1053.005)
+index=wineventlog EventCode=4698
+| table _time, ComputerName, SubjectUserName, TaskName, TaskContent
+| sort -_time
+
+# SSH brute force from Linux auth logs
+index=linux_secure "Failed password"
+| rex "from (?P<src_ip>\d+\.\d+\.\d+\.\d+)"
+| stats count as failures by src_ip, _time span=5m
+| where failures >= 10
+| sort -failures
+
+# Apache web attacks
+index=apache_access (uri="*../.*" OR uri="*/.env*" OR uri="*/etc/passwd*" OR uri="*union*select*")
+| rex "(?P<attack_ip>\d+\.\d+\.\d+\.\d+).+\"(?P<method>\w+) (?P<uri>[^ ]+)"
+| stats count by attack_ip, method
+| sort -count</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Export IOCs and generate Sigma detection rules</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/log-lab/sigma_ps_encoded.yml << 'EOF'
+title: PowerShell EncodedCommand Execution
+id: f62b4d71-abda-4c0d-b378-f9f5f5f9cf61
+status: production
+description: Detects PowerShell execution with -EncodedCommand parameter (T1059.001)
+author: CyberSec Pro Academy - L17
+logsource:
+    product: windows
+    category: process_creation
+detection:
+    selection:
+        EventID: 4688
+        NewProcessName|endswith: '\powershell.exe'
+        CommandLine|contains:
+            - '-enc '
+            - '-EncodedCommand '
+            - '-e '
+    filter_legitimate:
+        CommandLine|contains:
+            - 'C:\\Program Files\\PowerShell'
+            - 'Microsoft.Exchange'
+    condition: selection and not filter_legitimate
+falsepositives:
+    - Legitimate software using encoded commands (SCCM, Exchange)
+level: high
+tags:
+    - attack.execution
+    - attack.t1059.001
+    - attack.defense_evasion
+    - attack.t1027
+EOF
+echo "Sigma rule created"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Map all findings to MITRE ATT&amp;CK</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <table>
+            <tr><th>Detection</th><th>Log Source</th><th>ATT&amp;CK Technique</th></tr>
+            <tr><td>Encoded PowerShell</td><td>Windows 4688</td><td>T1059.001 + T1027</td></tr>
+            <tr><td>Scheduled task creation</td><td>Windows 4698</td><td>T1053.005 — Persistence</td></tr>
+            <tr><td>SSH brute force</td><td>Linux auth.log</td><td>T1110.001 — Password Guessing</td></tr>
+            <tr><td>Path traversal attempt</td><td>Apache access.log</td><td>T1083 — File Discovery</td></tr>
+            <tr><td>.env file probe</td><td>Apache access.log</td><td>T1552.001 — Credential in Files</td></tr>
+            <tr><td>New service install</td><td>Windows 7045</td><td>T1543.003 — Windows Service</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Document findings and produce log analysis report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Log sources analyzed</td><td><input type="text" placeholder="e.g., 4 (Windows, Apache, auth.log, firewall)"></td></tr>
+            <tr><td>Total events parsed</td><td><input type="text" placeholder="e.g., 3,500"></td></tr>
+            <tr><td>IOCs extracted (total)</td><td><input type="text" placeholder="e.g., 47 IOCs"></td></tr>
+            <tr><td>Encoded PS commands found</td><td><input type="text" placeholder="e.g., 30"></td></tr>
+            <tr><td>Web attacker IPs</td><td><input type="text" placeholder="e.g., 185.234.219.44"></td></tr>
+            <tr><td>SSH brute force sources</td><td><input type="text" placeholder="e.g., 2 IPs, 200 attempts"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-guide -->
+  <div class="next-lab"><h4>Next: Lab L18 — YARA Rule Writing with AI</h4><p>Write and test YARA rules to detect malware families using AI-guided pattern identification.</p><a href="lab-yara.html">Start L18 →</a></div>
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Log Analysis Expert</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('decode')">Decode this PowerShell</button>
+      <button onclick="qp('ioc')">Extract IOCs from log</button>
+      <button onclick="qp('correlate')">Correlate events</button>
+      <button onclick="qp('splunk')">Write SPL query</button>
+      <button onclick="qp('sigma')">Write Sigma rule</button>
+      <button onclick="qp('report')">Log analysis report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Paste log lines, ask about IOC extraction, Splunk queries..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L17',
+  totalSteps: 11,
+  modeLabel: 'Log Analysis Lab',
+  welcomeMsg: `Welcome to Lab L17: Log Analysis & Automated IOC Extraction!
+
+I'm your AI Log Analysis Expert. I can help you:
+- Parse Windows EVTX, Apache, and Linux syslog files with Python
+- Extract IOCs (IPs, domains, hashes, URLs) using regex patterns
+- Decode obfuscated PowerShell EncodedCommand payloads
+- Correlate events across multiple log sources
+- Write Splunk SPL queries for detected attack patterns
+- Convert findings into Sigma detection rules
+- Build MITRE ATT&CK mappings for all detected techniques
+
+Paste any log snippet directly into the chat and I'll help analyze it!`,
+  systemPrompt: `You are a senior DFIR analyst and detection engineer specializing in log analysis and IOC extraction. You're helping a student with Lab L17 on SIFT Workstation (192.168.56.20).
+
+Technical context:
+- Tools: Python (python-evtx, pandas, re), Splunk SPL, SIFT Workstation
+- Log sources: Windows Security EventLog (EVTX), Apache access.log, Linux auth.log/syslog
+- Attack patterns injected: encoded PowerShell (T1059.001+T1027), scheduled task creation (T1053.005), SSH brute force (T1110.001), web path traversal (T1083), .env probing (T1552)
+
+Key Windows Event IDs:
+4688=Process creation (command line logging required), 4698=Scheduled task, 4104=PS Script Block, 7045=New service, 4625=Failed logon, 4672=Privilege assignment
+
+PowerShell analysis:
+- -EncodedCommand/-enc: base64 UTF-16LE encoded payload
+- Decode: base64.b64decode(payload).decode('utf-16-le')
+- Subsequent layers: Compress-Object, XOR, string reverse — look for IEX, DownloadString, Net.WebClient
+
+CRITICAL: Students may paste actual log lines into chat. Analyze them directly, extract IOCs, decode obfuscated content, and explain what each indicator means for the investigation.`,
+  quickPrompts: {
+    decode: `I found this in my Windows Event ID 4688 log: "powershell.exe -nop -w hidden -enc JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMA". Can you decode the base64 and tell me what this PowerShell does?`,
+    ioc: `I have this Apache access.log line: '185.234.219.44 - - [01/Mar/2024:22:15:33 +0000] "GET /wp-admin/admin-ajax.php?action=revslider_show_image&img=../wp-config.php HTTP/1.1" 200 2048'. Extract all IOCs and identify the attack technique (MITRE T-code).`,
+    correlate: `I found IP 185.234.219.44 in both my Apache access log (web attack at 22:15) and Windows Event 4648 (explicit credential logon at 22:23). The Windows event shows source IP 185.234.219.44, user=admin, targeting DC01. What attack chain does this suggest?`,
+    splunk: `I need a Splunk SPL query that: finds PowerShell processes (EventCode 4688) with -enc in the command line, extracts the base64 string, and displays it alongside the user and workstation. My index is "wineventlog". Can you write this?`,
+    sigma: `Write a Sigma rule to detect: Linux SSH brute force where a single source IP fails authentication more than 5 times in 60 seconds. Target log source is Linux auth.log. Include MITRE T1110.001 mapping.`,
+    report: `I've analyzed 3,500 log events from 4 sources. Key findings: 30 encoded PowerShell commands from admin account at 10pm, 2 new scheduled tasks created (WindowsUpdate, SvcHost), web attacker from 185.234.219.44, SSH brute force against SIFT from 192.168.56.10. Write a log analysis report with IoCs, timeline, and Splunk detection rules.`
+  }
+});
+</script>
+</body>
+</html>

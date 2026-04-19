@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CyberSecPro Lab Uploader</title>
+<style>
+  body { font-family: monospace; padding: 30px; background: #0f172a; color: #e2e8f0; max-width: 800px; margin: 0 auto; }
+  h1 { color: #60a5fa; }
+  .box { background: #1e293b; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  .btn { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-family: monospace; }
+  .btn:hover { background: #1d4ed8; }
+  .btn:disabled { background: #475569; cursor: not-allowed; }
+  #log { background: #0f172a; border-radius: 6px; padding: 16px; margin-top: 16px; min-height: 200px; font-size: 13px; line-height: 1.6; overflow-y: auto; max-height: 400px; }
+  .ok { color: #4ade80; }
+  .err { color: #f87171; }
+  .info { color: #60a5fa; }
+  .warn { color: #fbbf24; }
+  #progress { height: 8px; background: #334155; border-radius: 4px; margin: 10px 0; }
+  #progressBar { height: 100%; background: #2563eb; border-radius: 4px; width: 0%; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<h1>🚀 CyberSecPro Lab Uploader</h1>
+
+<div class="box">
+  <p><strong>Instructions:</strong></p>
+  <ol>
+    <li>Click <strong>Select lab_html folder</strong> below</li>
+    <li>Navigate to and select your <code>Claude_cowork/lab_html</code> folder</li>
+    <li>The uploader will automatically upload all 18 files (CSS + 17 labs) to Netlify</li>
+  </ol>
+  <input type="file" id="folderInput" webkitdirectory multiple style="display:none">
+  <button class="btn" id="selectBtn" onclick="document.getElementById('folderInput').click()">📁 Select lab_html folder</button>
+  <button class="btn" id="uploadBtn" onclick="startUpload()" disabled style="margin-left:10px">⬆️ Upload to Netlify</button>
+</div>
+
+<div class="box">
+  <div id="progress"><div id="progressBar"></div></div>
+  <div id="log"><span class="info">Waiting for folder selection...</span></div>
+</div>
+
+<script>
+const TOKEN = 'nfp_1cuygWQvFhTRnxvwXHawtaNXxqyoa3Z48b3d';
+const DEPLOY_ID = '69d3505d98b1ce135212c858';
+
+const REQUIRED_FILES = [
+  'lab-base.css',
+  'lab-active-directory.html',
+  'lab-disk-forensics.html',
+  'lab-ghidra.html',
+  'lab-cloud.html',
+  'lab-dynamic-malware.html',
+  'lab-memory-forensics.html',
+  'lab-phishing-nlp.html',
+  'lab-splunk.html',
+  'lab-ueba.html',
+  'lab-threat-intel.html',
+  'lab-yara.html',
+  'lab-ir.html',
+  'lab-network-anomaly.html',
+  'lab-deepfake.html',
+  'lab-devsecops.html',
+  'lab-log-analysis.html',
+  'lab-soc-simulation.html'
+];
+
+const REMOTE_PATHS = {
+  'lab-base.css': '/labs/lab-base.css',
+  'lab-active-directory.html': '/labs/lab-active-directory.html',
+  'lab-disk-forensics.html': '/labs/lab-disk-forensics.html',
+  'lab-ghidra.html': '/labs/lab-ghidra.html',
+  'lab-cloud.html': '/labs/lab-cloud.html',
+  'lab-dynamic-malware.html': '/labs/lab-dynamic-malware.html',
+  'lab-memory-forensics.html': '/labs/lab-memory-forensics.html',
+  'lab-phishing-nlp.html': '/labs/lab-phishing-nlp.html',
+  'lab-splunk.html': '/labs/lab-splunk.html',
+  'lab-ueba.html': '/labs/lab-ueba.html',
+  'lab-threat-intel.html': '/labs/lab-threat-intel.html',
+  'lab-yara.html': '/labs/lab-yara.html',
+  'lab-ir.html': '/labs/lab-ir.html',
+  'lab-network-anomaly.html': '/labs/lab-network-anomaly.html',
+  'lab-deepfake.html': '/labs/lab-deepfake.html',
+  'lab-devsecops.html': '/labs/lab-devsecops.html',
+  'lab-log-analysis.html': '/labs/lab-log-analysis.html',
+  'lab-soc-simulation.html': '/labs/lab-soc-simulation.html'
+};
+
+let selectedFiles = {};
+
+function log(msg, cls) {
+  const el = document.getElementById('log');
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(pct) {
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+document.getElementById('folderInput').addEventListener('change', function(e) {
+  selectedFiles = {};
+  const files = Array.from(e.target.files);
+  document.getElementById('log').innerHTML = '';
+
+  for (const f of files) {
+    const name = f.name;
+    if (REQUIRED_FILES.includes(name)) {
+      selectedFiles[name] = f;
+    }
+  }
+
+  log('Found ' + Object.keys(selectedFiles).length + '/' + REQUIRED_FILES.length + ' required lab files:', 'info');
+
+  const missing = REQUIRED_FILES.filter(f => !selectedFiles[f]);
+  Object.keys(selectedFiles).forEach(f => log('  ✓ ' + f, 'ok'));
+  missing.forEach(f => log('  ✗ MISSING: ' + f, 'err'));
+
+  if (Object.keys(selectedFiles).length > 0) {
+    document.getElementById('uploadBtn').disabled = false;
+    log('\nReady to upload. Click "Upload to Netlify" to start.', 'info');
+  }
+});
+
+async function uploadFile(filename, file) {
+  const remotePath = REMOTE_PATHS[filename];
+  const buf = await file.arrayBuffer();
+  log('  → PUT ' + remotePath + ' (' + buf.byteLength + ' bytes)...', 'info');
+
+  const r = await fetch('https://api.netlify.com/api/v1/deploys/' + DEPLOY_ID + '/files' + remotePath, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + TOKEN,
+      'Content-Type': 'application/octet-stream'
+    },
+    body: buf
+  });
+
+  if (r.status === 200) {
+    log('  ✓ ' + r.status + ' ' + remotePath, 'ok');
+  } else {
+    log('  ✗ ' + r.status + ' ' + remotePath, 'err');
+  }
+  return r.status;
+}
+
+async function startUpload() {
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('selectBtn').disabled = true;
+  log('\n=== Starting upload to Netlify deploy ' + DEPLOY_ID + ' ===', 'warn');
+
+  const files = Object.entries(selectedFiles);
+  let done = 0;
+  let errors = 0;
+
+  for (const [name, file] of files) {
+    log('[' + name + ']', 'info');
+    try {
+      const status = await uploadFile(name, file);
+      if (status !== 200) errors++;
+    } catch(e) {
+      log('  ✗ Error: ' + e.message, 'err');
+      errors++;
+    }
+    done++;
+    setProgress(Math.round(done / files.length * 100));
+  }
+
+  log('\n=== UPLOAD COMPLETE ===', 'warn');
+  log('Uploaded: ' + (done - errors) + '/' + files.length, errors === 0 ? 'ok' : 'warn');
+
+  if (errors === 0) {
+    log('\n✅ All files uploaded! Netlify will now process and deploy to cybersecproacademy.org', 'ok');
+    log('Check: https://app.netlify.com/projects/chic-bunny-7baf17/deploys', 'info');
+  } else {
+    log('\n⚠️  ' + errors + ' file(s) failed. Try again or check Netlify dashboard.', 'err');
+  }
+}
+</script>
+</body>
+</html>

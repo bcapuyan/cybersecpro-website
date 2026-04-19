@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enroll — CyberSec Pro Academy</title>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6T7DPEWEP7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6T7DPEWEP7');
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a202c; }
+
+  /* NAV */
+  .nav { background: #0a1628; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .nav-logo { color: white; font-weight: 800; font-size: 18px; text-decoration: none; }
+  .nav-logo span { color: #00c896; }
+  .nav-back { color: #a0c4e8; font-size: 14px; text-decoration: none; }
+  .nav-back:hover { color: #00c896; }
+
+  /* HERO STRIP */
+  .hero-strip {
+    background: linear-gradient(135deg, #0a1628 0%, #0d3b6e 100%);
+    color: white; text-align: center; padding: 48px 24px 40px;
+  }
+  .urgency-badge {
+    display: inline-block; background: #ff6b6b; color: white;
+    font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero-strip h1 { font-size: clamp(26px, 4vw, 42px); font-weight: 900; line-height: 1.15; margin-bottom: 10px; }
+  .hero-strip h1 span { color: #00c896; }
+  .hero-strip p { color: #a0c4e8; font-size: 16px; max-width: 560px; margin: 0 auto; line-height: 1.6; }
+
+  /* LAYOUT */
+  .checkout-wrap { max-width: 1060px; margin: 0 auto; padding: 40px 20px 60px; display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
+  @media (max-width: 760px) { .checkout-wrap { grid-template-columns: 1fr; } }
+
+  /* LEFT — Course Summary */
+  .course-summary { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  .course-summary h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; color: #0a1628; }
+  .course-summary .subtitle { color: #555; font-size: 14px; margin-bottom: 28px; }
+
+  .includes-list { list-style: none; margin-bottom: 28px; }
+  .includes-list li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f4f8; font-size: 14px; }
+  .includes-list li:last-child { border-bottom: none; }
+  .includes-list .icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .includes-list .text strong { display: block; font-weight: 700; color: #0a1628; margin-bottom: 2px; }
+  .includes-list .text span { color: #666; font-size: 13px; line-height: 1.4; }
+
+  /* HOW IT WORKS */
+  .how-section { margin-top: 32px; }
+  .how-section h3 { font-size: 17px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step { display: flex; align-items: flex-start; gap: 16px; }
+  .step-num {
+    background: #00c896; color: #0a1628; width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; flex-shrink: 0;
+  }
+  .step-body strong { display: block; font-weight: 700; font-size: 14px; color: #0a1628; }
+  .step-body span { font-size: 13px; color: #666; line-height: 1.5; }
+
+  /* RIGHT — Checkout Card */
+  .checkout-card { background: white; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.13); overflow: hidden; position: sticky; top: 24px; }
+  .card-header { background: #0a1628; padding: 24px; text-align: center; }
+  .card-header .price-row { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 6px; }
+  .card-header .price { font-size: 52px; font-weight: 900; color: #00c896; line-height: 1; }
+  .card-header .price-label { font-size: 14px; color: #a0c4e8; }
+  .card-header .orig-price { font-size: 14px; color: #666; text-decoration: line-through; }
+  .card-header .badge { display: inline-block; background: #00c896; color: #0a1628; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .card-body { padding: 24px; }
+
+  .enroll-btn {
+    display: block; width: 100%; background: #00c896; color: #0a1628;
+    text-align: center; padding: 18px; border-radius: 10px;
+    font-size: 18px; font-weight: 900; text-decoration: none;
+    transition: transform 0.15s, background 0.15s; letter-spacing: 0.3px;
+    margin-bottom: 12px;
+  }
+  .enroll-btn:hover { background: #00a870; transform: translateY(-2px); }
+
+  .enroll-btn-alt {
+    display: block; width: 100%; background: #0a1628; color: #00c896;
+    text-align: center; padding: 16px; border-radius: 10px;
+    font-size: 16px; font-weight: 800; text-decoration: none;
+    transition: transform 0.15s, opacity 0.15s; letter-spacing: 0.3px;
+    margin-bottom: 12px; border: 2px solid #00c896;
+  }
+  .enroll-btn-alt:hover { opacity: 0.9; transform: translateY(-2px); }
+
+  .or-divider { text-align: center; font-size: 12px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin: 4px 0; }
+
+  .mentorship-btn {
+    display: block; width: 100%; background: transparent; color: #0a1628;
+    text-align: center; padding: 14px; border-radius: 10px; border: 2px solid #0a1628;
+    font-size: 15px; font-weight: 700; text-decoration: none;
+    transition: background 0.15s; margin-bottom: 20px;
+  }
+  .mentorship-btn:hover { background: #f0f4f8; }
+
+  .pricing-toggle { display: flex; gap: 0; margin-bottom: 12px; border-radius: 10px; overflow: hidden; border: 2px solid #00c896; }
+  .pricing-toggle-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; background: transparent; color: #a0c4e8; border: none; }
+  .pricing-toggle-btn.active { background: #00c896; color: #0a1628; }
+  .popular-tag { display: inline-block; background: #ff6b6b; color: white; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 4px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .secure-row { display: flex; align-items: center; justify-content: center; gap: 6px; color: #666; font-size: 12px; margin-bottom: 20px; }
+  .secure-row .lock { font-size: 14px; }
+
+  .mini-includes { border-top: 1px solid #f0f4f8; padding-top: 20px; }
+  .mini-includes p { font-size: 12px; font-weight: 700; color: #0a1628; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .mini-includes ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .mini-includes li { font-size: 13px; color: #444; display: flex; align-items: center; gap: 8px; }
+  .mini-includes li::before { content: "✓"; color: #00c896; font-weight: 900; flex-shrink: 0; }
+
+  .guarantee { background: #f0fff8; border: 1px solid #00c896; border-radius: 10px; padding: 14px 16px; margin-top: 16px; font-size: 12px; color: #444; line-height: 1.5; }
+  .guarantee strong { color: #00874a; }
+
+  /* TESTIMONIALS */
+  .testimonials { margin-top: 32px; }
+  .testimonials h3 { font-size: 17px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
+  .testimonial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 500px) { .testimonial-grid { grid-template-columns: 1fr; } }
+  .testimonial {
+    background: #f7fbff; border-left: 3px solid #00c896;
+    border-radius: 0 10px 10px 0; padding: 16px;
+  }
+  .testimonial p { font-size: 13px; color: #444; line-height: 1.6; font-style: italic; margin-bottom: 10px; }
+  .testimonial .author { font-size: 12px; font-weight: 700; color: #0a1628; }
+  .testimonial .role { font-size: 11px; color: #888; }
+
+  /* FAQ */
+  .faq-section { margin-top: 32px; }
+  .faq-section h3 { font-size: 17px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
+  .faq-item { border-bottom: 1px solid #e8f0fe; padding: 16px 0; }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q { font-weight: 700; font-size: 14px; color: #0a1628; margin-bottom: 6px; }
+  .faq-a { font-size: 13px; color: #555; line-height: 1.6; }
+
+  /* FOOTER */
+  footer { background: #0a1628; color: #666; text-align: center; padding: 24px; font-size: 13px; }
+  footer a { color: #00c896; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
+  <a href="/" class="nav-back">← Back to site</a>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <div class="urgency-badge">🔒 Founder's Price — Limited Time</div>
+  <h1>You're One Step Away From<br><span>Breaking Into Cybersecurity</span></h1>
+  <p>Secure checkout powered by Teachable. Instant access the moment your payment clears.</p>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="checkout-wrap">
+
+  <!-- LEFT COLUMN -->
+  <div>
+
+    <!-- Course Summary -->
+    <div class="course-summary">
+      <h2>Break Into Cybersecurity — The Course</h2>
+      <p class="subtitle">8 weeks · Self-paced · CompTIA Security+ aligned · Lifetime access</p>
+
+      <ul class="includes-list">
+        <li>
+          <span class="icon">🤖</span>
+          <div class="text">
+            <strong>20 AI Cybersecurity Labs</strong>
+            <span>Wireshark, OpenSSL, Nessus, Splunk, Active Directory + 15 AI-powered labs covering threat detection, malware analysis, and network defense automation.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">📚</span>
+          <div class="text">
+            <strong>17 Core Learning Topics</strong>
+            <span>Full CompTIA Security+ SY0-701 coverage across all 5 exam domains, plus 4 dedicated AI units integrated throughout.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">🗓️</span>
+          <div class="text">
+            <strong>8-Week Structured Roadmap</strong>
+            <span>Each week has a clear theme, lab deliverable, and milestone. Week 7 is 100% dedicated to resume, LinkedIn, and job search.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">👨‍💻</span>
+          <div class="text">
+            <strong>1-on-1 Mentorship Available</strong>
+            <span>Book directly with your instructor — CISM, CISA, 20+ years industry, 200+ students mentored. From $150/session.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">📘</span>
+          <div class="text">
+            <strong>Free Beginner's Guide Included</strong>
+            <span>10-section PDF covering career roadmaps, cert pathways, salary data, and how to get a college degree for free or near-free.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">♾️</span>
+          <div class="text">
+            <strong>Lifetime Access + Updates</strong>
+            <span>The course doesn't expire. As cybersecurity evolves, your content is updated — no extra charge.</span>
+          </div>
+        </li>
+      </ul>
+
+      <!-- HOW IT WORKS -->
+      <div class="how-section">
+        <h3>⚡ How Instant Access Works</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Click "Enroll Now" below</strong>
+              <span>You'll be taken to our secure Teachable checkout page. Takes about 60 seconds to complete.</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Complete payment securely</strong>
+              <span>Pay by card or PayPal. Teachable uses bank-grade encryption. Your information is never stored on our servers.</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Instant access — no waiting</strong>
+              <span>The moment payment clears, Teachable automatically creates your account and sends login details to your email. You can start your first lesson within minutes.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TESTIMONIALS -->
+      <div class="testimonials">
+        <h3>What Students Say</h3>
+        <p style="font-size:12px;color:#888;margin:-10px 0 16px;">Verified LinkedIn Recommendations</p>
+        <div class="testimonial-grid">
+          <div class="testimonial">
+            <p>"I was lucky enough to have been partnered with my instructor when I was enrolled in the THINKFUL cybersecurity program. His expertise helped guide me as I navigated through the course. He was patient and readily available to answer any questions. Great mentor, highly recommended!"</p>
+            <div class="author">Vanessa</div>
+            <div class="role">Information Technology · LinkedIn Recommendation</div>
+          </div>
+          <div class="testimonial">
+            <p>"My instructor is awesome at what he does and is very knowledgeable with a lot of experience in cybersecurity! He was my mentor for my cybersecurity boot camp and helped me with whatever questions I had — leading me to create a roadmap and advice to break into the Cyber industry!"</p>
+            <div class="author">Javonis</div>
+            <div class="role">SOC & Security Analyst · LinkedIn Recommendation</div>
+          </div>
+          <div class="testimonial">
+            <p>"My instructor is an amazing resource in the Cybersecurity industry. His enthusiasm in teaching this subject ignited a passion in me for the same industry and keeps me motivated. He is one person I'll always come back to for any questions and help."</p>
+            <div class="author">David</div>
+            <div class="role">Transportation Security Officer · LinkedIn Recommendation</div>
+          </div>
+          <div class="testimonial">
+            <p>"I had the honor of having my instructor as my mentor during my USF Cybersecurity Bootcamp. He is very knowledgeable, always on time, and worth my while. I most definitely recommend him for any mentoring position! He is patient and knows how to explain what needs to be accomplished."</p>
+            <div class="author">Kim</div>
+            <div class="role">Teacher · LinkedIn Recommendation</div>
+          </div>
+          <div class="testimonial">
+            <p>"My instructor has been more than a mere mentor — he has been a great help. He always takes the time to ensure I grasp different concepts regardless of difficulty. Always available, extremely reliable and dedicated to my success. My experience in this bootcamp was so smooth because I had him in my corner."</p>
+            <div class="author">Andrew</div>
+            <div class="role">Cybersecurity Specialist | CompTIA Security+ · LinkedIn Recommendation</div>
+          </div>
+          <div class="testimonial">
+            <p>"I was mentored in Cyber Security and my experience was fantastic! He knows his stuff!"</p>
+            <div class="author">Donald</div>
+            <div class="role">IT Specialist · LinkedIn Recommendation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="faq-section">
+        <h3>Frequently Asked Questions</h3>
+        <div class="faq-item">
+          <div class="faq-q">When do I get access after purchasing?</div>
+          <div class="faq-a">Immediately. Teachable automatically sends your login credentials as soon as payment is confirmed — typically within 60 seconds of purchase. Check your inbox (and spam folder) for an email from no-reply@teachable.com.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What payment methods are accepted?</div>
+          <div class="faq-a">All major credit and debit cards (Visa, Mastercard, Amex, Discover) and PayPal. Checkout is processed securely by Teachable — your card details are encrypted and never shared with us.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Is there a refund policy?</div>
+          <div class="faq-a">Yes — 30-day money-back guarantee. If you're not satisfied within the first 30 days, email bcapuyan@gmail.com for a full refund, no questions asked.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What's the difference between $19/month and $497 one-time?</div>
+          <div class="faq-a">Both plans give you the exact same course content — all 20 AI labs, 17 topics, and lifetime access. The $19/month plan lets you start with a low commitment and cancel anytime. The $497 one-time payment saves you money long-term (normally $997) and locks in lifetime access with one payment. Both come with a 30-day money-back guarantee.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Do I need prior cybersecurity experience?</div>
+          <div class="faq-a">No. The course starts from absolute basics and builds systematically. Many students started with no IT background at all. If you can use a computer, you can start this course today.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How long do I have to complete the course?</div>
+          <div class="faq-a">Forever. Lifetime access means you can go at your own pace — whether that's 8 weeks or 8 months. Content updates are included at no extra charge.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN — Checkout Card -->
+  <div>
+    <div class="checkout-card">
+      <div class="card-header">
+        <div class="pricing-toggle">
+          <button class="pricing-toggle-btn active" onclick="showMonthly()">$19/mo <span class="popular-tag">Popular</span></button>
+          <button class="pricing-toggle-btn" onclick="showOneTime()">$497 One-Time</button>
+        </div>
+        <div id="monthly-price" class="price-row" style="margin-bottom:6px;">
+          <div class="price">$19</div>
+          <div class="price-label">/month</div>
+        </div>
+        <div id="onetime-price" class="price-row" style="display:none; margin-bottom:6px;">
+          <div class="price">$497</div>
+          <div class="price-label">One-Time</div>
+        </div>
+        <div id="monthly-savings" style="color:#a0c4e8; font-size:13px;">Cancel anytime · 30-day money-back guarantee</div>
+        <div id="onetime-savings" style="display:none;"><span class="orig-price">Full price: $997</span><br><span class="badge" style="margin-top:6px;">Save $500 — Limited Time</span></div>
+      </div>
+      <div class="card-body">
+        <a id="enroll-monthly" href="https://checkout.teachable.com/secure/779189/checkout/order_y35y0jzk" class="enroll-btn">
+          🔒 Enroll Now — $19/month
+        </a>
+        <a id="enroll-onetime" href="https://checkout.teachable.com/secure/779189/checkout/order_y35y0jzk" class="enroll-btn-alt" style="display:none;">
+          🔒 Enroll Now — $497
+        </a>
+        <div class="or-divider">or</div>
+        <a href="https://cybersecurity-education.teachable.com/p/mentorship" class="mentorship-btn">
+          Book 1-on-1 Mentorship Instead
+        </a>
+        <div class="secure-row">
+          <span class="lock">🔒</span>
+          <span>Secure checkout via Teachable · 256-bit SSL</span>
+        </div>
+
+        <div class="mini-includes">
+          <p>What's included</p>
+          <ul>
+            <li>20 AI Cybersecurity Labs</li>
+            <li>17 Core Learning Topics</li>
+            <li>4 Dedicated AI Units</li>
+            <li>8-Week Structured Roadmap</li>
+            <li>Week 7 Job Readiness Module</li>
+            <li>Free Beginner's Guide PDF</li>
+            <li>Lifetime Access + Updates</li>
+            <li>1 Year Lab & Course Support</li>
+            <li>CompTIA Security+ SY0-701 Aligned</li>
+          </ul>
+        </div>
+
+        <div class="guarantee">
+          <strong>30-Day Money-Back Guarantee.</strong> If you're not satisfied in the first 30 days, email us for a full refund — no questions asked. Zero risk.
+        </div>
+      </div>
+    </div>
+
+    <!-- Below card trust signals -->
+    <div style="text-align:center; margin-top:20px; font-size:13px; color:#666; line-height:1.8;">
+      <div>🎓 CompTIA Security+ Aligned</div>
+      <div>⭐ 200+ Students Mentored</div>
+      <div>🏆 CISM · CISA · CSA · CAD · CIS-VR</div>
+      <div>📧 Questions? <a href="mailto:bcapuyan@gmail.com" style="color:#0d3b6e;">bcapuyan@gmail.com</a></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 CyberSec Pro Academy · <a href="mailto:bcapuyan@gmail.com">bcapuyan@gmail.com</a> · CISM · CISA · CSA · CAD · CIS-VR</p>
+  <p style="margin-top:8px; font-size:11px; color:#444;">Payment processed securely by Teachable. Course support and lab assistance available for one (1) year from date of purchase. Content access is lifetime. 30-day money-back guarantee subject to terms.</p>
+  <p style="margin-top:6px; font-size:11px; color:#444;"><a href="/" style="color:#00c896;">← Back to CyberSec Pro Academy</a> · <a href="/price-comparison.html" style="color:#00c896;">Compare Prices</a></p>
+</footer>
+
+<script>
+function showMonthly() {
+  document.getElementById('monthly-price').style.display = 'flex';
+  document.getElementById('onetime-price').style.display = 'none';
+  document.getElementById('monthly-savings').style.display = 'block';
+  document.getElementById('onetime-savings').style.display = 'none';
+  document.getElementById('enroll-monthly').style.display = 'block';
+  document.getElementById('enroll-onetime').style.display = 'none';
+  document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.pricing-toggle-btn')[0].classList.add('active');
+}
+function showOneTime() {
+  document.getElementById('monthly-price').style.display = 'none';
+  document.getElementById('onetime-price').style.display = 'flex';
+  document.getElementById('monthly-savings').style.display = 'none';
+  document.getElementById('onetime-savings').style.display = 'block';
+  document.getElementById('enroll-monthly').style.display = 'none';
+  document.getElementById('enroll-onetime').style.display = 'block';
+  document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.pricing-toggle-btn')[1].classList.add('active');
+}
+</script>
+</body>
+</html>

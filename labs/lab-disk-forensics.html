@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L14: Disk Forensics &amp; Timeline Analysis | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-progress-bar">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 12 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-guide">
+
+    <div class="lab-header"><div class="lab-meta">
+      <span class="lab-badge badge-advanced">Advanced</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Digital Forensics</span>
+    </div>
+    <h1>L14: Disk Forensics &amp; Super-Timeline Analysis</h1>
+    <p>Perform a full disk forensic investigation using Autopsy, The Sleuth Kit, and Plaso/log2timeline on SIFT Workstation. Acquire forensic images, reconstruct attacker activity through NTFS artifacts, build a super-timeline, and produce a court-ready forensic report.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">Autopsy</span>
+      <span class="tool-tag">The Sleuth Kit</span>
+      <span class="tool-tag">Plaso/log2timeline</span>
+      <span class="tool-tag">SIFT Workstation</span>
+      <span class="tool-tag">FTK Imager</span>
+      <span class="tool-tag">Volatility 3</span>
+    </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Evidence Acquisition &amp; Integrity Verification</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Create forensic disk image with dcfldd</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On SIFT Workstation (192.168.56.20), create a bit-for-bit forensic image of the evidence drive:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">sudo apt install -y dcfldd autopsy sleuthkit
+mkdir ~/disk-lab && cd ~/disk-lab
+
+# Identify evidence disk (use lsblk first)
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINT
+sudo fdisk -l
+
+# Create forensic image with hash verification
+# Replace /dev/sdb with your evidence disk (NEVER the live system disk)
+sudo dcfldd if=/dev/sdb \
+  of=~/disk-lab/evidence.dd \
+  bs=512 \
+  hash=md5,sha256 \
+  hashlog=~/disk-lab/evidence_hashes.txt \
+  errlog=~/disk-lab/evidence_errors.txt \
+  statusinterval=256
+
+# Alternatively, use dd with hash verification
+sudo dd if=/dev/sdb bs=4M conv=sync,noerror status=progress | \
+  tee evidence.dd | md5sum > evidence_md5.txt
+
+echo "Hash verification:"
+cat evidence_hashes.txt</pre>
+        </div>
+        <p><strong>For lab practice without a real disk:</strong></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Download a pre-made forensic image for practice
+# NIST CFReDS (Computer Forensics Reference Data Sets)
+wget -O ~/disk-lab/evidence.dd.gz \
+  "https://cfreds.nist.gov/all/NIST/HackingCase" 2>/dev/null || \
+  echo "Visit cfreds.nist.gov to download practice disk images"
+
+# Alternative: Create a small test image
+dd if=/dev/urandom of=~/disk-lab/test.dd bs=1M count=512
+mkfs.ntfs ~/disk-lab/test.dd  # Format as NTFS for practice</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Verify hash integrity and mount read-only</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Verify MD5/SHA256 hash matches original
+md5sum ~/disk-lab/evidence.dd
+sha256sum ~/disk-lab/evidence.dd
+
+# Document in chain of custody
+echo "Evidence: evidence.dd" >> ~/disk-lab/chain_of_custody.txt
+echo "MD5: $(md5sum ~/disk-lab/evidence.dd | cut -d' ' -f1)" >> ~/disk-lab/chain_of_custody.txt
+echo "SHA256: $(sha256sum ~/disk-lab/evidence.dd | cut -d' ' -f1)" >> ~/disk-lab/chain_of_custody.txt
+echo "Analyst: $(whoami)" >> ~/disk-lab/chain_of_custody.txt
+echo "Date: $(date -u)" >> ~/disk-lab/chain_of_custody.txt
+
+# Mount read-only using loop device
+mkdir -p ~/disk-lab/mount
+sudo losetup -r -f ~/disk-lab/evidence.dd
+LOOP=$(sudo losetup -j ~/disk-lab/evidence.dd | cut -d: -f1)
+echo "Loop device: $LOOP"
+
+# Mount NTFS partition read-only (adjust partition offset as needed)
+sudo mmls ~/disk-lab/evidence.dd  # Show partition table
+# Mount primary partition (find offset from mmls output)
+sudo mount -o ro,loop,offset=$((63*512)) ~/disk-lab/evidence.dd ~/disk-lab/mount/
+
+ls ~/disk-lab/mount/</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Autopsy Case &amp; Artifact Extraction</div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Create Autopsy case and ingest evidence image</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Launch Autopsy and set up the forensic case:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Launch Autopsy (web-based interface on SIFT)
+autopsy &
+# Navigate to http://localhost:9999/autopsy in browser
+
+# Or use Autopsy 4 (GUI)
+# If not installed: wget https://github.com/sleuthkit/autopsy/releases/latest</pre>
+        </div>
+        <p>In Autopsy:</p>
+        <ol>
+          <li>Create New Case → Case Name: <code>L14_DiskForensics</code>, Case Type: Single-user</li>
+          <li>Add Data Source → Disk Image → Browse to <code>evidence.dd</code></li>
+          <li>Enable all ingest modules: File Type ID, Keyword Search, Recent Activity, Hash DB</li>
+          <li>Wait for ingest to complete (check progress bar)</li>
+          <li>Explore: File System → expand partitions → browse directories</li>
+        </ol>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Alternatively: command-line with The Sleuth Kit
+# List files in NTFS image
+fls -r ~/disk-lab/evidence.dd > ~/disk-lab/file_listing.txt
+echo "Files listed: $(wc -l < ~/disk-lab/file_listing.txt)"
+
+# Extract deleted files
+fls -r -d ~/disk-lab/evidence.dd | head -50
+
+# Get file system metadata
+fsstat ~/disk-lab/evidence.dd</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Extract and analyze NTFS artifacts ($MFT, $LogFile, $UsnJrnl)</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>NTFS metadata files contain rich forensic evidence about file activity:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Parse $MFT (Master File Table) — every file's metadata
+pip3 install analyzeMFT
+analyzeMFT.py -f ~/disk-lab/mount/\$MFT -o ~/disk-lab/mft_analysis.csv
+echo "MFT entries: $(wc -l < ~/disk-lab/mft_analysis.csv)"
+
+# Parse $UsnJrnl (change journal) — all file changes
+icat ~/disk-lab/evidence.dd 2 0 > ~/disk-lab/usnjrnl_raw.bin 2>/dev/null || \
+  echo "Extract UsnJrnl via Autopsy"
+
+# Use TSK to get timestamps for specific files
+istat ~/disk-lab/evidence.dd [inode_number]
+
+# List recently modified files (last 30 days — adjust for investigation timeframe)
+mactime -b ~/disk-lab/mft_analysis.csv \
+  -d 2024-01-01 -e 2024-03-01 > ~/disk-lab/timeline_mft.txt
+
+echo "Files with activity in date range:"
+head -50 ~/disk-lab/timeline_mft.txt</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Extract registry hives and analyze artifacts</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Windows Registry hives contain persistence mechanisms, recently run programs, and network connections:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Copy registry hives from mounted image
+mkdir ~/disk-lab/registry
+cp ~/disk-lab/mount/Windows/System32/config/{SYSTEM,SOFTWARE,SAM,SECURITY} \
+   ~/disk-lab/registry/ 2>/dev/null
+
+# Also grab user hives (NTUSER.DAT)
+find ~/disk-lab/mount/Users -name "NTUSER.DAT" -exec cp {} ~/disk-lab/registry/ \; 2>/dev/null
+
+# Parse with RegRipper
+pip3 install python-registry
+cat > ~/disk-lab/parse_registry.py << 'EOF'
+from Registry import Registry
+import sys
+
+def parse_hive(path):
+    try:
+        reg = Registry.Registry(path)
+        return reg
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+# Run/RunOnce keys (persistence)
+def get_persistence(software_hive):
+    reg = parse_hive(software_hive)
+    if not reg: return
+
+    persistence_keys = [
+        "Microsoft\\Windows\\CurrentVersion\\Run",
+        "Microsoft\\Windows\\CurrentVersion\\RunOnce",
+        "Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+    ]
+
+    print("\n=== PERSISTENCE MECHANISMS ===")
+    for key_path in persistence_keys:
+        try:
+            key = reg.open(key_path)
+            print(f"\nHKLM\\{key_path}:")
+            for value in key.values():
+                print(f"  {value.name()}: {value.value()}")
+        except Registry.RegistryKeyNotFoundException:
+            pass
+
+get_persistence("registry/SOFTWARE")
+EOF
+python3 parse_registry.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Super-Timeline with Plaso</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Build super-timeline with log2timeline</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Plaso/log2timeline parses 200+ artifact types into a unified timeline:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># SIFT has Plaso pre-installed
+log2timeline.py --version
+
+# Create Plaso storage file (this takes time — 30-60min for large images)
+log2timeline.py \
+  --timezone UTC \
+  --parsers "win_registry,winprefetch,winevtx,recycle_bin,lnk,chrome_history" \
+  ~/disk-lab/evidence.plaso \
+  ~/disk-lab/evidence.dd
+
+echo "Timeline extraction complete"
+du -sh ~/disk-lab/evidence.plaso</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Query timeline with psort and filter by time window</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Export timeline to CSV for analysis
+psort.py \
+  --output-time-zone UTC \
+  -o l2tcsv \
+  -w ~/disk-lab/super_timeline.csv \
+  ~/disk-lab/evidence.plaso
+
+echo "Timeline rows: $(wc -l < ~/disk-lab/super_timeline.csv)"
+
+# Filter to incident timeframe (adjust dates)
+python3 << 'EOF'
+import pandas as pd
+
+df = pd.read_csv('disk-lab/super_timeline.csv', low_memory=False)
+print(f"Total events: {len(df)}")
+print(f"Columns: {list(df.columns)}")
+
+# Filter to key time window (when attack occurred)
+# Adjust dates based on your investigation
+df['datetime'] = pd.to_datetime(df.get('datetime', df.get('date', '')),
+                                  errors='coerce', utc=True)
+df = df.dropna(subset=['datetime'])
+
+start = pd.Timestamp('2024-03-01 08:00:00', tz='UTC')
+end = pd.Timestamp('2024-03-01 12:00:00', tz='UTC')
+
+attack_window = df[(df['datetime'] >= start) & (df['datetime'] <= end)]
+print(f"\nEvents in attack window: {len(attack_window)}")
+
+# Show most suspicious artifact types
+print("\nArtifact types in window:")
+print(attack_window.get('source', attack_window.get('sourcetype',
+    pd.Series())).value_counts().head(15))
+
+attack_window.sort_values('datetime').to_csv(
+    'disk-lab/attack_window_timeline.csv', index=False)
+print("Filtered timeline saved")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Analyze Windows Prefetch and LNK files</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Prefetch files show what executables ran and when; LNK files show recently accessed files:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Parse Prefetch files
+pip3 install prefetch-parser
+python3 << 'EOF'
+import glob, subprocess
+
+prefetch_dir = "disk-lab/mount/Windows/Prefetch"
+import os
+if os.path.exists(prefetch_dir):
+    files = glob.glob(f"{prefetch_dir}/*.pf")
+    print(f"Found {len(files)} Prefetch files")
+    for pf in sorted(files)[:20]:
+        # Use TSK or python-prefetch to parse
+        print(f"  {os.path.basename(pf)}")
+else:
+    print("Prefetch directory not found — may be disabled on this system")
+    print("Check: HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters")
+    print("EnablePrefetcher: 0=disabled, 2=app, 3=app+boot")
+EOF
+
+# Parse LNK files (show recently opened documents)
+python3 << 'EOF'
+import glob, os
+
+lnk_dirs = [
+    "disk-lab/mount/Users/*/AppData/Roaming/Microsoft/Windows/Recent/*.lnk",
+    "disk-lab/mount/Users/*/Desktop/*.lnk",
+]
+
+for pattern in lnk_dirs:
+    for lnk in glob.glob(pattern):
+        print(f"LNK: {os.path.basename(lnk)}")
+
+print("\nInstall python-lnk for detailed parsing:")
+print("pip3 install python-lnk")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Evidence Recovery &amp; Reporting</div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Recover deleted files with Autopsy / PhotoRec</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># List deleted files with TSK
+fls -r -d ~/disk-lab/evidence.dd | grep -i "\.(exe\|bat\|ps1\|vbs\|docx\|pdf\|zip)" \
+  | head -30
+
+# Recover specific deleted file by inode number
+# (get inode from fls output — e.g., "r/r * 12345: deleted_file.exe")
+icat ~/disk-lab/evidence.dd 12345 > ~/disk-lab/recovered/recovered_file.exe
+sha256sum ~/disk-lab/recovered/recovered_file.exe
+
+# Bulk file carving with PhotoRec (recovers by file signatures, ignores FS)
+sudo apt install -y testdisk
+photorec /d ~/disk-lab/recovered ~/disk-lab/evidence.dd
+
+# Check recovered file types
+find ~/disk-lab/recovered -type f | xargs file | head -30
+
+echo "Examine recovered executables with:"
+echo "  file, strings, sha256sum against VirusTotal hashes"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Extract browser history and artifacts</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Chrome history (SQLite database)
+pip3 install browser-history sqlite3
+python3 << 'EOF'
+import sqlite3, glob, shutil, os, tempfile
+
+chrome_paths = glob.glob(
+    "disk-lab/mount/Users/*/AppData/Local/Google/Chrome/User Data/Default/History")
+
+for history_path in chrome_paths:
+    user = history_path.split('/')[3]
+    # Copy to temp (Chrome locks original)
+    tmp = tempfile.mktemp(suffix='.db')
+    shutil.copy(history_path, tmp)
+
+    conn = sqlite3.connect(tmp)
+    cursor = conn.execute("""
+        SELECT datetime((last_visit_time/1000000-11644473600), 'unixepoch') as visit_time,
+               url, title, visit_count
+        FROM urls
+        WHERE last_visit_time > 0
+        ORDER BY last_visit_time DESC
+        LIMIT 100
+    """)
+
+    print(f"\n=== Chrome History: {user} ===")
+    for row in cursor.fetchall():
+        print(f"  {row[0]} | {row[3]}x | {row[1][:80]}")
+
+    conn.close()
+    os.unlink(tmp)
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Reconstruct attacker activity narrative</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Correlate all artifacts into a coherent attack narrative:</p>
+        <div class="findings-table">
+          <table>
+            <tr><th>Timestamp (UTC)</th><th>Artifact Type</th><th>Evidence</th><th>Significance</th></tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., 2024-03-01 08:15"></td>
+              <td><input type="text" placeholder="e.g., Prefetch"></td>
+              <td><input type="text" placeholder="e.g., cmd.exe ran"></td>
+              <td><input type="text" placeholder="e.g., Lateral movement"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+            </tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Produce court-ready forensic report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Use the AI analyst to help structure your forensic report per SWGDE standards.</p>
+        <div class="findings-table">
+          <h4>Lab Findings Summary</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Evidence image hash (MD5)</td><td><input type="text" placeholder="e.g., a1b2c3..."></td></tr>
+            <tr><td>OS / File System</td><td><input type="text" placeholder="e.g., Windows 10, NTFS"></td></tr>
+            <tr><td>Timeline events extracted</td><td><input type="text" placeholder="e.g., 48,293 events"></td></tr>
+            <tr><td>Deleted files recovered</td><td><input type="text" placeholder="e.g., 127 files"></td></tr>
+            <tr><td>Key persistence found</td><td><input type="text" placeholder="e.g., Run key: malware.exe"></td></tr>
+            <tr><td>Attack timeframe</td><td><input type="text" placeholder="e.g., 08:15 - 09:40 UTC"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-guide -->
+  <div class="next-lab"><h4>Next: Lab L15 — Reverse Engineering with Ghidra + AI</h4><p>Decompile and analyze malware binaries using Ghidra with AI-assisted code interpretation.</p><a href="lab-ghidra.html">Start L15 →</a></div>
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Forensic Examiner</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('ntfs')">NTFS artifact guide</button>
+      <button onclick="qp('timeline')">Timeline analysis tips</button>
+      <button onclick="qp('deleted')">Recover deleted files</button>
+      <button onclick="qp('registry')">Registry forensics</button>
+      <button onclick="qp('narrative')">Build attack narrative</button>
+      <button onclick="qp('report')">Court-ready report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about NTFS artifacts, timeline analysis, file recovery..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L14',
+  totalSteps: 12,
+  modeLabel: 'Digital Forensics Lab',
+  welcomeMsg: `Welcome to Lab L14: Disk Forensics & Super-Timeline Analysis!
+
+I'm your AI Forensic Examiner. I can help you with:
+- Understanding NTFS artifact types ($MFT, $LogFile, $UsnJrnl, Prefetch, LNK)
+- Building and filtering super-timelines with Plaso/log2timeline
+- Recovering deleted files and interpreting carving results
+- Analyzing Windows Registry hives for persistence mechanisms
+- Correlating multi-source artifacts into an attack narrative
+- Writing court-admissible forensic reports per SWGDE standards
+
+What forensic artifact would you like to explore first?`,
+  systemPrompt: `You are a senior digital forensics examiner (GCFE/GCFA certified) helping a cybersecurity student with Lab L14: Disk Forensics & Super-Timeline Analysis on SIFT Workstation (192.168.56.20).
+
+Technical context:
+- Tools: Autopsy 4, The Sleuth Kit (fls, icat, istat, mmls, fsstat, mactime), Plaso/log2timeline, dcfldd, python-registry, PhotoRec
+- Evidence: Windows NTFS forensic disk image (evidence.dd)
+- Key NTFS artifacts: $MFT (all file metadata), $LogFile (FS journal), $UsnJrnl (change journal), Prefetch (execution evidence), LNK files (recent files), shellbags (folder access), SRUM (resource usage)
+
+Forensic methodology (IMPORTANT):
+1. Never work on original evidence — always use forensic image
+2. Verify hash before and after analysis
+3. Document every action in chain of custody
+4. Super-timeline: log2timeline extracts events → psort filters/exports → analyze in CSV
+
+Key timestamps (NTFS):
+- $STANDARD_INFORMATION: Created, Modified, MFT Modified, Accessed (easily altered by attacker)
+- $FILE_NAME: Created, Modified (harder to alter — forensic gold)
+- Timestomping: $SI timestamps differ significantly from $FN timestamps = anti-forensics
+
+Help students understand: timeline gaps (attacker hibernation vs no activity), timestamp ambiguity, anti-forensics (timestomping, log clearing, wiper tools), and how to write defensible forensic findings.`,
+  quickPrompts: {
+    ntfs: `I found the following in my MFT analysis: a file "svchost32.exe" in C:\\Windows\\Temp with $SI Created=2024-03-01 08:15 but $FN Created=2024-02-28 23:58. The $SI timestamps differ from $FN by 8+ hours. What does this mean forensically? Is this evidence of timestomping?`,
+    timeline: `My Plaso timeline has 48,000 events in a 4-hour window. I need to narrow it down to find the initial compromise. What filters should I apply to find: 1) first execution of suspicious executables, 2) first external network connection, 3) first new registry run key added?`,
+    deleted: `PhotoRec recovered 127 files from the unallocated space. 23 are .exe files and 4 are .zip files. The .exe files don't appear in the MFT (truly deleted). How do I determine when they were deleted? Can I get timestamps for carved files? How do I prioritize which to examine first?`,
+    registry: `I found this registry value in HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run: "WindowsUpdate" = "C:\\ProgramData\\microsoft\\update\\svchost32.exe -persist". This is NOT a real Windows Update path. What are the forensic implications? How do I determine when this was created and by whom?`,
+    narrative: `My timeline shows: 08:15 cmd.exe Prefetch, 08:17 mimikatz.exe Prefetch (deleted), 08:22 NTLM auth to 5 workstations (Event 4648), 08:35 new scheduled task (taskschd.msc Prefetch), 08:40 large file copy to C:\\Temp. Build me an attacker activity narrative from these artifacts.`,
+    report: `I need to write a forensic report for potential litigation. Key findings: malware persistence via Run key, credential theft via mimikatz, lateral movement to 5 servers, data staged in C:\\Temp. Hash verified image, documented chain of custody. What sections should a SWGDE-compliant forensic report include?`
+  }
+});
+</script>
+</body>
+</html>

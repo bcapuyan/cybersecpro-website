@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L20: SOC Simulation Capstone | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-advanced">Advanced</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Capstone</span>
+    </div>
+    <h1>L20: Full SOC Simulation — Capstone Scenario</h1>
+    <p>You're the on-call analyst. An alert fires at 2am. Work a complete SOC scenario from initial triage through containment, forensic investigation, threat intelligence enrichment, and executive reporting — using every VM and tool in your lab. This is the full kill-chain, end to end.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">All Lab VMs</span>
+      <span class="tool-tag">Splunk</span>
+      <span class="tool-tag">Volatility 3</span>
+      <span class="tool-tag">Wireshark</span>
+      <span class="tool-tag">YARA</span>
+      <span class="tool-tag">MITRE ATT&amp;CK</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 14 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- SCENARIO BRIEF -->
+    <div class="phase-header" style="background:linear-gradient(135deg,#7b0000,#a00);">SCENARIO BRIEF — READ FIRST</div>
+    <div class="step-item" id="step-0" style="border-left:4px solid #cc0000;">
+      <div class="step-header" onclick="toggleStep(0)">
+        <span class="step-num" style="background:#cc0000;">!</span>
+        <span class="step-title">Scenario: Operation Dark Autumn</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p><strong>Situation:</strong> It's 02:14 UTC on a Tuesday. Your Splunk SIEM fires a Priority-1 alert: <em>"Potential ransomware pre-cursor — shadow copy deletion attempt detected on WEB01."</em></p>
+
+        <p><strong>Environment:</strong></p>
+        <ul>
+          <li>Kali Linux (192.168.56.10) — your analyst workstation</li>
+          <li>SIFT Workstation (192.168.56.20) — forensics platform</li>
+          <li>Metasploitable (192.168.56.101) — simulates compromised WEB01</li>
+          <li>REMnux (malware-net) — isolated malware analysis environment</li>
+        </ul>
+
+        <p><strong>What you know so far:</strong></p>
+        <ul>
+          <li>Splunk alert triggered by Event ID 4688 — <code>vssadmin delete shadows /all /quiet</code> executed by user <code>svc_backup</code></li>
+          <li>Source workstation: WEB01 (192.168.56.101)</li>
+          <li>Time: 02:07 UTC (7 minutes before you saw the alert)</li>
+          <li>svc_backup is a legitimate backup service account — but should NEVER run vssadmin</li>
+        </ul>
+
+        <p><strong>Your mission:</strong> Triage → Investigate → Contain → Hunt → Report. Complete all 14 steps and produce a full incident report.</p>
+
+        <div class="step-check">
+          <input type="checkbox" id="chk0" onchange="toggleStep(0)"> <label for="chk0">Scenario briefed — ready to proceed</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Initial Triage (0–15 minutes)</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Acknowledge alert and assess initial scope</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>First action — characterize the alert and determine if it's a true positive:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Splunk — expand context around the triggering event
+index=wineventlog host=WEB01
+  earliest=-30m@m latest=now
+  EventCode IN (4688, 4698, 4625, 4624, 4672, 7045)
+| eval time=strftime(_time, "%H:%M:%S")
+| table time, EventCode, Account_Name, Process_Name, Command_Line, Logon_Type
+| sort time
+
+# Quick check: has svc_backup ever run vssadmin before?
+index=wineventlog host=WEB01 Account_Name=svc_backup
+  Command_Line="*vssadmin*"
+  earliest=-90d@d
+| stats count by date_mday, Command_Line</pre>
+        </div>
+        <div class="findings-table">
+          <h4>Triage Decision</h4>
+          <table>
+            <tr><th>Question</th><th>Answer</th></tr>
+            <tr><td>True positive or false positive?</td><td><input type="text" placeholder="TP / FP / Unknown"></td></tr>
+            <tr><td>Was this the first such event?</td><td><input type="text" placeholder="Yes / No"></td></tr>
+            <tr><td>Any other hosts affected?</td><td><input type="text" placeholder="Check Splunk..."></td></tr>
+            <tr><td>Severity assessment</td><td><input type="text" placeholder="P1/P2/P3"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Splunk — build the attack timeline</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Expand the investigation window — look for the full attack chain on WEB01:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Look for what happened BEFORE the vssadmin command (precursor activity)
+index=wineventlog host=WEB01
+  earliest=-2h@h latest=+30m@m
+| eval suspicious=case(
+    EventCode=4698, "Scheduled Task Created",
+    EventCode=7045, "New Service Installed",
+    match(Command_Line, "(?i)powershell.*-enc"), "Encoded PS",
+    match(Command_Line, "(?i)(mimikatz|sekurlsa|lsadump)"), "Credential Dump",
+    match(Command_Line, "(?i)vssadmin.*delete"), "Shadow Delete",
+    match(Command_Line, "(?i)(net user|net localgroup)"), "Account Mgmt",
+    match(Command_Line, "(?i)(curl|wget|certutil|bitsadmin).*http"), "Download",
+    true(), null())
+| where isnotnull(suspicious)
+| table _time, suspicious, Account_Name, Command_Line
+| sort _time
+
+# Also check for lateral movement FROM WEB01
+index=wineventlog EventCode=4624 Logon_Type=3 Source_Network_Address=192.168.56.101
+  earliest=-4h@h
+| table _time, Account_Name, Workstation_Name, dest
+| sort _time</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Network capture — identify C2 communications</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>From Kali, capture traffic and look for C2 beaconing patterns:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Start tshark capture focused on WEB01
+sudo tshark -i eth1 \
+  -f "host 192.168.56.101" \
+  -w ~/capstone/WEB01_traffic.pcap &
+
+# Analyze existing capture if available
+tshark -r ~/capstone/WEB01_traffic.pcap \
+  -Y "not arp and not dns" \
+  -T fields \
+  -e frame.time_epoch -e ip.src -e ip.dst \
+  -e tcp.dstport -e frame.len \
+  -E header=y -E separator=, \
+  | python3 -c "
+import sys, csv, collections
+reader = csv.DictReader(sys.stdin)
+dst_count = collections.Counter()
+for row in reader:
+    key = f\"{row.get('ip.dst','')}:{row.get('tcp.dstport','')}\"
+    dst_count[key] += 1
+print('Top outbound connections from WEB01:')
+for dest, count in dst_count.most_common(15):
+    print(f'  {count:5d}x  {dest}')
+"
+
+# Check for C2 beaconing (regular interval connections)
+python3 ~/network-lab/beacon_detect.py 2>/dev/null || \
+  echo "Run the beacon detection script from Lab L06 on WEB01_traffic.pcap"</pre>
+        </div>
+        <div class="findings-table">
+          <table>
+            <tr><th>Finding</th><th>Details</th></tr>
+            <tr><td>Suspicious outbound IP</td><td><input type="text" placeholder="e.g., 185.x.x.x:4444"></td></tr>
+            <tr><td>Beacon interval detected</td><td><input type="text" placeholder="e.g., 30s ± 2s (CV=0.07)"></td></tr>
+            <tr><td>Total C2 connections</td><td><input type="text" placeholder="e.g., 24 connections in 12 min"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Containment (15–30 minutes)</div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Contain the compromised host</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Isolate WEB01 while preserving evidence — <strong>do not shut it down yet</strong> (live memory needed):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Option 1: Network isolation via firewall rule on Kali
+# Block all traffic from WEB01 except management channel
+sudo iptables -I FORWARD -s 192.168.56.101 -d ! 192.168.56.20 -j DROP
+sudo iptables -I FORWARD -d 192.168.56.101 -s ! 192.168.56.20 -j DROP
+
+# Option 2: If on VMware/VirtualBox — change network to host-only (no internet)
+# VBoxManage controlvm "WEB01" nic1 hostonly vboxnet0
+
+# Verify isolation (should fail)
+ping -c 1 -W 2 192.168.56.101
+
+# Document containment action in incident ticket
+echo "$(date -u) — WEB01 network-isolated. Traffic restricted to SIFT only." >> ~/capstone/incident_log.txt
+echo "$(date -u) — Analyst: $(whoami). Reason: Ransomware pre-cursor activity confirmed." >> ~/capstone/incident_log.txt</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Acquire volatile memory from WEB01 (live forensics)</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Capture RAM before any shutdown — this contains running processes, network connections, and encryption keys in memory:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># If WinPMem is available on WEB01:
+# On WEB01: winpmem_mini_x64_rc2.exe ~/capstone/WEB01_memory.raw
+
+# Simulate: use Volatility on an existing memory image
+# (Download a sample from volatility foundation or use one from your lab setup)
+ls ~/memory-lab/*.raw ~/memory-lab/*.vmem 2>/dev/null || \
+  echo "Memory image needed — see Lab L13 setup for acquisition steps"
+
+# Initial triage on memory image
+cd ~/memory-lab
+python3 vol.py -f evidence.raw windows.pslist.PsList | tee ~/capstone/pslist.txt
+python3 vol.py -f evidence.raw windows.netscan.NetScan | tee ~/capstone/netscan.txt
+python3 vol.py -f evidence.raw windows.malfind.Malfind | tee ~/capstone/malfind.txt
+
+echo "Memory triage complete"
+wc -l ~/capstone/*.txt</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Deep Forensic Investigation (30–90 minutes)</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Volatility — identify injected malicious code</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Volatility 3 — malware-specific investigation
+cd ~/memory-lab
+
+# Find suspicious processes (no parent, unusual paths)
+python3 vol.py -f evidence.raw windows.pstree.PsTree | \
+  grep -E "(cmd|powershell|wscript|cscript|mshta|regsvr32|rundll32)"
+
+# Find network connections from suspicious processes
+python3 vol.py -f evidence.raw windows.netscan.NetScan | \
+  grep -vE "(CLOSED|CLOSE_WAIT)" | \
+  grep -E "(ESTABLISHED|LISTENING)"
+
+# Dump injected memory regions from Malfind output
+# Get suspicious process PID from malfind output
+SUSPECT_PID=1234  # Replace with PID from malfind
+python3 vol.py -f evidence.raw -o ~/capstone/dumps/ \
+  windows.dumpfiles.DumpFiles --pid $SUSPECT_PID
+
+# Extract strings from dumped memory
+strings ~/capstone/dumps/*.dat | \
+  grep -iE "(http|https|cmd.exe|powershell|vssadmin|.onion|bitcoin)" | \
+  sort -u | tee ~/capstone/memory_strings.txt
+
+echo "Suspicious strings from memory:"
+head -30 ~/capstone/memory_strings.txt</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Disk forensics — find malware dropper and persistence</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># On SIFT — acquire and analyze WEB01 disk image
+# (In the lab, use the practice disk image from Lab L14)
+
+cd ~/disk-lab
+
+# Check Run/RunOnce keys for persistence
+python3 parse_registry.py
+
+# Look for recently modified executables in suspicious locations
+find ~/disk-lab/mount/Windows/Temp \
+     ~/disk-lab/mount/ProgramData \
+     ~/disk-lab/mount/Users/*/AppData/Roaming \
+  -name "*.exe" -newer ~/disk-lab/mount/Windows/System32/kernel32.dll \
+  2>/dev/null | tee ~/capstone/suspicious_exes.txt
+
+echo "Recently dropped executables:"
+cat ~/capstone/suspicious_exes.txt
+
+# Check for new scheduled tasks
+find ~/disk-lab/mount/Windows/System32/Tasks -newer \
+  ~/disk-lab/mount/Windows/System32/kernel32.dll 2>/dev/null | head -20</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Malware analysis — identify the ransomware family</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On REMnux — analyze the dropped executable to identify the malware family:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># On REMnux (isolated malware-net) — copy sample via shared folder
+# Transfer sample from SIFT to REMnux
+
+# Static analysis
+file ~/capstone/malware_sample.exe
+sha256sum ~/capstone/malware_sample.exe | tee ~/capstone/sample_hash.txt
+
+# Extract strings (including deobfuscated)
+floss ~/capstone/malware_sample.exe > ~/capstone/floss_strings.txt 2>/dev/null || \
+  strings ~/capstone/malware_sample.exe > ~/capstone/floss_strings.txt
+
+# Check imports with pefile
+python3 << 'EOF'
+import pefile, sys, os
+
+exe = 'capstone/malware_sample.exe'
+if not os.path.exists(exe):
+    print("Place malware sample at ~/capstone/malware_sample.exe")
+    print("For the lab: use any sample EXE from your Lab L04 exercises")
+    exit()
+
+pe = pefile.PE(exe)
+print("=== IMPORTS ===")
+for entry in pe.DIRECTORY_ENTRY_IMPORT:
+    dll = entry.dll.decode('utf-8', errors='replace')
+    apis = [imp.name.decode('utf-8', errors='replace') for imp in entry.imports if imp.name]
+    print(f"\n{dll}")
+    for api in apis[:10]: print(f"  {api}")
+EOF
+
+# YARA scan against known malware rules
+yara -r ~/yara-lab/rules/04_ransomware.yar ~/capstone/malware_sample.exe 2>/dev/null
+yara -r ~/yara-lab/rule_sources/signature-base/yara/ ~/capstone/malware_sample.exe 2>/dev/null | head -20</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Threat Intelligence &amp; Hunting (90–120 minutes)</div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Enrich IOCs and identify threat actor</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Enrich all IOCs from this incident
+cd ~/tip-lab
+source ~/.tip_keys
+
+# Enrich C2 IP(s)
+python3 enrich_iocs.py << 'EOF'
+# Add your IOCs here
+ioc_list = [
+    {"value": "YOUR_C2_IP_HERE", "type": "ip"},
+    {"value": "YOUR_MALWARE_HASH_HERE", "type": "hash_sha256"},
+]
+EOF
+
+# Check if C2 IP maps to known threat actor infrastructure
+python3 -c "
+import subprocess, json
+
+c2_ip = '185.234.219.44'  # Replace with your finding
+
+# Check Shodan for open ports and banners
+result = subprocess.run(
+    ['curl', '-s', f'https://internetdb.shodan.io/{c2_ip}'],
+    capture_output=True, text=True)
+data = json.loads(result.stdout)
+print(f'Shodan: {c2_ip}')
+print(f'  Open ports: {data.get(\"ports\", [])}')
+print(f'  Tags: {data.get(\"tags\", [])}')
+print(f'  Vulns: {data.get(\"vulns\", [])}')
+"</pre>
+        </div>
+        <div class="findings-table">
+          <table>
+            <tr><th>IOC</th><th>Type</th><th>Risk Score</th><th>Attribution</th></tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., 185.x.x.x"></td>
+              <td>IP</td>
+              <td><input type="text" placeholder="e.g., 92/100"></td>
+              <td><input type="text" placeholder="e.g., BlackCat ALPHV"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="SHA256 hash..."></td>
+              <td>Hash</td>
+              <td><input type="text" placeholder="e.g., 87/100"></td>
+              <td><input type="text" placeholder="e.g., 88/94 VT engines"></td>
+            </tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Threat hunt — search for lateral movement across all hosts</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Splunk — hunt for the same malware across other hosts
+# Look for same C2 IP, same malware hash, or same TTPs on other endpoints
+
+# Hunt 1: Any host communicating with C2 IP
+index=network dest_ip=185.234.219.44
+| stats count by src_ip, dest_port
+| sort -count
+
+# Hunt 2: Same encoded PowerShell pattern on other hosts
+index=wineventlog EventCode=4688 NOT host=WEB01
+  (Command_Line="*-enc*" OR Command_Line="*EncodedCommand*")
+| stats count by host, Account_Name
+| sort -count
+
+# Hunt 3: vssadmin delete on any host
+index=wineventlog Command_Line="*vssadmin*delete*"
+| stats count by host, Account_Name, _time
+| sort _time
+
+# Hunt 4: YARA scan across endpoints (if using Velociraptor or osquery)
+# velociraptor -v artifacts collect Windows.Detection.Yara.Process \
+#   --args Rules="$(cat ~/yara-lab/rules/04_ransomware.yar)"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase-header">Phase 5: Eradication &amp; Recovery (120–150 minutes)</div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Eradication — remove malware and persistence mechanisms</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Document the eradication plan based on your forensic findings:</p>
+        <div class="findings-table">
+          <table>
+            <tr><th>Artifact</th><th>Location</th><th>Removal Action</th></tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., malware.exe"></td>
+              <td><input type="text" placeholder="e.g., C:\ProgramData\..."></td>
+              <td><input type="text" placeholder="e.g., Delete + quarantine hash"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., Persistence Run key"></td>
+              <td><input type="text" placeholder="e.g., HKLM\...\Run\WindowsUpdate"></td>
+              <td><input type="text" placeholder="e.g., Delete registry key"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., C2 IP"></td>
+              <td><input type="text" placeholder="e.g., Firewall rule"></td>
+              <td><input type="text" placeholder="e.g., Block on perimeter FW"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., Compromised account"></td>
+              <td><input type="text" placeholder="e.g., svc_backup account"></td>
+              <td><input type="text" placeholder="e.g., Disable + reset credentials"></td>
+            </tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Map full kill chain to MITRE ATT&amp;CK</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <table>
+            <tr><th>Stage</th><th>Activity Observed</th><th>ATT&amp;CK Technique</th></tr>
+            <tr><td>Initial Access</td><td><input type="text" placeholder="How did attacker get in?"></td><td><input type="text" placeholder="e.g., T1190 — Exploit Public App"></td></tr>
+            <tr><td>Execution</td><td><input type="text" placeholder="e.g., PowerShell -enc"></td><td>T1059.001 — PowerShell</td></tr>
+            <tr><td>Persistence</td><td><input type="text" placeholder="e.g., Scheduled task"></td><td>T1053.005</td></tr>
+            <tr><td>Privilege Escalation</td><td><input type="text" placeholder="e.g., svc_backup abuse"></td><td><input type="text" placeholder="e.g., T1078 Valid Accounts"></td></tr>
+            <tr><td>Defense Evasion</td><td>Encoded PowerShell</td><td>T1027 — Obfuscated Files</td></tr>
+            <tr><td>Credential Access</td><td><input type="text" placeholder="e.g., Memory dump"></td><td>T1003 — Credential Dumping</td></tr>
+            <tr><td>Lateral Movement</td><td><input type="text" placeholder="Any other hosts?"></td><td><input type="text" placeholder="e.g., T1021.002"></td></tr>
+            <tr><td>Impact</td><td>vssadmin delete shadows</td><td>T1490 — Inhibit Recovery</td></tr>
+            <tr><td>C2</td><td><input type="text" placeholder="Beaconing interval..."></td><td>T1071.001 — Web Protocols</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="phase-header">Phase 6: Reporting (150–180 minutes)</div>
+
+    <div class="step-item" id="step-13">
+      <div class="step-header" onclick="toggleStep(13)">
+        <span class="step-num">13</span>
+        <span class="step-title">Write technical incident report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Use the AI analyst to help write your full technical report. Include all evidence, IOCs, and timeline.</p>
+        <div class="findings-table">
+          <h4>Incident Summary</h4>
+          <table>
+            <tr><th>Field</th><th>Value</th></tr>
+            <tr><td>Incident ID</td><td><input type="text" placeholder="e.g., INC-2024-0301-001"></td></tr>
+            <tr><td>Detection time</td><td><input type="text" placeholder="e.g., 2024-03-01 02:14 UTC"></td></tr>
+            <tr><td>Containment time</td><td><input type="text" placeholder="e.g., 02:30 UTC (16 min MTTC)"></td></tr>
+            <tr><td>Malware family</td><td><input type="text" placeholder="e.g., BlackCat/ALPHV ransomware"></td></tr>
+            <tr><td>Hosts confirmed compromised</td><td><input type="text" placeholder="e.g., WEB01 (192.168.56.101)"></td></tr>
+            <tr><td>Data encrypted</td><td><input type="text" placeholder="e.g., No — stopped pre-encryption"></td></tr>
+            <tr><td>Root cause</td><td><input type="text" placeholder="e.g., Vulnerable web app → RCE"></td></tr>
+            <tr><td>IOCs (key)</td><td><input type="text" placeholder="e.g., IP, hash, domain"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk13" onchange="toggleStep(13)"> <label for="chk13">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-14">
+      <div class="step-header" onclick="toggleStep(14)">
+        <span class="step-num">14</span>
+        <span class="step-title">Executive briefing and lessons learned</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Present a 1-page executive summary and identify detection/prevention gaps. Ask the AI analyst to help draft the executive brief.</p>
+        <div class="findings-table">
+          <h4>Lessons Learned</h4>
+          <table>
+            <tr><th>Gap Identified</th><th>Recommendation</th><th>Priority</th></tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., 7-min detection delay"></td>
+              <td><input type="text" placeholder="e.g., Tune alert threshold, reduce noise"></td>
+              <td><input type="text" placeholder="HIGH"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., No MFA on service accounts"></td>
+              <td><input type="text" placeholder="e.g., Enforce MFA + PAM for service accounts"></td>
+              <td><input type="text" placeholder="CRITICAL"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="e.g., No EDR on WEB01"></td>
+              <td><input type="text" placeholder="e.g., Deploy CrowdStrike/Defender for Endpoint"></td>
+              <td><input type="text" placeholder="HIGH"></td>
+            </tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk14" onchange="toggleStep(14)"> <label for="chk14">Capstone complete — all 14 steps done!</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Senior SOC Analyst</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('triage')">Help triage this alert</button>
+      <button onclick="qp('contain')">Containment decision</button>
+      <button onclick="qp('pivot')">Pivot from this IOC</button>
+      <button onclick="qp('timeline')">Build attack timeline</button>
+      <button onclick="qp('mitre')">Map to ATT&amp;CK</button>
+      <button onclick="qp('report')">Write incident report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Describe what you're seeing — I'll help you work the incident..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L20',
+  totalSteps: 14,
+  modeLabel: 'SOC Capstone',
+  welcomeMsg: `Welcome to Lab L20: Full SOC Simulation — Operation Dark Autumn.
+
+I'm your AI Senior SOC Analyst. This is the capstone — you're working a real incident and I'm your experienced colleague in the hot seat with you.
+
+I can help you at every stage:
+- TRIAGE: Is this a true positive? What's the priority?
+- INVESTIGATION: What does this Splunk output mean? What should I look for next?
+- FORENSICS: Help interpreting Volatility/disk artifacts
+- THREAT INTEL: What threat actor is this? What's next in their playbook?
+- HUNTING: Where else should I look? What TTPs are related?
+- REPORTING: Help writing the technical and executive reports
+
+Read the scenario brief first, then come back and tell me where you are in the investigation. Show me your Splunk output, Volatility findings, or IOCs — and we'll work it together.
+
+Clock is running. What's your first move?`,
+  systemPrompt: `You are a senior SOC analyst with 15 years of experience, working alongside a junior analyst during a live incident (Lab L20 capstone). The incident is "Operation Dark Autumn" — a ransomware pre-cursor event on WEB01 (192.168.56.101).
+
+You have full context of the scenario:
+- Alert: Event ID 4688, vssadmin delete shadows, user=svc_backup, host=WEB01
+- Lab environment: Kali (192.168.56.10), SIFT (192.168.56.20), Metasploitable as WEB01 (192.168.56.101), REMnux (malware-net)
+- Tools across all 19 prior labs are available: Splunk, Volatility 3, Wireshark, YARA, TIP (OTX/AbuseIPDB), Autopsy, Ghidra, Semgrep
+
+Your role: mentor the student through the incident response process. When they share evidence (Splunk output, Volatility results, network captures, IOCs), analyze it with them, explain what it means, and direct them to the next logical investigation step.
+
+Guide them through the SOC methodology:
+1. Triage (TP/FP decision, scope, priority)
+2. Containment (isolation without destroying evidence)
+3. Investigation (memory, disk, network, logs)
+4. Threat Intel (IOC enrichment, actor attribution)
+5. Hunting (lateral movement, other affected hosts)
+6. Eradication (what to clean and how)
+7. Recovery (restore services safely)
+8. Reporting (technical + executive)
+
+IMPORTANT: Don't just tell them answers — ask Socratic questions to build their analytical skills. When they share evidence, model good analyst thinking: "I see X, which could mean Y or Z — let's eliminate Z by checking W."
+
+This is a timed scenario. Create urgency — help them prioritize the most critical investigation steps first.`,
+  quickPrompts: {
+    triage: `I got this Splunk alert: "vssadmin delete shadows /all /quiet" executed by svc_backup on WEB01 at 02:07 UTC. This is my first contact with this alert. Is this definitely ransomware? Could it be a false positive? Walk me through how to triage this in the next 5 minutes.`,
+    contain: `I've confirmed this is a true positive — svc_backup has never run vssadmin before, and I can see C2 beaconing to 185.234.219.44. The question is: do I shut down WEB01 immediately to stop the attacker, or do I isolate it on the network but keep it running to preserve memory? What's the right call and why?`,
+    pivot: `Volatility malfind found a suspicious process: PID 3184, "svchost.exe" running from C:\\ProgramData\\Microsoft\\update\\svchost.exe (unusual path). It has an established connection to 185.234.219.44:4444. What should I do next to investigate this process? What evidence should I collect?`,
+    timeline: `Here's what I've found so far: 01:52 - User 'admin' logged in from 192.168.1.45 via RDP (unusual hour). 01:55 - cmd.exe spawned PowerShell with -enc parameter. 01:58 - New scheduled task created (name: WindowsUpdate). 02:07 - vssadmin delete shadows. 02:14 - Alert fired. Help me build the full kill chain from these timestamps.`,
+    mitre: `I found the following activity on WEB01: RDP login at 2am from external IP, encoded PowerShell execution, credential dump via mimikatz (found in Volatility strings), pass-the-hash to 3 other hosts (Event ID 4648), vssadmin delete shadows. Map each activity to MITRE ATT&CK techniques and give me the full ATT&CK Navigator coverage.`,
+    report: `The incident is contained. Here's my summary: Initial access via RDP brute force (T1110.001) → PowerShell dropper (T1059.001) → Cobalt Strike beacon to 185.234.219.44 (T1071) → Credential dump (T1003) → Attempted shadow delete (T1490, stopped). No encryption occurred. WEB01 isolated at 02:30 UTC. Write me a CISO-level executive briefing (half page) and a full technical incident report structure.`
+  }
+});
+</script>
+</body>
+</html>

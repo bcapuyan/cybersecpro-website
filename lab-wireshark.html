@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L01: Wireshark + AI Traffic Analysis — CyberSec Pro Academy</title>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- End Google Tag Manager -->
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --navy:#0a1628; --teal:#0e5f7a; --green:#00c896; --dark:#1a202c; --gray:#f4f6f9; --mid:#6b7280; --red:#ef4444; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: #f8fafc; }
+  a { text-decoration: none; color: inherit; }
+  nav { position: sticky; top: 0; z-index: 200; background: var(--navy); border-bottom: 2px solid var(--green); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 68px; }
+  .nav-logo { font-size: 20px; font-weight: 900; color: white; } .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; } .nav-links a:hover { color: var(--green); }
+  .nav-cta { background: var(--green); color: var(--navy) !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; }
+  .lab-progress-bar { background: var(--navy); padding: 10px 40px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .lp-label { font-size: 12px; font-weight: 700; color: #a0c4e8; white-space: nowrap; }
+  .lp-track { flex: 1; background: rgba(255,255,255,.1); border-radius: 8px; height: 6px; }
+  .lp-fill { height: 6px; background: var(--green); border-radius: 8px; transition: width .4s; }
+  .lp-pct { font-size: 12px; font-weight: 800; color: var(--green); white-space: nowrap; min-width: 35px; }
+  .lp-steps { font-size: 12px; color: #64748b; white-space: nowrap; }
+  .lab-layout { display: grid; grid-template-columns: 1fr 400px; min-height: calc(100vh - 108px); }
+  .lab-guide { padding: 40px; overflow-y: auto; }
+  .lab-header { background: linear-gradient(135deg, var(--navy) 0%, #0d3b6e 100%); border-radius: 18px; padding: 32px; color: white; margin-bottom: 32px; }
+  .lab-breadcrumb { font-size: 12px; color: #a0c4e8; margin-bottom: 12px; } .lab-breadcrumb a { color: var(--green); }
+  .lab-num-badge { display: inline-block; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 8px; background: rgba(0,200,150,.15); color: var(--green); letter-spacing: 1px; margin-bottom: 12px; }
+  .lab-header h1 { font-size: clamp(22px, 3vw, 32px); font-weight: 900; line-height: 1.15; margin-bottom: 12px; }
+  .lab-header h1 em { color: var(--green); font-style: normal; }
+  .lab-header p { color: #a0c4e8; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+  .lab-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+  .lab-meta-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c8d8e8; } .lab-meta-item strong { color: white; }
+  .scenario-box { background: rgba(14,95,122,.12); border: 1px solid rgba(14,95,122,.3); border-radius: 14px; padding: 20px 24px; margin-bottom: 28px; border-left: 4px solid var(--teal); }
+  .scenario-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--teal); margin-bottom: 8px; }
+  .scenario-box p { font-size: 14px; color: #374151; line-height: 1.7; } .scenario-box p+p { margin-top: 8px; }
+  .lab-phase { margin-bottom: 40px; }
+  .phase-title-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--gray); }
+  .phase-badge { width: 36px; height: 36px; border-radius: 10px; background: var(--navy); color: var(--green); font-weight: 900; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .phase-name { font-size: 18px; font-weight: 800; color: var(--navy); } .phase-desc { font-size: 13px; color: var(--mid); margin-top: 2px; }
+  .steps-list { display: flex; flex-direction: column; gap: 14px; }
+  .step-item { background: white; border-radius: 12px; border: 1px solid #e8f0fe; box-shadow: 0 2px 10px rgba(0,0,0,.05); overflow: hidden; }
+  .step-header { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; cursor: pointer; user-select: none; }
+  .step-header:hover { background: #f8faff; } .step-item.done .step-header { background: #f0fdf4; }
+  .step-num { width: 28px; height: 28px; border-radius: 8px; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: var(--mid); flex-shrink: 0; margin-top: 1px; transition: all .15s; }
+  .step-item.done .step-num { background: var(--green); border-color: var(--green); color: white; }
+  .step-num::after { content: attr(data-n); } .step-item.done .step-num::after { content: "✓"; }
+  .step-content { flex: 1; }
+  .step-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .step-item.done .step-title { color: var(--mid); }
+  .step-desc { font-size: 13px; color: var(--mid); line-height: 1.5; }
+  .step-body { padding: 0 18px 18px 60px; display: none; }
+  .step-item.open .step-body { display: block; }
+  .step-detail { font-size: 13px; color: #374151; line-height: 1.7; margin-bottom: 12px; }
+  .step-detail strong { color: var(--navy); }
+  .code-wrap { position: relative; margin: 10px 0; }
+  .code-block { background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 16px 50px 16px 16px; font-family: 'Consolas', monospace; font-size: 12.5px; line-height: 1.8; overflow-x: auto; }
+  .code-block .c { color: #64748b; } .code-block .k { color: #a5f3fc; } .code-block .s { color: #86efac; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.1); border: none; color: #94a3b8; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-weight: 600; }
+  .copy-btn:hover { background: rgba(255,255,255,.2); color: white; } .copy-btn.copied { color: var(--green); }
+  .alert { border-radius: 10px; padding: 12px 16px; margin: 10px 0; display: flex; gap: 10px; font-size: 13px; line-height: 1.6; }
+  .alert-icon { flex-shrink: 0; }
+  .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a5f; }
+  .alert-warn { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+  .ai-prompt { background: linear-gradient(90deg, rgba(0,200,150,.08), rgba(14,95,122,.08)); border: 1px solid rgba(0,200,150,.25); border-radius: 12px; padding: 16px; margin-top: 14px; }
+  .ai-prompt-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--green); margin-bottom: 8px; }
+  .ai-prompt p { font-size: 13px; color: #374151; line-height: 1.6; margin-bottom: 10px; }
+  .ai-prompt-btn { background: var(--green); color: var(--navy); font-weight: 800; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }
+  .ai-prompt-btn:hover { opacity: .85; }
+  .ai-sidebar { background: var(--navy); border-left: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; height: calc(100vh - 108px); position: sticky; top: 108px; }
+  .ai-header { padding: 16px 18px 14px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 12px; }
+  .ai-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--green), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .ai-name { font-size: 14px; font-weight: 800; color: white; }
+  .ai-status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+  .ai-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .ai-context-chip { margin: 10px 14px; background: rgba(0,200,150,.1); border: 1px solid rgba(0,200,150,.2); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #a0c4e8; }
+  .ai-context-chip strong { color: var(--green); }
+  .ai-chat { flex: 1; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .msg-ai .bubble { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 10px 10px 10px 3px; padding: 10px 12px; font-size: 12.5px; color: #e2e8f0; line-height: 1.6; }
+  .msg-user .bubble { background: rgba(0,200,150,.15); border: 1px solid rgba(0,200,150,.25); border-radius: 10px 10px 3px 10px; padding: 10px 12px; font-size: 12.5px; color: #e2e8f0; line-height: 1.6; margin-left: 20px; }
+  .msg-label { font-size: 10px; font-weight: 700; margin-bottom: 3px; }
+  .msg-ai .msg-label { color: var(--green); } .msg-user .msg-label { color: #94a3b8; text-align: right; }
+  .bubble code { background: rgba(0,0,0,.3); padding: 1px 4px; border-radius: 3px; font-family: monospace; font-size: 11px; color: #a5f3fc; }
+  .bubble strong { color: #e2e8f0; } .bubble ul, .bubble ol { padding-left: 16px; margin-top: 6px; } .bubble li { margin-bottom: 3px; }
+  .typing-indicator { display: flex; gap: 4px; padding: 8px 12px; }
+  .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: .2s; } .typing-dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
+  .quick-actions { padding: 8px 14px; border-top: 1px solid rgba(255,255,255,.08); }
+  .quick-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .quick-btns { display: flex; flex-wrap: wrap; gap: 5px; }
+  .quick-btn { font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 7px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: #c8d8e8; cursor: pointer; }
+  .quick-btn:hover { background: rgba(255,255,255,.12); color: white; }
+  .ai-input-area { padding: 10px 14px; border-top: 1px solid rgba(255,255,255,.08); }
+  .input-row { display: flex; gap: 7px; align-items: flex-end; }
+  .ai-textarea { flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); border-radius: 9px; padding: 9px 11px; color: white; font-size: 12.5px; font-family: inherit; resize: none; min-height: 38px; max-height: 100px; line-height: 1.5; outline: none; }
+  .ai-textarea:focus { border-color: rgba(0,200,150,.5); } .ai-textarea::placeholder { color: #64748b; }
+  .send-btn { width: 36px; height: 36px; border-radius: 9px; background: var(--green); color: var(--navy); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .send-btn:hover { opacity: .85; } .send-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .api-mini-banner { margin: 8px 14px; background: rgba(0,200,150,.08); border: 1px solid rgba(0,200,150,.2); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  .api-mini-banner p { font-size: 11px; color: #a0c4e8; } .api-mini-banner strong { color: var(--green); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--navy); border: 1px solid rgba(255,255,255,.15); border-radius: 18px; padding: 32px; max-width: 420px; width: 90%; }
+  .modal h3 { font-size: 18px; font-weight: 800; color: white; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: #a0c4e8; line-height: 1.6; margin-bottom: 16px; }
+  .modal-input { width: 100%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.2); border-radius: 9px; padding: 11px 14px; color: white; font-size: 13px; font-family: monospace; outline: none; margin-bottom: 10px; }
+  .modal-input:focus { border-color: var(--green); }
+  .modal-note { font-size: 11px; color: #64748b; margin-bottom: 18px; }
+  .modal-btns { display: flex; gap: 8px; }
+  .modal-save { flex: 1; background: var(--green); color: var(--navy); font-weight: 800; padding: 11px; border-radius: 9px; border: none; cursor: pointer; font-size: 14px; }
+  .modal-skip { background: transparent; border: 1px solid rgba(255,255,255,.2); color: #a0c4e8; font-weight: 600; padding: 11px 18px; border-radius: 9px; cursor: pointer; font-size: 13px; }
+  .next-lab { background: linear-gradient(135deg,var(--navy),#0d3b6e); border-radius: 14px; padding: 24px; text-align: center; color: white; margin-top: 32px; }
+  .next-lab h4 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+  .next-lab p { font-size: 13px; color: #a0c4e8; margin-bottom: 16px; }
+  .next-lab a { display: inline-block; background: var(--green); color: var(--navy); font-weight: 800; padding: 10px 24px; border-radius: 10px; font-size: 14px; }
+  @media(max-width:900px){.lab-layout{grid-template-columns:1fr}.ai-sidebar{display:none}nav{padding:0 20px}.lab-guide{padding:24px 20px}.lab-progress-bar{padding:10px 20px}}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<nav>
+  <a href="index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="labs.html">← All Labs</a>
+    <a href="lab-setup.html">Lab Setup</a>
+    <a href="checkout.html" class="nav-cta">Enroll Now</a>
+  </div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill" style="width:0%"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="labs.html">Labs</a> › <a href="labs.html">Network</a> › L01</div>
+    <div class="lab-num-badge">LAB L01 · NETWORK SECURITY · BEGINNER</div>
+    <h1>Wireshark + <em>AI Traffic Analysis</em></h1>
+    <p>Capture live packets from your lab network, analyze protocol distributions, apply Wireshark display filters, and use the AI Analyst to identify suspicious flows, decode attack signatures, and generate network-based IOCs.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>45 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Kali Linux</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Wireshark · tcpdump · tshark</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI Traffic Analysis</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box">
+    <div class="scenario-label">📡 Lab Scenario</div>
+    <p>Your SOC has flagged unusual outbound traffic from a workstation. You've been given a PCAP file and asked to determine: what protocols are in use, are there any suspicious connections, and is there evidence of data exfiltration or C2 communication?</p>
+    <p>In this lab you'll capture live traffic between your Kali VM and Metasploitable, analyze it in Wireshark, and use the AI Analyst to interpret your findings.</p>
+  </div>
+
+  <!-- PHASE 0 -->
+  <div class="lab-phase">
+    <div class="phase-title-row">
+      <div class="phase-badge">0</div>
+      <div><div class="phase-name">Phase 0 — Setup & Capture</div><div class="phase-desc">Get Wireshark running and capture your first PCAP</div></div>
+    </div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Verify lab network connectivity</div><div class="step-desc">Confirm Kali can reach Metasploitable before capturing</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Ensure both VMs are on the Host-Only network. From Kali:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">ping -c 3 192.168.56.101</span>   <span class="c"># Should reach Metasploitable</span><br><span class="k">ip addr show</span>                  <span class="c"># Find your interface name (eth0/eth1)</span><br><span class="k">nmap -sn 192.168.56.0/24</span>     <span class="c"># Discover all hosts on the network</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Start a background packet capture with tcpdump</div><div class="step-desc">Capture all traffic to a PCAP file while you generate activity</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Start capture in background (replace eth0 with your interface)</span><br><span class="k">sudo tcpdump -i eth0 -w /tmp/lab01_capture.pcap &</span><br><span class="k">CAPTURE_PID=$!</span><br><br><span class="c"># Generate diverse traffic to Metasploitable</span><br><span class="k">ping -c 5 192.168.56.101</span><br><span class="k">nmap -sV -p 22,80,21,23,3306 192.168.56.101</span><br><span class="k">curl -s http://192.168.56.101 > /dev/null</span><br><span class="k">ftp 192.168.56.101 <<< "quit"</span><br><br><span class="c"># Stop capture</span><br><span class="k">sudo kill $CAPTURE_PID</span><br><span class="k">ls -lh /tmp/lab01_capture.pcap</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Open the PCAP in Wireshark</div><div class="step-desc">Load and explore the capture file</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="k">wireshark /tmp/lab01_capture.pcap &</span></div></div>
+          <div class="step-detail" style="margin-top:10px">In Wireshark: go to <strong>Statistics → Protocol Hierarchy</strong> to see protocol distribution. Screenshot this — you'll share it with the AI Analyst.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="lab-phase">
+    <div class="phase-title-row">
+      <div class="phase-badge">1</div>
+      <div><div class="phase-name">Phase 1 — Display Filters & Analysis</div><div class="phase-desc">Use Wireshark filters to isolate traffic types and find anomalies</div></div>
+    </div>
+    <div class="steps-list">
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Apply essential display filters</div><div class="step-desc">Isolate protocols and connections of interest</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Enter these filters in the Wireshark display filter bar one at a time. Note what you see for each.</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Paste each into Wireshark's filter bar:</span><br><span class="k">tcp.flags.syn == 1 && tcp.flags.ack == 0</span>  <span class="c"># SYN packets = new connections</span><br><span class="k">tcp.flags.rst == 1</span>                          <span class="c"># RST = rejected connections</span><br><span class="k">ftp</span>                                         <span class="c"># FTP traffic (plaintext creds!)</span><br><span class="k">http</span>                                        <span class="c"># HTTP requests/responses</span><br><span class="k">icmp</span>                                        <span class="c"># Ping traffic</span><br><span class="k">ip.addr == 192.168.56.101</span>                   <span class="c"># All traffic to/from target</span><br><span class="k">tcp.port == 23</span>                              <span class="c"># Telnet — plaintext protocol</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Analyze conversations and endpoints</div><div class="step-desc">Statistics menus reveal the big picture of who's talking to whom</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Open these Statistics menus and record your findings:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># In Wireshark menus:</span><br><span class="k">Statistics → Conversations</span>       <span class="c"># All TCP/UDP conversations, data volume</span><br><span class="k">Statistics → Endpoints</span>           <span class="c"># All IPs and ports seen</span><br><span class="k">Statistics → Protocol Hierarchy</span>  <span class="c"># Breakdown by protocol %</span><br><span class="k">Analyze → Expert Information</span>    <span class="c"># Errors, warnings, anomalies flagged</span></div></div>
+          <div class="ai-prompt">
+            <div class="ai-prompt-label">🤖 AI Analyst</div>
+            <p>Paste the conversation summary (IPs, ports, data volumes) from the Conversations window into the AI chat. The AI will identify suspicious connections and explain what each protocol usage pattern suggests.</p>
+            <button class="ai-prompt-btn" onclick="qp('conversations')">Ask AI to analyze conversations →</button>
+          </div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Follow TCP streams</div><div class="step-desc">Reconstruct full sessions to read plaintext credentials and commands</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Right-click any TCP packet → <strong>Follow → TCP Stream</strong>. Do this for FTP, HTTP, and Telnet packets. You'll see the full plaintext conversation including any credentials.</div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>FTP and Telnet transmit credentials in cleartext. This is why they're banned in modern environments. You should be able to see the username and password in the stream.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Use tshark for command-line analysis</div><div class="step-desc">tshark enables scriptable, automated packet analysis</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Extract all unique IP conversations</span><br><span class="k">tshark -r /tmp/lab01_capture.pcap -q -z conv,tcp</span><br><br><span class="c"># Find all HTTP requests</span><br><span class="k">tshark -r /tmp/lab01_capture.pcap -Y "http.request" -T fields -e http.host -e http.request.uri</span><br><br><span class="c"># Extract DNS queries</span><br><span class="k">tshark -r /tmp/lab01_capture.pcap -Y "dns.qry.name" -T fields -e dns.qry.name | sort -u</span><br><br><span class="c"># Find large data transfers (potential exfiltration)</span><br><span class="k">tshark -r /tmp/lab01_capture.pcap -q -z io,stat,0 -z "io,stat,0,ip.addr==192.168.56.101"</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="lab-phase">
+    <div class="phase-title-row">
+      <div class="phase-badge">2</div>
+      <div><div class="phase-name">Phase 2 — Nmap Scan Detection</div><div class="phase-desc">Capture and identify what a port scan looks like in Wireshark</div></div>
+    </div>
+    <div class="steps-list">
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Capture an Nmap scan in real time</div><div class="step-desc">See exactly what a port scan looks like at the packet level</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Terminal 1: Start capture</span><br><span class="k">sudo tcpdump -i eth0 -w /tmp/nmap_scan.pcap host 192.168.56.101</span><br><br><span class="c"># Terminal 2: Run scans</span><br><span class="k">nmap -sS 192.168.56.101</span>    <span class="c"># SYN stealth scan</span><br><span class="k">nmap -sU -p 53,161 192.168.56.101</span>  <span class="c"># UDP scan</span><br><span class="k">nmap -sV 192.168.56.101</span>    <span class="c"># Version detection</span><br><br><span class="c"># Terminal 1: Stop capture (Ctrl+C)</span><br><span class="k">wireshark /tmp/nmap_scan.pcap &</span></div></div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>Filter: <code>tcp.flags.syn==1 && tcp.flags.ack==0</code> — you'll see hundreds of SYN packets to sequential ports. This is the signature of a SYN scan.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Identify scan patterns with AI</div><div class="step-desc">Use the AI Analyst to characterize the scan type and write detection signatures</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt">
+            <div class="ai-prompt-label">🤖 AI Analyst — Scan Detection</div>
+            <p>Export 20-30 rows from the Wireshark packet list (File → Export Packet Dissections → As CSV) and paste into the AI. It will identify the scan type, explain the TCP flag patterns, and write a Snort/Suricata signature to detect this scan.</p>
+            <button class="ai-prompt-btn" onclick="qp('scan')">Ask AI to identify scan type and write IDS rule →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="lab-phase">
+    <div class="phase-title-row">
+      <div class="phase-badge">3</div>
+      <div><div class="phase-name">Phase 3 — AI IOC Extraction & Report</div><div class="phase-desc">Synthesize all findings into network-based IOCs and a detection summary</div></div>
+    </div>
+    <div class="steps-list">
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Export objects and identify data exfiltration indicators</div><div class="step-desc">Recover files transferred over HTTP, FTP, or SMB</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Wireshark: <strong>File → Export Objects → HTTP</strong> (or FTP-DATA). This recovers any files transferred during your capture session. Also useful for malware C2 analysis.</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># CLI equivalent using tshark</span><br><span class="k">tshark -r /tmp/lab01_capture.pcap --export-objects http,/tmp/http_objects/</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Generate network IOCs with AI</div><div class="step-desc">Convert your findings into structured threat intel</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt">
+            <div class="ai-prompt-label">🤖 AI Analyst — IOC Generation</div>
+            <p>Share your tshark output (conversations, DNS queries, HTTP hosts). The AI will extract network IOCs (IPs, domains, user-agents, URIs), assign confidence levels, and format them for SIEM ingestion.</p>
+            <button class="ai-prompt-btn" onclick="qp('ioc')">Extract and structure network IOCs →</button>
+          </div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — key takeaways</div><div class="step-desc">Review what you've learned and document findings</div></div></div>
+        <div class="step-body">
+          <div class="step-detail"><strong>You should now be able to:</strong><br>
+          ✅ Capture live traffic with tcpdump and tshark<br>
+          ✅ Apply Wireshark display filters to isolate traffic types<br>
+          ✅ Read plaintext credentials in cleartext protocol streams<br>
+          ✅ Identify port scan signatures in packet captures<br>
+          ✅ Extract transferred files from PCAPs<br>
+          ✅ Generate network-based IOCs from traffic analysis<br><br>
+          Ask the AI Analyst to generate a one-page network analysis report based on your findings.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="next-lab">
+    <h4>Next: Lab L02 — AI-Powered SIEM (Splunk)</h4>
+    <p>Take the traffic you've analyzed and build detection rules in Splunk to automate alerting on these patterns.</p>
+    <a href="labs/lab-splunk.html">Start L02 →</a>
+  </div>
+</div>
+
+<!-- AI SIDEBAR -->
+<div class="ai-sidebar">
+  <div class="ai-header">
+    <div class="ai-avatar">🤖</div>
+    <div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L01 — Network Analysis Mode</div></div>
+  </div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Wireshark traffic analysis on Kali Linux. Analyzing PCAP files for suspicious traffic, attack signatures, and network IOCs.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key to enable live analysis</p></div>
+  <div class="ai-chat" id="aiChat">
+    <div class="msg msg-ai"><div class="msg-label">AI Analyst</div><div class="bubble">I'm your network traffic analyst for Lab L01. Paste any Wireshark output, tshark results, or packet summaries and I'll help you:<br><ul><li>Identify suspicious traffic patterns</li><li>Interpret TCP flags and protocol behavior</li><li>Detect scan signatures</li><li>Extract network IOCs</li><li>Write Snort/Suricata detection rules</li></ul>Start by running the capture commands and sharing what you see.</div></div>
+  </div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('conversations')">Analyze Conversations</button>
+      <button class="quick-btn" onclick="qp('scan')">ID Scan Type</button>
+      <button class="quick-btn" onclick="qp('ioc')">Extract IOCs</button>
+      <button class="quick-btn" onclick="qp('snort')">Write Snort Rule</button>
+      <button class="quick-btn" onclick="qp('exfil')">Detect Exfiltration</button>
+      <button class="quick-btn" onclick="qp('report')">Draft Report</button>
+    </div>
+  </div>
+  <div class="ai-input-area">
+    <div class="input-row">
+      <textarea class="ai-textarea" id="aiInput" placeholder="Paste Wireshark output, tshark results, or ask a question..." onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h3>Connect AI Analyst</h3>
+    <p>Enter your Anthropic API key. Stored locally in your browser only.</p>
+    <input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-...">
+    <div class="modal-note">Get your key at console.anthropic.com.</div>
+    <div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div>
+  </div>
+</div>
+
+<script>
+const TOTAL_STEPS = 12;
+let apiKey = localStorage.getItem('cspa_api_key') || '';
+const chatHistory = [];
+const LAB_SYSTEM = `You are a senior network security analyst and instructor helping a student with Lab L01: Wireshark + AI Traffic Analysis on Kali Linux.
+
+Help with: interpreting Wireshark packet captures, identifying suspicious traffic patterns, explaining TCP/UDP/ICMP behavior, detecting port scans and attack signatures, extracting network IOCs (IPs, domains, ports, user-agents), writing Snort/Suricata detection rules, and identifying cleartext credential exposure.
+
+Be practical and direct. When analyzing packet data, highlight the most suspicious elements first. Explain WHY something is suspicious, not just THAT it is.`;
+
+function toggleStep(n){const el=document.getElementById('step-'+n);el.classList.toggle('open');if(el.classList.contains('open')&&!el.classList.contains('done')){el.classList.add('done');saveProgress();updateProgress();}}
+function saveProgress(){const d={};for(let i=0;i<TOTAL_STEPS;i++){const el=document.getElementById('step-'+i);if(el)d[i]=el.classList.contains('done');}localStorage.setItem('lab_L01_progress',JSON.stringify(d));}
+function updateProgress(){let c=0;for(let i=0;i<TOTAL_STEPS;i++){const el=document.getElementById('step-'+i);if(el&&el.classList.contains('done'))c++;}const p=Math.round((c/TOTAL_STEPS)*100);document.getElementById('lpFill').style.width=p+'%';document.getElementById('lpPct').textContent=p+'%';document.getElementById('lpSteps').textContent=c+' / '+TOTAL_STEPS+' steps';}
+function addMsg(role,text){const chat=document.getElementById('aiChat');const div=document.createElement('div');div.className='msg msg-'+role;div.innerHTML=`<div class="msg-label">${role==='ai'?'AI Analyst':'You'}</div><div class="bubble">${fmt(text)}</div>`;chat.appendChild(div);chat.scrollTop=chat.scrollHeight;}
+function fmt(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>');}
+function showTyping(){const chat=document.getElementById('aiChat');const div=document.createElement('div');div.id='typing';div.className='msg msg-ai';div.innerHTML='<div class="msg-label">AI Analyst</div><div class="bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';chat.appendChild(div);chat.scrollTop=chat.scrollHeight;}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+async function sendMessage(){const input=document.getElementById('aiInput');const text=input.value.trim();if(!text)return;input.value='';if(!apiKey){openApiModal();return;}addMsg('user',text);chatHistory.push({role:'user',content:text});showTyping();document.getElementById('sendBtn').disabled=true;try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-4-6',max_tokens:1500,system:LAB_SYSTEM,messages:chatHistory.slice(-10)})});const data=await res.json();removeTyping();if(data.error){addMsg('ai','Error: '+data.error.message);}else{const reply=data.content[0].text;chatHistory.push({role:'assistant',content:reply});addMsg('ai',reply);}}catch(err){removeTyping();addMsg('ai','Connection error: '+err.message);}document.getElementById('sendBtn').disabled=false;}
+function qp(type){const p={conversations:"I ran Statistics → Conversations in Wireshark. Here's what I see:\n\n[PASTE CONVERSATION DATA]\n\nPlease identify any suspicious connections, explain what each protocol/port combination means, and flag anything that warrants investigation.",scan:"I captured an Nmap scan in Wireshark. Here are the TCP flags I'm seeing in the packet list:\n\n[PASTE PACKET SUMMARY]\n\nPlease: 1) Identify the scan type, 2) Explain what the TCP flag pattern tells us, 3) Write a Snort rule to detect this scan.",ioc:"Here is my tshark output showing all connections and DNS queries:\n\n[PASTE TSHARK OUTPUT]\n\nPlease extract all network IOCs, assign confidence levels, and format them for SIEM ingestion.",snort:"Based on the attack traffic I observed, please write a Snort/Suricata detection rule for:\n\n[DESCRIBE THE ATTACK PATTERN]",exfil:"I found these large data transfers in my PCAP. Please analyze whether this could be data exfiltration:\n\n[PASTE CONNECTION DATA WITH BYTE COUNTS]",report:"Please draft a network traffic analysis report based on my Wireshark findings:\n\n[PASTE ALL FINDINGS]"};document.getElementById('aiInput').value=p[type];document.getElementById('aiInput').focus();}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function openApiModal(){document.getElementById('apiModal').classList.add('open');}
+function closeApiModal(){document.getElementById('apiModal').classList.remove('open');}
+function saveKey(){const val=document.getElementById('apiKeyInput').value.trim();if(!val.startsWith('sk-')){alert('Invalid key');return;}apiKey=val;localStorage.setItem('cspa_api_key',apiKey);document.getElementById('apiBanner').style.display='none';document.getElementById('aiStatus').textContent='Online — Network Analysis Mode';closeApiModal();addMsg('ai',"Connected. Paste your Wireshark or tshark output and I'll analyze it.");}
+function copyCmd(btn){const block=btn.nextElementSibling;const text=block.innerText;navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1800);});}
+(function init(){const saved=JSON.parse(localStorage.getItem('lab_L01_progress')||'{}');for(let i=0;i<TOTAL_STEPS;i++){if(saved[i]){const el=document.getElementById('step-'+i);if(el)el.classList.add('done');}}updateProgress();if(apiKey){document.getElementById('apiBanner').style.display='none';document.getElementById('aiStatus').textContent='Online — Network Analysis Mode';}document.getElementById('apiModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeApiModal();});})();
+</script>
+</body>
+</html>

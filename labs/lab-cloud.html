@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L09: Cloud Security &amp; CloudTrail Analysis | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-progress-bar">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 12 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-guide">
+
+    <div class="lab-header"><div class="lab-meta">
+      <span class="lab-badge badge-advanced">Advanced</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Cloud Security</span>
+    </div>
+    <h1>L09: Cloud Security — AWS CloudTrail Investigation</h1>
+    <p>Investigate a simulated AWS breach using CloudTrail logs. Detect privilege escalation, data exfiltration, IAM abuse, and unauthorized resource creation. Use Python to parse logs at scale, build detection queries, and generate incident reports aligned with the AWS Shared Responsibility Model.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">AWS CloudTrail</span>
+      <span class="tool-tag">Python 3</span>
+      <span class="tool-tag">pandas</span>
+      <span class="tool-tag">AWS CLI</span>
+      <span class="tool-tag">jq</span>
+      <span class="tool-tag">Kali Linux</span>
+    </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: CloudTrail Setup &amp; Log Acquisition</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Install AWS CLI and configure lab environment</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On Kali Linux, install the AWS CLI and Python dependencies:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>sudo apt update && sudo apt install -y awscli jq python3-pip
+pip3 install boto3 pandas matplotlib
+
+mkdir ~/cloud-lab && cd ~/cloud-lab
+
+# Configure AWS CLI with read-only credentials for the lab
+# (Use a dedicated lab AWS account or provided credentials)
+aws configure
+# AWS Access Key ID: [your lab key]
+# AWS Secret Access Key: [your lab secret]
+# Default region: us-east-1
+# Output format: json
+
+# Verify access
+aws sts get-caller-identity</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Generate or download simulated CloudTrail breach logs</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Generate a realistic CloudTrail log dataset containing a multi-stage AWS breach:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/cloud-lab/generate_cloudtrail.py << 'EOF'
+import json, random, datetime, uuid
+
+def make_event(time, user, action, resource, source_ip, region='us-east-1', error=None):
+    service, api = action.split(':')
+    event = {
+        "eventVersion": "1.09",
+        "userIdentity": {
+            "type": "IAMUser",
+            "principalId": f"AIDA{uuid.uuid4().hex[:16].upper()}",
+            "arn": f"arn:aws:iam::123456789012:user/{user}",
+            "accountId": "123456789012",
+            "userName": user
+        },
+        "eventTime": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "eventSource": f"{service}.amazonaws.com",
+        "eventName": api,
+        "awsRegion": region,
+        "sourceIPAddress": source_ip,
+        "userAgent": "aws-cli/2.15.0 Python/3.12.0",
+        "requestID": str(uuid.uuid4()),
+        "eventID": str(uuid.uuid4()),
+        "readOnly": api.startswith(('Get','List','Describe')),
+        "resources": [{"type": "AWS::IAM::User", "ARN": resource}],
+    }
+    if error:
+        event["errorCode"] = error[0]
+        event["errorMessage"] = error[1]
+    return event
+
+events = []
+base = datetime.datetime(2024, 3, 1, 8, 0, 0)
+attacker_ip = "185.234.219.44"  # External IP
+legitimate_ip = "10.0.1.50"
+
+# Phase 1: Reconnaissance (legitimate-looking)
+for i in range(20):
+    t = base + datetime.timedelta(minutes=i*2)
+    events.append(make_event(t, "dev-alice", "iam:ListUsers",
+        "arn:aws:iam::123456789012:user/*", legitimate_ip))
+    events.append(make_event(t+datetime.timedelta(seconds=30),
+        "dev-alice", "iam:ListRoles",
+        "arn:aws:iam::123456789012:role/*", legitimate_ip))
+
+# Phase 2: Compromised credential — attacker from external IP
+compromise_time = base + datetime.timedelta(hours=2)
+# Attacker enumerates
+for api in ["iam:ListUsers","iam:ListPolicies","iam:GetAccountSummary",
+            "ec2:DescribeInstances","s3:ListBuckets","iam:ListAttachedUserPolicies"]:
+    events.append(make_event(compromise_time, "dev-alice", api,
+        "arn:aws:iam::123456789012:user/dev-alice", attacker_ip))
+    compromise_time += datetime.timedelta(seconds=15)
+
+# Phase 3: Privilege escalation
+for api, resource in [
+    ("iam:AttachUserPolicy", "arn:aws:iam::aws:policy/AdministratorAccess"),
+    ("iam:CreateAccessKey", "arn:aws:iam::123456789012:user/dev-alice"),
+    ("iam:PutUserPolicy", "arn:aws:iam::123456789012:user/dev-alice"),
+]:
+    events.append(make_event(compromise_time, "dev-alice", api, resource, attacker_ip))
+    compromise_time += datetime.timedelta(seconds=30)
+
+# Phase 4: Data exfiltration
+for i in range(15):
+    events.append(make_event(compromise_time, "dev-alice", "s3:GetObject",
+        f"arn:aws:s3:::company-sensitive-data/confidential/file{i}.csv", attacker_ip))
+    compromise_time += datetime.timedelta(seconds=10)
+
+# Phase 5: Persistence — new admin user
+for api, resource in [
+    ("iam:CreateUser", "arn:aws:iam::123456789012:user/backup-svc"),
+    ("iam:AttachUserPolicy", "arn:aws:iam::aws:policy/AdministratorAccess"),
+    ("iam:CreateAccessKey", "arn:aws:iam::123456789012:user/backup-svc"),
+    ("ec2:RunInstances", "arn:aws:ec2:us-east-1:123456789012:instance/*"),
+]:
+    events.append(make_event(compromise_time, "dev-alice", api, resource, attacker_ip))
+    compromise_time += datetime.timedelta(seconds=45)
+
+# Add some noise (normal activity from legit users)
+for i in range(50):
+    t = base + datetime.timedelta(minutes=random.randint(0, 480))
+    user = random.choice(["dev-bob", "dev-charlie", "svc-deploy"])
+    events.append(make_event(t, user,
+        random.choice(["ec2:DescribeInstances","s3:ListBuckets","iam:GetUser"]),
+        f"arn:aws:iam::123456789012:user/{user}", legitimate_ip))
+
+events.sort(key=lambda x: x['eventTime'])
+with open('cloudtrail_breach.json', 'w') as f:
+    json.dump({"Records": events}, f, indent=2)
+print(f"Generated {len(events)} CloudTrail events")
+EOF
+cd ~/cloud-lab && python3 generate_cloudtrail.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Reconnaissance &amp; Privilege Escalation Detection</div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Parse CloudTrail logs and extract key fields</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/cloud-lab/parse_cloudtrail.py << 'EOF'
+import json, pandas as pd
+
+with open('cloudtrail_breach.json') as f:
+    data = json.load(f)
+
+records = []
+for event in data['Records']:
+    records.append({
+        'time': event['eventTime'],
+        'user': event['userIdentity'].get('userName', event['userIdentity'].get('type','')),
+        'event_name': event['eventName'],
+        'event_source': event['eventSource'],
+        'source_ip': event['sourceIPAddress'],
+        'region': event['awsRegion'],
+        'read_only': event.get('readOnly', False),
+        'error_code': event.get('errorCode', ''),
+        'resource': event['resources'][0]['ARN'] if event.get('resources') else '',
+    })
+
+df = pd.DataFrame(records)
+df['time'] = pd.to_datetime(df['time'])
+df['hour'] = df['time'].dt.hour
+
+print(f"Total events: {len(df)}")
+print(f"\nEvents by user:\n{df['user'].value_counts()}")
+print(f"\nEvents by source IP:\n{df['source_ip'].value_counts().head()}")
+print(f"\nUnique API calls: {df['event_name'].nunique()}")
+
+df.to_csv('cloudtrail_parsed.csv', index=False)
+print("\nSaved to cloudtrail_parsed.csv")
+EOF
+python3 parse_cloudtrail.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Detect IAM reconnaissance and enumeration</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Identify accounts performing excessive IAM read operations — a common pre-escalation step:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 << 'EOF'
+import pandas as pd
+
+df = pd.read_csv('cloudtrail_parsed.csv', parse_dates=['time'])
+
+# IAM enumeration APIs
+iam_recon_apis = ['ListUsers','ListRoles','ListPolicies','GetAccountSummary',
+                   'ListAttachedUserPolicies','ListGroupsForUser','GetUser',
+                   'ListAccessKeys','GetPolicy','ListAccountAliases']
+
+# Flag: multiple distinct IAM read APIs from same IP in short window
+recon = df[df['event_name'].isin(iam_recon_apis)].copy()
+recon_summary = recon.groupby(['source_ip', 'user']).agg(
+    api_count=('event_name', 'count'),
+    unique_apis=('event_name', 'nunique'),
+    first_seen=('time', 'min'),
+    last_seen=('time', 'max')
+).reset_index()
+recon_summary['duration_min'] = (
+    recon_summary['last_seen'] - recon_summary['first_seen']
+).dt.total_seconds() / 60
+
+# Flag: many distinct APIs from external IP
+flagged = recon_summary[recon_summary['unique_apis'] >= 4]
+print("IAM Reconnaissance Detection:")
+print(flagged.to_string(index=False))
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Detect privilege escalation via IAM policy attachment</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Flag <code>AttachUserPolicy</code> / <code>PutUserPolicy</code> calls granting AdministratorAccess:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 << 'EOF'
+import pandas as pd
+
+df = pd.read_csv('cloudtrail_parsed.csv', parse_dates=['time'])
+
+# Privilege escalation indicators
+privesc_apis = ['AttachUserPolicy', 'PutUserPolicy', 'AttachRolePolicy',
+                'CreatePolicyVersion', 'SetDefaultPolicyVersion',
+                'AddUserToGroup', 'CreateLoginProfile', 'UpdateLoginProfile']
+
+privesc = df[df['event_name'].isin(privesc_apis)].copy()
+
+print(f"[!] Privilege escalation API calls detected: {len(privesc)}")
+for _, row in privesc.iterrows():
+    print(f"\n  Time:    {row['time']}")
+    print(f"  User:    {row['user']}")
+    print(f"  API:     {row['event_name']}")
+    print(f"  Resource:{row['resource']}")
+    print(f"  Src IP:  {row['source_ip']}")
+
+    # Check for AdministratorAccess policy attachment
+    if 'AdministratorAccess' in str(row['resource']):
+        print(f"  [CRITICAL] AdministratorAccess policy attached!")
+        print(f"  MITRE: T1098 — Account Manipulation")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Data Exfiltration &amp; Persistence Detection</div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Detect S3 data exfiltration patterns</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 << 'EOF'
+import pandas as pd
+from datetime import timedelta
+
+df = pd.read_csv('cloudtrail_parsed.csv', parse_dates=['time'])
+
+# S3 GetObject spikes (>10 objects in 5 minutes from external IP)
+s3_gets = df[df['event_name'] == 'GetObject'].copy()
+
+results = []
+for ip, group in s3_gets.groupby('source_ip'):
+    group = group.sort_values('time')
+    for i, row in group.iterrows():
+        window = group[(group['time'] >= row['time']) &
+                       (group['time'] <= row['time'] + timedelta(minutes=5))]
+        if len(window) >= 10:
+            results.append({
+                'source_ip': ip,
+                'user': row['user'],
+                'start': row['time'].isoformat(),
+                'objects_accessed': len(window),
+                'buckets': list(window['resource'].str.extract(r'arn:aws:s3:::([^/]+)')[0].unique()),
+            })
+            break
+
+if results:
+    for r in results:
+        print(f"\n[ALERT] S3 Mass Download Detected!")
+        print(f"  Source IP:   {r['source_ip']}")
+        print(f"  User:        {r['user']}")
+        print(f"  Time:        {r['start']}")
+        print(f"  Objects:     {r['objects_accessed']} in 5 min")
+        print(f"  Buckets:     {r['buckets']}")
+        print(f"  MITRE: T1530 — Data from Cloud Storage Object")
+else:
+    print("No S3 exfiltration detected in this window")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Detect persistence via rogue IAM user creation</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 << 'EOF'
+import pandas as pd
+
+df = pd.read_csv('cloudtrail_parsed.csv', parse_dates=['time'])
+
+# Persistence: CreateUser → AttachUserPolicy (Admin) → CreateAccessKey
+# happening in rapid sequence
+persistence_apis = ['CreateUser', 'CreateAccessKey', 'AttachUserPolicy']
+persist = df[df['event_name'].isin(persistence_apis)].copy()
+
+print(f"Persistence-related API calls: {len(persist)}")
+print()
+for _, row in persist.iterrows():
+    alert_level = "CRITICAL" if row['event_name'] in ['CreateUser','CreateAccessKey'] else "HIGH"
+    print(f"[{alert_level}] {row['time']} | {row['user']}@{row['source_ip']}")
+    print(f"         {row['event_name']} → {row['resource']}")
+
+# Also check for unauthorized EC2 instance launches (crypto mining, C2 hosting)
+ec2_launches = df[df['event_name'] == 'RunInstances']
+if len(ec2_launches) > 0:
+    print(f"\n[CRITICAL] Unauthorized EC2 launch detected:")
+    for _, row in ec2_launches.iterrows():
+        print(f"  {row['time']} | {row['user']}@{row['source_ip']}")
+        print(f"  MITRE: T1578.002 — Create Cloud Instance")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Reconstruct the full attack timeline</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">python3 << 'EOF'
+import pandas as pd
+
+df = pd.read_csv('cloudtrail_parsed.csv', parse_dates=['time'])
+ATTACKER_IP = "185.234.219.44"
+
+# Filter to attacker IP and sort chronologically
+attacker_events = df[df['source_ip'] == ATTACKER_IP].sort_values('time')
+
+print("=" * 70)
+print("ATTACK TIMELINE RECONSTRUCTION")
+print("=" * 70)
+
+phases = {
+    'Reconnaissance': ['ListUsers','ListRoles','ListPolicies','GetAccountSummary',
+                       'DescribeInstances','ListBuckets','ListAttachedUserPolicies'],
+    'Privilege Escalation': ['AttachUserPolicy','PutUserPolicy','CreateAccessKey'],
+    'Data Exfiltration': ['GetObject'],
+    'Persistence': ['CreateUser','RunInstances'],
+}
+
+for _, row in attacker_events.iterrows():
+    phase = 'Other'
+    for p, apis in phases.items():
+        if row['event_name'] in apis: phase = p; break
+    print(f"[{row['time'].strftime('%H:%M:%S')}] [{phase:22}] {row['event_name']:<30} {row['user']}")
+
+print(f"\nTotal attacker events: {len(attacker_events)}")
+print(f"Compromised account: {attacker_events['user'].mode()[0]}")
+EOF</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Detection Rules &amp; Incident Response</div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Write AWS CloudWatch detection queries</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># CloudWatch Logs Insights query — privilege escalation detection
+# Run these in AWS Console → CloudWatch → Log Insights → Select CloudTrail log group
+
+# Query 1: IAM privilege escalation
+fields eventTime, userIdentity.userName, eventName, requestParameters.policyArn
+| filter eventName in ["AttachUserPolicy", "PutUserPolicy", "AttachRolePolicy", "CreatePolicyVersion"]
+| filter requestParameters.policyArn like /AdministratorAccess/
+| sort eventTime desc
+| limit 50
+
+# Query 2: External IP accessing sensitive APIs
+fields eventTime, userIdentity.userName, eventName, sourceIPAddress
+| filter sourceIPAddress not like /^10\./ and sourceIPAddress not like /^192\.168\./
+| filter eventName in ["CreateUser","CreateAccessKey","DeleteTrail","PutBucketPolicy","GetObject"]
+| sort eventTime desc
+| limit 100
+
+# Query 3: Mass S3 data access
+fields eventTime, userIdentity.userName, sourceIPAddress, requestParameters.bucketName
+| filter eventName = "GetObject"
+| stats count(*) as access_count by userIdentity.userName, sourceIPAddress, bin(5m)
+| filter access_count > 10
+| sort access_count desc</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Simulate containment actions via AWS CLI</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Document the containment commands (run only in your lab account):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># 1. Disable compromised user's access keys
+aws iam list-access-keys --user-name dev-alice
+aws iam update-access-key --user-name dev-alice \
+    --access-key-id AKIA... --status Inactive
+
+# 2. Attach deny-all policy to compromised account
+aws iam put-user-policy --user-name dev-alice \
+    --policy-name EmergencyDeny \
+    --policy-document '{
+      "Version":"2012-10-17",
+      "Statement":[{"Effect":"Deny","Action":"*","Resource":"*"}]
+    }'
+
+# 3. Remove unauthorized admin policy from compromised user
+aws iam detach-user-policy --user-name dev-alice \
+    --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+# 4. Delete rogue persistence user
+aws iam delete-access-key --user-name backup-svc --access-key-id AKIA...
+aws iam detach-user-policy --user-name backup-svc \
+    --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+aws iam delete-user --user-name backup-svc
+
+# 5. Terminate unauthorized EC2 instance
+aws ec2 terminate-instances --instance-ids i-0abc123def456789
+
+# 6. Enable CloudTrail if disabled
+aws cloudtrail start-logging --name my-trail
+
+echo "Containment actions complete"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Map findings to MITRE ATT&amp;CK Cloud matrix</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <table>
+            <tr><th>Phase</th><th>Action</th><th>ATT&amp;CK Technique</th></tr>
+            <tr><td>Recon</td><td>ListUsers, ListRoles, ListPolicies</td><td>T1526 — Cloud Service Discovery</td></tr>
+            <tr><td>Priv Esc</td><td>AttachUserPolicy (Admin)</td><td>T1098.003 — Add AWS Credentials</td></tr>
+            <tr><td>Exfil</td><td>S3 GetObject (15 objects)</td><td>T1530 — Data from Cloud Storage</td></tr>
+            <tr><td>Persist</td><td>CreateUser + AdminPolicy</td><td>T1136.003 — Create Cloud Account</td></tr>
+            <tr><td>Persist</td><td>RunInstances</td><td>T1578.002 — Create Cloud Instance</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-12">
+      <div class="step-header" onclick="toggleStep(12)">
+        <span class="step-num">12</span>
+        <span class="step-title">Generate executive incident report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Finding</th><th>Details</th></tr>
+            <tr><td>Compromised account</td><td><input type="text" placeholder="e.g., dev-alice"></td></tr>
+            <tr><td>Attacker IP</td><td><input type="text" placeholder="e.g., 185.234.219.44"></td></tr>
+            <tr><td>Initial access time</td><td><input type="text" placeholder="e.g., 2024-03-01 10:00Z"></td></tr>
+            <tr><td>Privilege escalation method</td><td><input type="text" placeholder="e.g., AttachUserPolicy → AdministratorAccess"></td></tr>
+            <tr><td>Data exfiltrated</td><td><input type="text" placeholder="e.g., 15 S3 objects from company-sensitive-data"></td></tr>
+            <tr><td>Persistence mechanism</td><td><input type="text" placeholder="e.g., backup-svc user created"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk12" onchange="toggleStep(12)"> <label for="chk12">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-guide -->
+  <div class="next-lab"><h4>Next: Lab L10 — Deepfake & Social Engineering Defense</h4><p>Detect AI-generated deepfakes and build defenses against social engineering attacks.</p><a href="lab-deepfake.html">Start L10 →</a></div>
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Cloud Security Analyst</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('recon')">IAM recon detection</button>
+      <button onclick="qp('privesc')">Privilege escalation paths</button>
+      <button onclick="qp('exfil')">S3 exfil detection</button>
+      <button onclick="qp('contain')">Containment steps</button>
+      <button onclick="qp('cloudwatch')">CloudWatch query help</button>
+      <button onclick="qp('report')">Incident report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about CloudTrail analysis, IAM, privilege escalation..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L09',
+  totalSteps: 12,
+  modeLabel: 'Cloud Security Lab',
+  welcomeMsg: `Welcome to Lab L09: Cloud Security — AWS CloudTrail Investigation!
+
+I'm your AI Cloud Security Analyst. I can help you:
+- Understand the AWS Shared Responsibility Model in the context of this breach
+- Detect IAM privilege escalation paths in CloudTrail logs
+- Identify data exfiltration via S3 access patterns
+- Reconstruct multi-stage cloud attack timelines
+- Write CloudWatch Logs Insights detection queries
+- Plan containment and remediation in AWS
+- Map findings to MITRE ATT&CK Cloud matrix
+
+What aspect of the cloud investigation would you like help with?`,
+  systemPrompt: `You are a senior cloud security engineer and incident responder specializing in AWS. You're helping a student with Lab L09: AWS CloudTrail breach investigation using Python/pandas on Kali Linux.
+
+Technical context:
+- Simulated CloudTrail breach log: compromised IAM user 'dev-alice' from external IP 185.234.219.44
+- Attack phases: Reconnaissance → Privilege Escalation (AttachUserPolicy + AdministratorAccess) → Data Exfiltration (S3 GetObject x15) → Persistence (CreateUser 'backup-svc', RunInstances)
+- Tools: Python/pandas for log parsing, AWS CLI for containment, jq for JSON processing
+- CloudWatch Logs Insights queries for real-time detection
+
+Key concepts to teach:
+- IAM privilege escalation paths: AttachUserPolicy, PutUserPolicy, CreatePolicyVersion, PassRole
+- CloudTrail vs CloudWatch: CloudTrail logs API calls; CloudWatch Logs Insights queries them
+- The difference between read-only (reconnaissance) and write (exploitation) IAM events
+- Shared Responsibility Model: AWS secures infrastructure, customers secure their IAM configs
+- Containment priority: disable access keys first, then revoke elevated permissions, then investigate
+
+When the student shares their output, help them distinguish attacker vs legitimate traffic, understand MITRE ATT&CK Cloud techniques, and prioritize containment actions.`,
+  quickPrompts: {
+    recon: `My CloudTrail analysis shows IP 185.234.219.44 made 12 IAM API calls (ListUsers, ListRoles, ListPolicies, GetAccountSummary, DescribeInstances, ListBuckets) in 6 minutes using account dev-alice. Is this definitely recon? Could it be legitimate? What's the best way to detect this in CloudWatch?`,
+    privesc: `I found this CloudTrail sequence from the attacker IP: 1) ListAttachedUserPolicies on dev-alice, 2) AttachUserPolicy with AdministratorAccess ARN, 3) CreateAccessKey on dev-alice. What privilege escalation path is this? What are 3 other common AWS privilege escalation methods I should watch for?`,
+    exfil: `15 S3 GetObject calls occurred from the attacker IP on bucket 'company-sensitive-data' in 2.5 minutes. How do I estimate data volume exfiltrated from CloudTrail when byte counts aren't logged? How would I write a CloudWatch alarm to detect this in real time?`,
+    contain: `The compromised account is dev-alice. I need to contain the incident immediately. In what order should I perform these actions: 1) disable access keys, 2) revoke admin policy, 3) delete persistence backdoor user 'backup-svc', 4) terminate rogue EC2 instance, 5) enable MFA. What's the risk if I get the order wrong?`,
+    cloudwatch: `Write me a CloudWatch Logs Insights query that detects: any IAM user getting AdministratorAccess policy attached, where the source IP is not in the private RFC1918 range. I want it to alert within 5 minutes of the event.`,
+    report: `I've completed the cloud investigation. Findings: compromised IAM user dev-alice, attacker from 185.234.219.44, privilege escalated to admin at 10:05Z, 15 S3 objects exfiltrated at 10:08Z, backdoor user 'backup-svc' created at 10:20Z. Write a 1-page executive incident report for the CISO including business impact and recommendations.`
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L06: Network Anomaly Detection | CyberSec Pro Academy</title>
+  <link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">CyberSec Pro Academy</a>
+  <div class="nav-links">
+    <a href="../labs.html">Labs</a>
+    <a href="../lab-setup.html">Lab Setup</a>
+    <a href="../checkout.html">Enroll</a>
+  </div>
+</nav>
+
+<div class="lab-hero">
+  <div class="lab-hero-content">
+    <div class="lab-meta">
+      <span class="lab-badge badge-medium">Intermediate</span>
+      <span class="lab-badge badge-ai">AI-Assisted</span>
+      <span class="lab-category">Network Security</span>
+    </div>
+    <h1>L06: Network Anomaly Detection with ML</h1>
+    <p>Apply unsupervised machine learning (Isolation Forest, DBSCAN) to detect anomalous network traffic patterns without labeled data. Capture live traffic with tshark, engineer flow features, and tune your model to surface port scans, C2 beaconing, and data exfiltration.</p>
+    <div class="lab-tools">
+      <span class="tool-tag">Python 3</span>
+      <span class="tool-tag">scikit-learn</span>
+      <span class="tool-tag">tshark</span>
+      <span class="tool-tag">pandas</span>
+      <span class="tool-tag">Kali Linux</span>
+      <span class="tool-tag">Wireshark</span>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label" id="progressLabel">0 / 11 steps complete</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-mode" id="modeLabel"></span>
+  </div>
+</div>
+
+<div class="lab-layout">
+  <div class="lab-main">
+
+    <!-- PHASE 1 -->
+    <div class="phase-header">Phase 1: Traffic Capture &amp; Flow Feature Extraction</div>
+
+    <div class="step-item" id="step-1">
+      <div class="step-header" onclick="toggleStep(1)">
+        <span class="step-num">1</span>
+        <span class="step-title">Capture baseline traffic with tshark</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>On Kali Linux, capture 5 minutes of baseline traffic in the host-only network (192.168.56.0/24):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>sudo tshark -i eth1 -a duration:300 \
+  -w ~/network-lab/baseline_capture.pcap \
+  -f "net 192.168.56.0/24"
+
+# Export to CSV for feature engineering
+tshark -r ~/network-lab/baseline_capture.pcap \
+  -T fields \
+  -e frame.time_epoch \
+  -e ip.src \
+  -e ip.dst \
+  -e ip.proto \
+  -e tcp.srcport \
+  -e tcp.dstport \
+  -e udp.srcport \
+  -e udp.dstport \
+  -e frame.len \
+  -e tcp.flags \
+  -E header=y -E separator=, \
+  > ~/network-lab/packets.csv
+
+echo "Captured $(wc -l < ~/network-lab/packets.csv) packets"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk1" onchange="toggleStep(1)"> <label for="chk1">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-2">
+      <div class="step-header" onclick="toggleStep(2)">
+        <span class="step-num">2</span>
+        <span class="step-title">Engineer NetFlow-style features from packets</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Aggregate raw packets into bidirectional flows with statistical features:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/network-lab/flow_features.py << 'EOF'
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('packets.csv')
+df['time'] = pd.to_numeric(df['frame.time_epoch'], errors='coerce')
+df['length'] = pd.to_numeric(df['frame.len'], errors='coerce')
+
+# Create flow key (5-tuple)
+def flow_key(row):
+    src, dst = sorted([str(row.get('ip.src','')), str(row.get('ip.dst',''))])
+    proto = str(row.get('ip.proto',''))
+    sp = str(row.get('tcp.srcport', row.get('udp.srcport','')))
+    dp = str(row.get('tcp.dstport', row.get('udp.dstport','')))
+    return f"{src}|{dst}|{proto}|{sorted([sp,dp])[0]}|{sorted([sp,dp])[1]}"
+
+df['flow_id'] = df.apply(flow_key, axis=1)
+
+# Aggregate flow statistics
+flows = df.groupby('flow_id').agg(
+    packet_count=('length', 'count'),
+    total_bytes=('length', 'sum'),
+    mean_bytes=('length', 'mean'),
+    std_bytes=('length', 'std'),
+    min_bytes=('length', 'min'),
+    max_bytes=('length', 'max'),
+    duration=('time', lambda x: x.max() - x.min()),
+    start_time=('time', 'min'),
+).reset_index()
+
+# Derived features
+flows['bytes_per_pkt'] = flows['total_bytes'] / flows['packet_count']
+flows['pkt_rate'] = flows['packet_count'] / (flows['duration'] + 0.001)
+flows['byte_rate'] = flows['total_bytes'] / (flows['duration'] + 0.001)
+flows['small_pkt_ratio'] = (flows['min_bytes'] < 100).astype(int)
+
+flows.fillna(0, inplace=True)
+flows.to_csv('flow_features.csv', index=False)
+print(f"Generated {len(flows)} flows with {flows.shape[1]} features")
+print(flows.describe())
+EOF
+cd ~/network-lab && python3 flow_features.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk2" onchange="toggleStep(2)"> <label for="chk2">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-header">Phase 2: Unsupervised Anomaly Detection</div>
+
+    <div class="step-item" id="step-3">
+      <div class="step-header" onclick="toggleStep(3)">
+        <span class="step-num">3</span>
+        <span class="step-title">Train Isolation Forest on flow features</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Isolation Forest identifies anomalies by isolating data points in fewer partitions. No labels required:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/network-lab/isolation_forest.py << 'EOF'
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+
+flows = pd.read_csv('flow_features.csv')
+
+feature_cols = ['packet_count', 'total_bytes', 'mean_bytes', 'std_bytes',
+                'duration', 'bytes_per_pkt', 'pkt_rate', 'byte_rate',
+                'small_pkt_ratio']
+
+X = flows[feature_cols].fillna(0)
+
+# Normalize features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Train Isolation Forest
+# contamination=0.05 means ~5% of flows expected to be anomalous
+iso = IsolationForest(
+    n_estimators=200,
+    contamination=0.05,
+    max_samples='auto',
+    random_state=42
+)
+flows['anomaly_score'] = iso.fit_predict(X_scaled)
+flows['anomaly_raw'] = iso.score_samples(X_scaled)
+
+anomalies = flows[flows['anomaly_score'] == -1]
+print(f"\nDetected {len(anomalies)} anomalous flows ({len(anomalies)/len(flows)*100:.1f}%)")
+print("\nTop anomalies by score:")
+print(anomalies.nsmallest(10, 'anomaly_raw')[
+    ['flow_id', 'packet_count', 'total_bytes', 'pkt_rate', 'anomaly_raw']])
+
+# PCA visualization
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+plt.figure(figsize=(10,6))
+colors = ['red' if a == -1 else 'steelblue' for a in flows['anomaly_score']]
+plt.scatter(X_pca[:,0], X_pca[:,1], c=colors, alpha=0.6, s=20)
+plt.title('Network Flow Anomaly Detection — Isolation Forest')
+plt.xlabel('PCA Component 1'); plt.ylabel('PCA Component 2')
+plt.legend(['Anomaly', 'Normal'], loc='upper right')
+plt.savefig('anomaly_pca.png', dpi=150)
+print("\nVisualization saved to anomaly_pca.png")
+EOF
+python3 isolation_forest.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk3" onchange="toggleStep(3)"> <label for="chk3">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-4">
+      <div class="step-header" onclick="toggleStep(4)">
+        <span class="step-num">4</span>
+        <span class="step-title">Apply DBSCAN for cluster-based anomaly detection</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>DBSCAN labels flows not belonging to any cluster as noise — potential anomalies:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/network-lab/dbscan_anomaly.py << 'EOF'
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import NearestNeighbors
+import matplotlib.pyplot as plt
+
+flows = pd.read_csv('flow_features.csv')
+feature_cols = ['packet_count', 'total_bytes', 'mean_bytes', 'bytes_per_pkt',
+                'pkt_rate', 'duration']
+X = StandardScaler().fit_transform(flows[feature_cols].fillna(0))
+
+# Find optimal epsilon using k-distance graph
+nbrs = NearestNeighbors(n_neighbors=4).fit(X)
+distances, _ = nbrs.kneighbors(X)
+distances = np.sort(distances[:, -1])
+plt.figure(figsize=(8,4))
+plt.plot(distances)
+plt.xlabel('Points sorted by distance')
+plt.ylabel('4th NN distance (epsilon)')
+plt.title('K-Distance Graph — Choose epsilon at elbow')
+plt.savefig('kdistance.png')
+print("Examine kdistance.png to choose epsilon value")
+
+# Apply DBSCAN (adjust eps from k-distance graph)
+db = DBSCAN(eps=1.5, min_samples=5)
+flows['cluster'] = db.fit_predict(X)
+noise = flows[flows['cluster'] == -1]
+
+print(f"\nDBSCAN clusters found: {flows['cluster'].nunique() - 1}")
+print(f"Noise points (anomalies): {len(noise)}")
+print("\nNoise flows sample:")
+print(noise[['flow_id', 'packet_count', 'total_bytes', 'pkt_rate']].head(10))
+flows.to_csv('flows_clustered.csv', index=False)
+EOF
+python3 dbscan_anomaly.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk4" onchange="toggleStep(4)"> <label for="chk4">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-header">Phase 3: Attack Traffic Injection &amp; Detection</div>
+
+    <div class="step-item" id="step-5">
+      <div class="step-header" onclick="toggleStep(5)">
+        <span class="step-num">5</span>
+        <span class="step-title">Simulate port scan (Nmap) and verify detection</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>From Kali, run a port scan against Metasploitable and check if your model flags it:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre"># Terminal 1: Start capture
+sudo tshark -i eth1 -w ~/network-lab/attack_capture.pcap &
+TSHARK_PID=$!
+
+# Terminal 2: Inject attack traffic
+# Port scan — generates many short-duration flows with small packets
+nmap -sS -p 1-1000 192.168.56.101
+
+# C2 beacon simulation — regular interval, small packets
+python3 -c "
+import socket, time, random
+for i in range(20):
+    try:
+        s = socket.socket()
+        s.settimeout(1)
+        s.connect(('192.168.56.101', 4444))
+        s.send(b'beacon\x00' * 10)
+        s.close()
+    except: pass
+    time.sleep(30 + random.uniform(-2, 2))  # jitter
+print('Beacon simulation complete')
+" &
+
+sleep 120; kill $TSHARK_PID
+
+# Now run features extraction on attack capture
+tshark -r attack_capture.pcap \
+  -T fields -e frame.time_epoch -e ip.src -e ip.dst \
+  -e ip.proto -e tcp.srcport -e tcp.dstport \
+  -e frame.len -E header=y -E separator=, > attack_packets.csv</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk5" onchange="toggleStep(5)"> <label for="chk5">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-6">
+      <div class="step-header" onclick="toggleStep(6)">
+        <span class="step-num">6</span>
+        <span class="step-title">Score attack traffic against trained model</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Extract flow features from the attack capture and apply your trained Isolation Forest:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/network-lab/score_attacks.py << 'EOF'
+import pandas as pd, numpy as np, pickle
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+
+# Load attack flows
+import subprocess
+subprocess.run(['python3', 'flow_features.py'])  # rerun on attack data
+# Manually rename if needed: mv flow_features.csv attack_flows.csv
+
+attack_flows = pd.read_csv('attack_flows.csv')
+feature_cols = ['packet_count', 'total_bytes', 'mean_bytes', 'std_bytes',
+                'duration', 'bytes_per_pkt', 'pkt_rate', 'byte_rate', 'small_pkt_ratio']
+X_attack = attack_flows[feature_cols].fillna(0)
+
+# Load baseline scaler and model (retrain from baseline CSV for consistency)
+baseline = pd.read_csv('flow_features.csv')
+scaler = StandardScaler().fit(baseline[feature_cols].fillna(0))
+iso = IsolationForest(n_estimators=200, contamination=0.05, random_state=42)
+iso.fit(scaler.transform(baseline[feature_cols].fillna(0)))
+
+X_scaled = scaler.transform(X_attack)
+attack_flows['anomaly'] = iso.predict(X_scaled)
+attack_flows['score'] = iso.score_samples(X_scaled)
+
+flagged = attack_flows[attack_flows['anomaly'] == -1]
+print(f"Attack flows flagged: {len(flagged)}/{len(attack_flows)}")
+print("\nHighest anomaly scores:")
+print(flagged.nsmallest(15, 'score')[
+    ['flow_id', 'packet_count', 'pkt_rate', 'duration', 'score']])
+EOF
+python3 score_attacks.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk6" onchange="toggleStep(6)"> <label for="chk6">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-7">
+      <div class="step-header" onclick="toggleStep(7)">
+        <span class="step-num">7</span>
+        <span class="step-title">Detect C2 beaconing with periodicity analysis</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>C2 beacons have highly regular inter-packet timing. Detect with FFT periodicity analysis:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>cat > ~/network-lab/beacon_detect.py << 'EOF'
+import pandas as pd, numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# Load raw packet timestamps grouped by flow
+df = pd.read_csv('attack_packets.csv')
+df['time'] = pd.to_numeric(df['frame.time_epoch'], errors='coerce')
+df = df.dropna(subset=['time'])
+
+# For each unique dst IP, compute inter-arrival time statistics
+for dst_ip in df['ip.dst'].dropna().unique():
+    flow = df[df['ip.dst'] == dst_ip].sort_values('time')
+    if len(flow) < 10: continue
+
+    # Inter-arrival times
+    iats = flow['time'].diff().dropna()
+
+    # Low standard deviation relative to mean = regular beaconing
+    cv = iats.std() / (iats.mean() + 0.001)  # coefficient of variation
+
+    if cv < 0.3 and iats.mean() > 5:  # regular and interval > 5s
+        print(f"\n[!] POTENTIAL C2 BEACON DETECTED")
+        print(f"    Destination: {dst_ip}")
+        print(f"    Packet count: {len(flow)}")
+        print(f"    Mean interval: {iats.mean():.2f}s")
+        print(f"    Std interval:  {iats.std():.2f}s")
+        print(f"    Coefficient of variation: {cv:.3f} (low = regular)")
+
+        plt.figure(figsize=(8,3))
+        plt.plot(iats.values, marker='o', markersize=3)
+        plt.axhline(iats.mean(), color='red', linestyle='--', label='Mean IAT')
+        plt.title(f'Inter-Arrival Times — {dst_ip}')
+        plt.xlabel('Packet #'); plt.ylabel('Seconds')
+        plt.legend(); plt.savefig(f'beacon_{dst_ip.replace(".","-")}.png')
+EOF
+python3 beacon_detect.py</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk7" onchange="toggleStep(7)"> <label for="chk7">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-header">Phase 4: Sigma Rules &amp; Detection Reporting</div>
+
+    <div class="step-item" id="step-8">
+      <div class="step-header" onclick="toggleStep(8)">
+        <span class="step-num">8</span>
+        <span class="step-title">Tune model contamination threshold</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Adjust the contamination parameter to balance detection rate vs false positives:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre>python3 << 'EOF'
+import pandas as pd, numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+
+flows = pd.read_csv('flow_features.csv')
+feature_cols = ['packet_count', 'total_bytes', 'mean_bytes', 'bytes_per_pkt',
+                'pkt_rate', 'duration', 'std_bytes', 'small_pkt_ratio']
+X = StandardScaler().fit_transform(flows[feature_cols].fillna(0))
+
+print(f"{'Contamination':>15} | {'Flagged':>8} | {'Flag Rate':>10} | {'Min Score':>10}")
+print("-" * 55)
+for c in [0.01, 0.02, 0.05, 0.10, 0.15, 0.20]:
+    iso = IsolationForest(n_estimators=200, contamination=c, random_state=42)
+    preds = iso.fit_predict(X)
+    scores = iso.score_samples(X)
+    flagged = (preds == -1).sum()
+    print(f"{c:>15.2f} | {flagged:>8} | {flagged/len(flows)*100:>9.1f}% | {scores.min():>10.4f}")
+EOF</pre>
+        </div>
+        <p>Set contamination based on your environment's expected anomaly rate. For SOC environments, 2-5% is typical.</p>
+        <div class="step-check">
+          <input type="checkbox" id="chk8" onchange="toggleStep(8)"> <label for="chk8">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-9">
+      <div class="step-header" onclick="toggleStep(9)">
+        <span class="step-num">9</span>
+        <span class="step-title">Write Sigma rules for port scan and beacon patterns</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          <pre">cat > ~/network-lab/sigma_port_scan.yml << 'EOF'
+title: Network Port Scan Detection
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+status: experimental
+description: Detects horizontal port scanning based on high distinct destination port count
+author: CyberSec Pro Academy - L06
+date: 2024/01/15
+logsource:
+    category: network_connection
+    product: zeek
+detection:
+    selection:
+        src_ip|startswith: '192.168.'
+    timeframe: 60s
+    condition: selection | count(dst_port) by src_ip > 100
+falsepositives:
+    - Network scanners (Nessus, Qualys) — allowlist scanner IPs
+    - Load balancer health checks
+level: medium
+tags:
+    - attack.discovery
+    - attack.t1046
+EOF
+
+cat > ~/network-lab/sigma_c2_beacon.yml << 'EOF'
+title: C2 Beaconing — Regular Interval Connections
+id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+status: experimental
+description: Detects C2 beaconing via regular-interval connections to same external host
+author: CyberSec Pro Academy - L06
+logsource:
+    category: network_connection
+detection:
+    selection:
+        dst_port:
+            - 443
+            - 80
+            - 4444
+            - 8080
+        connection_count|gte: 10
+    filter_internal:
+        dst_ip|startswith:
+            - '10.'
+            - '172.16.'
+            - '192.168.'
+    timeframe: 1h
+    condition: selection and not filter_internal | count() by src_ip,dst_ip > 8
+level: high
+tags:
+    - attack.command_and_control
+    - attack.t1071
+    - attack.t1571
+EOF
+echo "Sigma rules written"</pre>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk9" onchange="toggleStep(9)"> <label for="chk9">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-10">
+      <div class="step-header" onclick="toggleStep(10)">
+        <span class="step-num">10</span>
+        <span class="step-title">Map detections to MITRE ATT&amp;CK</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Document which ATT&amp;CK techniques your detections cover:</p>
+        <div class="findings-table">
+          <table>
+            <tr><th>Detection</th><th>ATT&amp;CK Technique</th><th>Coverage</th></tr>
+            <tr><td>Port scan (Isolation Forest)</td><td>T1046 — Network Service Discovery</td><td>Discovery</td></tr>
+            <tr><td>C2 beaconing (periodicity)</td><td>T1071 — App Layer Protocol</td><td>C2</td></tr>
+            <tr><td>Large upload flows (byte_rate)</td><td>T1048 — Exfiltration Over Alt Protocol</td><td>Exfiltration</td></tr>
+            <tr><td>DBSCAN noise flows</td><td>T1571 — Non-Standard Port</td><td>C2</td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk10" onchange="toggleStep(10)"> <label for="chk10">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item" id="step-11">
+      <div class="step-header" onclick="toggleStep(11)">
+        <span class="step-num">11</span>
+        <span class="step-title">Document findings and produce detection report</span>
+        <span class="step-toggle">▼</span>
+      </div>
+      <div class="step-body">
+        <p>Record your lab results. Use the AI analyst to help structure your network detection report.</p>
+        <div class="findings-table">
+          <h4>Lab Findings</h4>
+          <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Total flows analyzed</td><td><input type="text" placeholder="e.g., 4,820"></td></tr>
+            <tr><td>Anomalies flagged (Isolation Forest)</td><td><input type="text" placeholder="e.g., 241 (5%)"></td></tr>
+            <tr><td>Port scan detected</td><td><input type="text" placeholder="Yes / No"></td></tr>
+            <tr><td>Beacon detected</td><td><input type="text" placeholder="Yes / No / Interval (s)"></td></tr>
+            <tr><td>Optimal contamination value</td><td><input type="text" placeholder="e.g., 0.05"></td></tr>
+            <tr><td>MITRE techniques covered</td><td><input type="text" placeholder="e.g., T1046, T1071, T1048"></td></tr>
+          </table>
+        </div>
+        <div class="step-check">
+          <input type="checkbox" id="chk11" onchange="toggleStep(11)"> <label for="chk11">Mark complete</label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lab-main -->
+
+  <!-- AI SIDEBAR -->
+  <div class="ai-sidebar">
+    <div class="ai-header">
+      <span class="ai-dot"></span>
+      <span>AI Network Detection Expert</span>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <p>Enter your Anthropic API key to activate the AI analyst:</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button onclick="saveKey()">Activate AI</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="quick-prompts">
+      <p class="qp-label">Quick Prompts:</p>
+      <button onclick="qp('features')">Best flow features</button>
+      <button onclick="qp('tune')">Tune contamination</button>
+      <button onclick="qp('beacon')">Beacon detection</button>
+      <button onclick="qp('sigma')">Write Sigma rule</button>
+      <button onclick="qp('fp')">Investigate false positive</button>
+      <button onclick="qp('report')">Detection report</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="userInput" placeholder="Ask about flow features, anomaly tuning, beacon detection..." rows="3"></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L06',
+  totalSteps: 11,
+  modeLabel: 'Network Security Lab',
+  welcomeMsg: `Welcome to Lab L06: Network Anomaly Detection with ML!
+
+I'm your AI Network Detection Expert. In this lab, I can help you:
+- Select the best NetFlow features for anomaly detection
+- Tune Isolation Forest contamination for your environment
+- Interpret DBSCAN cluster results
+- Identify C2 beaconing patterns in packet timing data
+- Convert detections into Sigma rules for your SIEM
+- Map findings to MITRE ATT&CK techniques
+
+What would you like to explore first?`,
+  systemPrompt: `You are a senior network security engineer and data scientist helping a student with Lab L06: Network Anomaly Detection using ML. The lab uses Python/scikit-learn on Kali Linux to analyze tshark packet captures from a virtual lab network (192.168.56.0/24) with Kali (192.168.56.10) and Metasploitable (192.168.56.101).
+
+Techniques covered:
+- NetFlow feature engineering from raw pcap (bidirectional flow aggregation)
+- Isolation Forest (unsupervised, contamination parameter tuning)
+- DBSCAN clustering (noise points = anomalies, epsilon from k-distance graph)
+- C2 beaconing via inter-arrival time coefficient of variation (CV < 0.3 = regular)
+- Sigma rule writing for network detection logs
+
+Key concepts to teach:
+- Why unsupervised methods are needed when labeled attack data is unavailable
+- Isolation Forest: anomalies are isolated in fewer tree splits (shorter path = anomalous)
+- DBSCAN: eps and min_samples selection; noise points vs sparse clusters
+- Beaconing CV analysis: low variance/mean ratio indicates machine-generated timing
+- Flow features: bytes-per-packet distinguishes scans (small) from transfers (large)
+
+If the student shares their output (flagged flows, scores, CV values), help them interpret whether each anomaly is a true positive or false positive.`,
+  quickPrompts: {
+    features: `I have these raw flow features: packet_count, total_bytes, duration. What additional derived features should I calculate to improve detection of: 1) port scans, 2) C2 beaconing, 3) data exfiltration? List the formula for each.`,
+    tune: `My Isolation Forest with contamination=0.05 flagged 241/4820 flows. When I look at the flagged flows, 180 appear to be DNS queries and NTP traffic — legitimate but high-frequency. How do I reduce these false positives without lowering contamination to miss real attacks?`,
+    beacon: `My beacon detection script found a flow to 192.168.56.101:4444 with mean IAT=30.2s, std=1.8s, CV=0.060. Is this definitely C2 beaconing? What other evidence should I gather to confirm? How would I differentiate this from legitimate scheduled tasks?`,
+    sigma: `I detected port scanning: source IP 192.168.56.10 made 847 TCP SYN packets to distinct destination ports on 192.168.56.101 within 60 seconds, average 15 bytes per packet. Write a Sigma rule for this using Zeek/conn logs. Include MITRE ATT&CK mapping.`,
+    fp: `My Isolation Forest flagged a flow: src=192.168.56.10, dst=8.8.8.8, port=53, packet_count=1840, duration=120s, pkt_rate=15.3/s. The anomaly score is -0.6. Is this a true positive (DNS tunneling) or false positive (heavy DNS client)? What features should I examine?`,
+    report: `Lab results: Isolation Forest (contamination=0.05) flagged 5% of flows. Confirmed true positives: 1 port scan (T1046), 1 C2 beacon (T1071) at 30s intervals. False positive rate: ~2% (DNS/NTP high-frequency flows). Help me write a 1-page network anomaly detection report for the SOC manager.`
+  }
+});
+</script>
+</body>
+</html>

