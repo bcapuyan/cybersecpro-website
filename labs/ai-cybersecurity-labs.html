@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Cybersecurity Labs — 20 Hands-On Labs | CyberSec Pro Academy</title>
+<meta name="description" content="Practice with 20 AI-powered cybersecurity labs. Wireshark+AI traffic analysis, Splunk ML, malware classification, phishing NLP, prompt injection, and more. Build a real portfolio employers can see.">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P5H69GGB');</script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6T7DPEWEP7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6T7DPEWEP7');
+</script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --navy:#0a1628; --teal:#0e5f7a; --green:#00c896; --dark:#1a202c; --gray:#f4f6f9; --mid:#6b7280; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: #fff; }
+  a { text-decoration: none; color: inherit; }
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy); border-bottom: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; height: 68px;
+  }
+  .nav-logo { font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px; }
+  .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta { background: var(--green); color: var(--navy) !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; }
+  .nav-enroll { background: var(--green); color: var(--navy) !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; white-space: nowrap; }
+  .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; background: white; border-radius: 2px; }
+  .nav-drawer { display: none; flex-direction: column; gap: 0; background: var(--navy); border-top: 1px solid rgba(255,255,255,.1); position: absolute; top: 68px; left: 0; right: 0; z-index: 99; padding: 16px 24px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a { color: #c8d8e8; font-size: 15px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.08); transition: color .15s; }
+  .nav-drawer a:last-child { border-bottom: none; }
+  .nav-drawer a:hover { color: var(--green); }
+  .nav-drawer .drawer-enroll { margin-top: 16px; background: var(--green); color: var(--navy) !important; font-weight: 800 !important; padding: 14px; border-radius: 8px; text-align: center; font-size: 15px !important; }
+  @media (max-width: 860px) { nav { padding: 0 20px; } .nav-links { display: none; } .nav-hamburger { display: flex; } }
+
+  .page-hero { background: linear-gradient(135deg, var(--navy) 0%, #0d3b6e 55%, var(--teal) 100%); color: white; padding: 70px 40px 80px; text-align: center; }
+  .page-hero h1 { font-size: clamp(32px, 4.5vw, 52px); font-weight: 900; line-height: 1.1; margin-bottom: 18px; }
+  .page-hero h1 em { color: var(--green); font-style: normal; }
+  .page-hero p { font-size: 18px; color: #a0c4e8; line-height: 1.7; max-width: 640px; margin: 0 auto 36px; }
+  .page-hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 16px 32px; border-radius: 10px; font-size: 16px; font-weight: 800; transition: transform .15s, opacity .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-green { background: var(--green); color: var(--navy); }
+  .btn-dark { background: var(--navy); color: white; }
+  .btn-white { background: white; color: var(--navy); }
+
+  .section { padding: 80px 40px; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+  .section-title { font-size: clamp(26px, 3.5vw, 38px); font-weight: 900; color: var(--navy); margin-bottom: 14px; line-height: 1.15; }
+  .section-sub { font-size: 17px; color: var(--mid); line-height: 1.7; max-width: 620px; }
+  .section-alt { background: var(--gray); }
+
+  .curriculum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
+  .topic-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border-left: 4px solid var(--teal); display: flex; gap: 14px; align-items: flex-start; }
+  .topic-card.ai { border-left-color: var(--green); }
+  .topic-num { font-size: 12px; font-weight: 900; color: white; background: var(--teal); padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; }
+  .topic-card.ai .topic-num { background: var(--green); color: var(--navy); }
+  .topic-card h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .topic-card p { font-size: 12px; color: var(--mid); line-height: 1.5; }
+  .ai-badge { display: inline-block; font-size: 10px; font-weight: 800; background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 8px; margin-left: 6px; }
+
+  .cta-strip { background: linear-gradient(135deg, var(--green), #00a070); padding: 70px 40px; text-align: center; }
+  .cta-strip h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 900; color: var(--navy); margin-bottom: 12px; }
+  .cta-strip p { font-size: 18px; color: var(--navy); opacity: .75; margin-bottom: 36px; max-width: 600px; margin-left: auto; margin-right: auto; }
+  .cta-strip .actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  footer { background: var(--navy); color: #6b7280; padding: 50px 40px 30px; }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  .footer-brand .logo { font-size: 20px; font-weight: 900; color: white; margin-bottom: 12px; }
+  .footer-brand .logo span { color: var(--green); }
+  .footer-brand p { font-size: 13px; line-height: 1.7; color: #6b7280; }
+  .footer-col h4 { font-size: 13px; font-weight: 700; color: #a0b0c0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .footer-col a { display: block; font-size: 13px; color: #6b7280; margin-bottom: 10px; transition: color .15s; }
+  .footer-col a:hover { color: var(--green); }
+  .footer-bottom { border-top: 1px solid #1e2d40; padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12px; margin-top: 16px; }
+  .footer-certs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fc { background: #1e2d40; color: #6b7280; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+
+  @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .section { padding: 60px 20px; } .page-hero { padding: 60px 20px; } .footer-inner { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<nav>
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="/about/bonifacio-capuyan">About</a>
+    <a href="/courses/break-into-cybersecurity">Courses</a>
+    <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
+    <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
+    <a href="/free-resources.html">Resources</a>
+    <a href="/price-comparison.html">Compare Prices</a>
+    <a href="/" class="nav-cta">Free Guide</a>
+    <a href="/checkout.html" class="nav-enroll">Enroll — From $19/mo</a>
+  </div>
+  <button class="nav-hamburger" onclick="document.getElementById('navDrawer').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
+  <a href="/courses/break-into-cybersecurity" onclick="this.closest('.nav-drawer').classList.remove('open')">Courses</a>
+  <a href="/curriculum/security-plus-sy0-701" onclick="this.closest('.nav-drawer').classList.remove('open')">Curriculum</a>
+  <a href="/labs/ai-cybersecurity-labs" onclick="this.closest('.nav-drawer').classList.remove('open')">AI Labs</a>
+  <a href="/free-resources.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Resources</a>
+  <a href="/price-comparison.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Compare Prices</a>
+  <a href="/" onclick="this.closest('.nav-drawer').classList.remove('open')">Get Free Guide</a>
+  <a href="/checkout.html" class="drawer-enroll">Enroll Now — From $19/mo</a>
+</div>
+
+<!-- PAGE HERO -->
+<div style="background: linear-gradient(135deg, #0a1628 0%, #0d3b6e 55%, #0e5f7a 100%);">
+  <div class="page-hero">
+    <h1>20 <em>AI Cybersecurity Labs</em><br>— Build a Real Portfolio</h1>
+    <p>Every lab uses real tools and AI techniques employers actually look for. You build a portfolio while you learn — not after.</p>
+    <div class="actions">
+      <a href="/checkout.html" class="btn btn-green">Get Access — From $19/mo →</a>
+    </div>
+  </div>
+</div>
+
+<!-- LABS GRID -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">Hands-On Practice</div>
+    <h2 class="section-title">All 20 AI Cybersecurity Labs</h2>
+    <p class="section-sub">Real tools. Real techniques. Real portfolio pieces — included with the course.</p>
+    <div class="curriculum-grid">
+      <div class="topic-card ai"><div class="topic-num">L01</div><div><h4>Wireshark + AI Traffic Analysis <span class="ai-badge">AI</span></h4><p>Capture live packets, apply ML anomaly detection to flag suspicious flows</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L02</div><div><h4>AI-Powered SIEM (Splunk) <span class="ai-badge">AI</span></h4><p>Build ML correlation rules in Splunk to auto-detect attack patterns in real logs</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L03</div><div><h4>Malware Classification with ML <span class="ai-badge">AI</span></h4><p>Train a Python scikit-learn classifier to distinguish benign from malicious binaries</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L04</div><div><h4>Phishing Detection with NLP <span class="ai-badge">AI</span></h4><p>Build an NLP model that classifies phishing emails with 95%+ accuracy</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L05</div><div><h4>AI Red Team — Prompt Injection <span class="ai-badge">AI</span></h4><p>Attack and defend LLM-based tools; document prompt injection vulnerabilities</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L06</div><div><h4>Network Anomaly Detection <span class="ai-badge">AI</span></h4><p>Use Isolation Forest in Python to detect outliers in network traffic datasets</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L07</div><div><h4>Behavioral Analytics (UEBA) <span class="ai-badge">AI</span></h4><p>Profile normal user behavior and trigger AI alerts on insider threat patterns</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L08</div><div><h4>AI Incident Response Automation <span class="ai-badge">AI</span></h4><p>Build automated IR playbooks using AI orchestration to cut MTTR by 60%</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L09</div><div><h4>Cloud Security AI Monitoring <span class="ai-badge">AI</span></h4><p>AWS CloudTrail + AI threat detection — spot privilege escalation in real time</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L10</div><div><h4>Deepfake &amp; Social Engineering Defense <span class="ai-badge">AI</span></h4><p>Analyze deepfake audio/video samples and build detection workflows</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L11</div><div><h4>Vulnerability Triage with AI (Nessus) <span class="ai-badge">AI</span></h4><p>Run Nessus scans then use AI to prioritize CVEs by exploitability and business impact</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L12</div><div><h4>Active Directory Attack &amp; AI Defense <span class="ai-badge">AI</span></h4><p>Kerberoasting, Pass-the-Hash attacks + AI-powered detection and response</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L13</div><div><h4>PKI &amp; OpenSSL Security Lab <span class="ai-badge">AI</span></h4><p>Generate certs, analyze TLS connections, and use AI to detect certificate anomalies</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L14</div><div><h4>Zero-Trust Architecture Simulation <span class="ai-badge">AI</span></h4><p>Implement microsegmentation + AI policy enforcement in a virtual enterprise network</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L15</div><div><h4>DevSecOps Pipeline Security <span class="ai-badge">AI</span></h4><p>Embed SAST, DAST, and AI code review into a GitHub Actions CI/CD pipeline</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L16</div><div><h4>AI Threat Intelligence Aggregator <span class="ai-badge">AI</span></h4><p>Build a Python tool that pulls OSINT feeds and uses NLP to surface critical IOCs</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L17</div><div><h4>Password Intelligence Lab <span class="ai-badge">AI</span></h4><p>AI-driven password strength modeling + hashcat GPU cracking and defense strategies</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L18</div><div><h4>Explainable AI in Security (XAI) <span class="ai-badge">AI</span></h4><p>Use SHAP and LIME to explain ML model decisions — critical for SOC analyst buy-in</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L19</div><div><h4>Cryptographic Attack Simulation <span class="ai-badge">AI</span></h4><p>AI-assisted cryptanalysis lab + quantum threat modeling and post-quantum algorithms</p></div></div>
+      <div class="topic-card ai"><div class="topic-num">L20</div><div><h4>AI SOC Analyst Simulation <span class="ai-badge">AI</span></h4><p>Full SOC workflow: AI-assisted alert triage, threat hunting, and escalation decisions</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <h2>All 20 Labs Included With the Course</h2>
+  <p>Get lifetime access to every lab, every lesson, and all future updates — from $19/month.</p>
+  <div class="actions">
+    <a href="/checkout.html" class="btn btn-dark">Enroll — From $19/mo</a>
+    <a href="/courses/break-into-cybersecurity" class="btn btn-white">See Full Course Details</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">CyberSec<span>Pro</span> Academy</div>
+      <p>Built by a practitioner, not a content team. Every lesson, every lab, and every piece of career advice comes from 20+ years in the industry and 200+ real student outcomes.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programs</h4>
+      <a href="/">Free Guide</a>
+      <a href="/checkout.html">The Course</a>
+      <a href="https://square.link/u/ddpR15Ct">1-on-1 Mentorship</a>
+      <a href="/price-comparison.html">Compare Prices</a>
+    </div>
+    <div class="footer-col">
+      <h4>Learn</h4>
+      <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
+      <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
+      <a href="/free-resources.html">Free Resources</a>
+      <a href="/about/bonifacio-capuyan">About</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:info@cybersecproacademy.org">info@cybersecproacademy.org</a>
+      <a href="https://square.link/u/ddpR15Ct">Book a Session</a>
+    </div>
+  </div>
+  <div style="border-top:1px solid #1e2d40; padding-top:16px; font-size:11px; color:#4b5563; line-height:1.7;">
+    Course support and lab assistance available for one (1) year from date of purchase. Content access is lifetime.
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 CyberSec Pro Academy · All rights reserved</div>
+    <div class="footer-certs">
+      <span class="fc">CISM</span><span class="fc">CISA</span><span class="fc">CSA</span><span class="fc">CAD</span><span class="fc">CIS-VR</span><span class="fc">20+ Years</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
