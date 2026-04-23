@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bon's Career Roadmap — From $20/hr to $320K+ | CyberSec Pro Academy</title>
+<meta name="description" content="The chronological playbook — every job, every skill, every cert — showing exactly how Bon Capuyan built a 25-year cybersecurity career from a non-technical degree to $320K+ total comp.">
+<meta property="og:title" content="From $20/hr to $320K+ — Bon's Cybersecurity Career Roadmap">
+<meta property="og:description" content="25 years, 14 roles, 11+ certs. The real, year-by-year playbook for mentees.">
+<meta property="og:type" content="article">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --navy-deep: #0a1628;       /* site header / deepest */
+    --navy-mid: #0d3b6e;         /* hero middle */
+    --navy-teal: #0e5f7a;        /* hero end */
+    --navy-card: #1e2d40;        /* dark card bg */
+    --green: #00c896;            /* primary CTA */
+    --green-dark: #00a67d;
+    --green-hover: #00e0a8;
+    --red-accent: #ff5252;
+    --amber: #f59e0b;
+    --ink: #1a202c;              /* body text */
+    --ink-soft: #4a5568;
+    --ink-muted: #6b7280;
+    --light-blue: #a0c4e8;
+    --light-blue-soft: #c8d8e8;
+    --bg: #ffffff;
+    --bg-soft: #f4f6f9;
+    --bg-blue: #e8f4ff;
+    --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- NAV (matches site) ---------- */
+  .site-nav {
+    background: var(--navy-deep);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  }
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .nav-brand {
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .nav-brand span { color: var(--green); }
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    align-items: center;
+  }
+  .nav-links a {
+    color: var(--light-blue-soft);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta {
+    background: var(--green);
+    color: var(--navy-deep);
+    padding: 10px 18px;
+    font-weight: 800;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .nav-cta:hover { background: var(--green-hover); }
+  .nav-menu-toggle { display: none; background: none; border: 0; color: #fff; font-size: 22px; cursor: pointer; }
+
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .nav-menu-toggle { display: block; }
+    .nav-links.open {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--navy-deep);
+      padding: 20px 24px;
+      gap: 16px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-cta { padding: 8px 14px; font-size: 13px; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 55%, var(--navy-teal) 100%);
+    color: #fff;
+    padding: 80px 24px 100px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 15% 25%, rgba(0, 200, 150, 0.12) 0%, transparent 45%),
+      radial-gradient(circle at 85% 70%, rgba(14, 95, 122, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-eyebrow {
+    display: inline-block;
+    background: rgba(0, 200, 150, 0.12);
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 6px 14px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin-bottom: 20px;
+  }
+  .hero h1 .highlight { color: var(--green); }
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--light-blue-soft);
+    max-width: 720px;
+    margin: 0 auto 42px;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 0;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: var(--navy-deep);
+  }
+  .btn-primary:hover { background: var(--green-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 200, 150, 0.3); }
+  .btn-outline {
+    background: transparent;
+    color: #fff;
+    border: 2px solid var(--light-blue-soft);
+  }
+  .btn-outline:hover { background: rgba(255, 255, 255, 0.08); border-color: #fff; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .stat {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(160, 196, 232, 0.15);
+    padding: 24px 12px;
+  }
+  .stat-num {
+    font-size: clamp(22px, 3vw, 34px);
+    font-weight: 900;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--light-blue);
+    font-weight: 600;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section { padding: 80px 24px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-header { text-align: center; margin-bottom: 60px; }
+  .section-eyebrow {
+    color: var(--green-dark);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .section-header h2 {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--navy-deep);
+    margin-bottom: 14px;
+  }
+  .section-header p {
+    color: var(--ink-soft);
+    font-size: 17px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ---------- TIMELINE ---------- */
+  .timeline { position: relative; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--green) 0%, var(--navy-mid) 50%, var(--navy-teal) 100%);
+    transform: translateX(-50%);
+  }
+  .event {
+    position: relative;
+    width: 50%;
+    padding: 12px 40px 40px 0;
+  }
+  .event:nth-child(even) {
+    margin-left: 50%;
+    padding: 12px 0 40px 40px;
+  }
+  .event-dot {
+    position: absolute;
+    top: 28px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 4px solid var(--green);
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 0 4px rgba(0, 200, 150, 0.18);
+  }
+  .event:nth-child(even) .event-dot { right: auto; left: -10px; }
+  .event-year {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--navy-deep);
+    background: #fff;
+    padding: 5px 14px;
+    border: 2px solid var(--green);
+    margin-bottom: 12px;
+  }
+  .event-card {
+    background: #fff;
+    padding: 28px;
+    box-shadow: 0 4px 14px rgba(10, 22, 40, 0.08), 0 1px 3px rgba(10, 22, 40, 0.05);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--green);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(10, 22, 40, 0.12), 0 4px 8px rgba(10, 22, 40, 0.06);
+  }
+  .event-company {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .event-role {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--navy-deep);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .event-comp {
+    display: inline-block;
+    background: var(--navy-deep);
+    color: var(--green);
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+  .event-tech {
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: var(--bg-soft);
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--navy-mid);
+  }
+  .event-tech-label {
+    font-weight: 800;
+    color: var(--navy-deep);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-right: 6px;
+  }
+  .event-story {
+    color: var(--ink);
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .event-lesson {
+    background: linear-gradient(135deg, #f0fdf9 0%, #d1faee 100%);
+    border-left: 4px solid var(--green);
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--navy-deep);
+  }
+  .event-lesson::before {
+    content: '★ LESSON';
+    display: block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+  .event-real-talk {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border-left: 4px solid var(--red-accent);
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--navy-deep);
+    margin-bottom: 14px;
+  }
+  .event-real-talk::before {
+    content: '⚠ REAL TALK';
+    display: block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #c92a2a;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .timeline::before { left: 24px; }
+    .event, .event:nth-child(even) {
+      width: 100%;
+      margin-left: 0;
+      padding: 12px 0 32px 60px;
+    }
+    .event-dot, .event:nth-child(even) .event-dot {
+      left: 14px;
+      right: auto;
+    }
+  }
+
+  /* ---------- INLINE FUNNEL (after timeline) ---------- */
+  .inline-cta {
+    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 100%);
+    color: #fff;
+    padding: 60px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .inline-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 100%, rgba(0, 200, 150, 0.15) 0%, transparent 60%);
+  }
+  .inline-cta-inner { max-width: 820px; margin: 0 auto; position: relative; z-index: 1; }
+  .inline-cta h3 {
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 900;
+    margin-bottom: 14px;
+    line-height: 1.25;
+  }
+  .inline-cta p {
+    color: var(--light-blue-soft);
+    font-size: 16px;
+    margin-bottom: 28px;
+  }
+  .inline-cta-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- COMP CHART ---------- */
+  .comp-section { background: var(--bg-soft); }
+  .chart-wrap {
+    background: #fff;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(10, 22, 40, 0.08);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--green);
+    margin-bottom: 40px;
+  }
+  .chart-container { position: relative; height: 400px; }
+  .patterns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .pattern {
+    background: #fff;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(10, 22, 40, 0.06);
+    border-top: 3px solid var(--green);
+  }
+  .pattern h4 {
+    color: var(--navy-deep);
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .pattern p { color: var(--ink-soft); font-size: 14px; }
+
+  /* ---------- DECADES ---------- */
+  .decades-section {
+    background: var(--navy-deep);
+    color: #fff;
+  }
+  .decades-section .section-header h2 { color: #fff; }
+  .decades-section .section-header p { color: var(--light-blue-soft); }
+  .decades-section .section-eyebrow { color: var(--green); }
+  .decades {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  .decade {
+    background: var(--navy-card);
+    border: 1px solid rgba(160, 196, 232, 0.1);
+    padding: 28px;
+    transition: all 0.25s ease;
+  }
+  .decade:hover {
+    background: #263a52;
+    transform: translateY(-4px);
+    border-color: var(--green);
+  }
+  .decade-stage {
+    color: var(--green);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .decade h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    color: #fff;
+  }
+  .decade-focus {
+    color: var(--light-blue);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(160, 196, 232, 0.15);
+  }
+  .decade p { font-size: 14px; color: var(--light-blue-soft); }
+
+  /* ---------- NORTH STAR ---------- */
+  .northstar {
+    background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-teal) 100%);
+    color: #fff;
+    padding: 90px 24px;
+    text-align: center;
+  }
+  .northstar-inner { max-width: 900px; margin: 0 auto; }
+  .northstar .section-eyebrow { color: var(--green); }
+  .northstar h2 {
+    font-size: clamp(28px, 4vw, 42px);
+    margin-bottom: 24px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .northstar-intro {
+    font-size: 18px;
+    color: var(--light-blue-soft);
+    margin-bottom: 48px;
+  }
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    text-align: left;
+  }
+  .rule {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 4px solid var(--green);
+    padding: 28px;
+  }
+  .rule-num {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .rule h4 { font-size: 17px; font-weight: 800; margin-bottom: 10px; color: #fff; }
+  .rule p { font-size: 14px; color: var(--light-blue-soft); }
+  .closing {
+    margin-top: 56px;
+    font-size: 20px;
+    font-weight: 700;
+    font-style: italic;
+    color: #fff;
+  }
+
+  /* ---------- FINAL OFFER BLOCK ---------- */
+  .offer-section { background: var(--bg); padding: 90px 24px; }
+  .offer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .offer-card {
+    background: #fff;
+    border: 2px solid var(--line);
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .offer-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--green);
+    box-shadow: 0 12px 32px rgba(10, 22, 40, 0.1);
+  }
+  .offer-card.featured {
+    border-color: var(--green);
+    background: linear-gradient(180deg, #fff 0%, #f0fdf9 100%);
+  }
+  .offer-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: var(--navy-deep);
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .offer-icon {
+    font-size: 44px;
+    margin-bottom: 14px;
+  }
+  .offer-card h3 {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--navy-deep);
+    margin-bottom: 10px;
+  }
+  .offer-card .price {
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--navy-deep);
+    margin: 14px 0 4px;
+  }
+  .offer-card .price small {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+  .offer-card .price-sub {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 22px;
+  }
+  .offer-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0;
+    text-align: left;
+  }
+  .offer-card ul li {
+    padding: 8px 0 8px 28px;
+    position: relative;
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .offer-card ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    color: var(--green);
+    font-weight: 900;
+    font-size: 16px;
+  }
+  .offer-card .btn { width: 100%; justify-content: center; }
+  @media (max-width: 760px) { .offer-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- LEAD CAPTURE ---------- */
+  .lead-section {
+    background: var(--bg-soft);
+    padding: 70px 24px;
+    text-align: center;
+  }
+  .lead-inner {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 44px 32px;
+    border: 2px solid var(--green);
+    box-shadow: 0 8px 24px rgba(10, 22, 40, 0.1);
+  }
+  .lead-inner h3 {
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--navy-deep);
+    margin-bottom: 12px;
+  }
+  .lead-inner p { color: var(--ink-soft); margin-bottom: 24px; }
+  .lead-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .lead-form input[type="email"] {
+    flex: 1;
+    min-width: 220px;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    border: 2px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .lead-form input[type="email"]:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    background: var(--navy-deep);
+    color: var(--light-blue-soft);
+    padding: 50px 24px 30px;
+    text-align: center;
+    font-size: 14px;
+  }
+  footer .foot-inner { max-width: 900px; margin: 0 auto; }
+  footer h4 { color: #fff; margin-bottom: 14px; font-size: 16px; font-weight: 800; }
+  footer a { color: var(--green); text-decoration: none; font-weight: 600; }
+  footer a:hover { color: var(--green-hover); text-decoration: underline; }
+  .foot-links {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 18px 0;
+    flex-wrap: wrap;
+  }
+  .foot-copy {
+    padding-top: 22px;
+    margin-top: 22px;
+    border-top: 1px solid rgba(160, 196, 232, 0.1);
+    font-size: 13px;
+    color: var(--light-blue);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    section { padding: 60px 20px; }
+    .event-card { padding: 22px; }
+    .chart-wrap { padding: 20px; }
+    .chart-container { height: 320px; }
+    .hero-ctas .btn { width: 100%; justify-content: center; }
+  }
+
+  /* ---------- Print ---------- */
+  @media print {
+    .site-nav, .hero-ctas, .inline-cta, .lead-section, .offer-section, footer { display: none !important; }
+    .hero, .northstar, .decades-section { background: #fff !important; color: var(--navy-deep) !important; }
+    .hero h1, .hero h1 .highlight, .stat-num, .stat-label, .hero-sub,
+    .northstar h2, .northstar-intro, .rule h4, .rule p, .decade h3, .decade-stage, .decade-focus, .decade p { color: var(--navy-deep) !important; }
+    .event-card { page-break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="https://cybersecproacademy.org/" class="nav-brand">CyberSec<span>Pro</span>Academy</a>
+    <button class="nav-menu-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="https://cybersecproacademy.org/about/bonifacio-capuyan">About</a></li>
+      <li><a href="https://cybersecproacademy.org/courses/break-into-cybersecurity">Course</a></li>
+      <li><a href="https://cybersecproacademy.org/curriculum/security-plus-sy0-701">Curriculum</a></li>
+      <li><a href="https://cybersecproacademy.org/free-resources">Free Resources</a></li>
+      <li><a href="https://cybersecproacademy.org/checkout" class="nav-cta">Enroll — 50% Off</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">The Real Career Roadmap</div>
+    <h1>From <span class="highlight">$20/hr</span> to <span class="highlight">$320K+</span><br>in Cybersecurity</h1>
+    <p class="hero-sub">25 years. 14 roles. 11+ certifications. A non-technical degree. This is the real, year-by-year playbook — every job, every skill, every cert — showing exactly how I built this career so you can too.</p>
+
+    <div class="hero-ctas">
+      <a href="https://cybersecproacademy.org/checkout" class="btn btn-primary">Enroll in the Course — From $19/mo →</a>
+      <a href="https://square.link/u/ddpR15Ct" class="btn btn-outline">Book 1-on-1 Mentorship</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">25</div>
+        <div class="stat-label">Years</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">14</div>
+        <div class="stat-label">Roles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">11+</div>
+        <div class="stat-label">Certifications</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">8x</div>
+        <div class="stat-label">Salary Growth</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- TIMELINE -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">The Chronology</div>
+      <h2>Every Step, In Order</h2>
+      <p>Scroll through 25 years — what I was doing, what I was learning, what it paid, and what I'd tell you about that moment now.</p>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+  </div>
+</section>
+
+<!-- INLINE COURSE CTA -->
+<section class="inline-cta">
+  <div class="inline-cta-inner">
+    <h3>This roadmap took 25 years. Your version doesn't have to.</h3>
+    <p>Everything I learned the hard way — the certs that actually moved the needle, the tech stacks worth betting on, the way to walk into a cybersec job without a degree — it's all inside the course. Self-paced. Starts at $19/mo. Compare that to the $10K–$16K bootcamps.</p>
+    <div class="inline-cta-actions">
+      <a href="https://cybersecproacademy.org/checkout" class="btn btn-primary">Start the Course — From $19/mo →</a>
+      <a href="https://cybersecproacademy.org/courses/break-into-cybersecurity" class="btn btn-outline">See What's Inside</a>
+    </div>
+  </div>
+</section>
+
+<!-- COMP CHART -->
+<section class="comp-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">The Money Story</div>
+      <h2>Compensation Growth</h2>
+      <p>From $41,600 a year to over $320K total comp. Every jump had four things in common.</p>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-container">
+        <canvas id="compChart"></canvas>
+      </div>
+    </div>
+
+    <div class="patterns">
+      <div class="pattern">
+        <h4>Skill Stack-Up</h4>
+        <p>Every jump came after I'd already learned the skills the next role required — on my own time, off the clock.</p>
+      </div>
+      <div class="pattern">
+        <h4>Cert + Move, Together</h4>
+        <p>CISSP didn't raise my pay alone. It raised my pay when I paired it with a promotion. Time them together.</p>
+      </div>
+      <div class="pattern">
+        <h4>The Platform Bet</h4>
+        <p>Going deep on ServiceNow for a decade meant I could walk into the vendor itself and command top-of-band comp.</p>
+      </div>
+      <div class="pattern">
+        <h4>Manager Trust</h4>
+        <p>Every promotion came from being the person my manager couldn't afford to lose. Make their number easier to hit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DECADES -->
+<section class="decades-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">The Playbook</div>
+      <h2>Lessons by Decade</h2>
+      <p>Where to put your energy at each stage of your career if you want a curve like this one.</p>
+    </div>
+
+    <div class="decades">
+      <div class="decade">
+        <div class="decade-stage">2000 – 2009</div>
+        <h3>20s — Build the Base</h3>
+        <div class="decade-focus">Learn fundamentals · Ship anything · Earn your first serious cert</div>
+        <p>Flunked out of college for a semester with a <strong>1.9 GPA</strong> — came back and graduated. Self-taught PHP, Perl, and MySQL. Said yes to a forensics contract I wasn't qualified for. Studied CISSP on nights and weekends for two years — <strong>failed it the first attempt, passed the second</strong>. Took the promotion the moment the cert came in.</p>
+      </div>
+      <div class="decade">
+        <div class="decade-stage">2010 – 2014</div>
+        <h3>Early 30s — Pick Your Platform</h3>
+        <div class="decade-focus">Specialize in a tool/platform the business pays to protect. Go deep, not wide.</div>
+        <p>Went deep on Splunk, EnCase, and vulnerability management. Became the person my manager sent clients to. Took a lead role at a regulated bank to prove I could operate under audit pressure.</p>
+      </div>
+      <div class="decade">
+        <div class="decade-stage">2014 – 2020</div>
+        <h3>Mid 30s — Stack Credibility</h3>
+        <div class="decade-focus">Add code to your security skillset. Lateral into engineering if you have to.</div>
+        <p>Made the "lateral" move from Senior Security Engineer to Software Engineer. Built data pipelines and exec dashboards. Learned ServiceNow. Became an Architect by 2020.</p>
+      </div>
+      <div class="decade">
+        <div class="decade-stage">2020 – Today</div>
+        <h3>Late 30s+ — Monetize the Expertise</h3>
+        <div class="decade-focus">Go to the vendor. Then decide: keep building, or start deciding what gets built.</div>
+        <p>Joined Nuvolo at $170K, then ServiceNow itself at $320K+ total. Five years later, pivoted from engineering to product management to own the roadmap.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENTORING CTA -->
+<section class="inline-cta">
+  <div class="inline-cta-inner">
+    <h3>Want me to walk you through <em>your</em> roadmap?</h3>
+    <p>A roadmap is useful. A roadmap built for your situation is career-changing. Book a 1-on-1 mentorship session and we'll map the next 12 months of your career — what to learn, what cert to chase, how to position for the next role.</p>
+    <div class="inline-cta-actions">
+      <a href="https://square.link/u/ddpR15Ct" class="btn btn-primary">Book a Mentorship Session →</a>
+    </div>
+  </div>
+</section>
+
+<!-- NORTH STAR -->
+<section class="northstar">
+  <div class="northstar-inner">
+    <div class="section-eyebrow">The North Star</div>
+    <h2>The 3 Rules</h2>
+    <p class="northstar-intro">Every job, I leveled up in both skill AND salary. I followed the latest industry trends and stayed current with technology. Your journey is your own and it will look different from mine — but the rules are the same.</p>
+
+    <div class="rules">
+      <div class="rule">
+        <div class="rule-num">1</div>
+        <h4>Always Be Learning a New Skill</h4>
+        <p>The second you stop learning, you start sliding. Pick one new thing per quarter — an AWS service, a scripting language, a framework, a cert — and actually finish it.</p>
+      </div>
+      <div class="rule">
+        <div class="rule-num">2</div>
+        <h4>Become Invaluable to Your Manager</h4>
+        <p>Promotions come from the one person who signs your review. Know what they're measured on, and make their number easier to hit.</p>
+      </div>
+      <div class="rule">
+        <div class="rule-num">3</div>
+        <h4>Keep Earning New Certifications</h4>
+        <p>Certs don't raise your pay by themselves — they unlock the room where the raise happens. Stack them steadily over decades.</p>
+      </div>
+    </div>
+
+    <p class="closing">Do those three things, and the title, the comp, and the opportunities will follow.</p>
+  </div>
+</section>
+
+<!-- OFFER BLOCK -->
+<section class="offer-section">
+  <div class="section-header">
+    <div class="section-eyebrow">Ready to Start?</div>
+    <h2>Two Ways to Work with Me</h2>
+    <p>Pick what fits your stage — the self-paced course, or 1-on-1 mentorship to accelerate.</p>
+  </div>
+
+  <div class="offer-grid">
+    <div class="offer-card featured">
+      <div class="offer-badge">Most Popular</div>
+      <div class="offer-icon">🎯</div>
+      <h3>Break Into Cybersecurity</h3>
+      <div class="price">$19<small> /mo</small></div>
+      <div class="price-sub">or $497 one-time · vs $10,000–$16,000 bootcamps</div>
+      <ul>
+        <li>Self-paced full cybersecurity curriculum</li>
+        <li>Security+ SY0-701 exam prep</li>
+        <li>AI cybersecurity labs</li>
+        <li>Built by a practitioner with 20+ years</li>
+        <li>No degree or experience required</li>
+      </ul>
+      <a href="https://cybersecproacademy.org/checkout" class="btn btn-primary">Enroll Now →</a>
+    </div>
+
+    <div class="offer-card">
+      <div class="offer-icon">🧭</div>
+      <h3>1-on-1 Mentorship</h3>
+      <div class="price">Book a Session</div>
+      <div class="price-sub">Direct access to Bon · Custom roadmap for your career</div>
+      <ul>
+        <li>Personal career plan for the next 12 months</li>
+        <li>Which certs to chase (and which to skip)</li>
+        <li>Resume + LinkedIn review</li>
+        <li>Interview prep for your target role</li>
+        <li>Feedback from 25 years in the field</li>
+      </ul>
+      <a href="https://square.link/u/ddpR15Ct" class="btn btn-primary">Book a Session →</a>
+    </div>
+  </div>
+</section>
+
+<!-- LEAD CAPTURE -->
+<section class="lead-section">
+  <div class="lead-inner">
+    <h3>Not ready to enroll? Grab the Free Guide first.</h3>
+    <p>The same framework this roadmap is built on — delivered to your inbox.</p>
+    <form class="lead-form" action="https://cybersecproacademy.org/#free-guide" method="get">
+      <input type="email" name="email" placeholder="your@email.com" required>
+      <button type="submit" class="btn btn-primary">Send Me the Free Guide →</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <h4>CyberSec Pro Academy</h4>
+    <p>Break Into Cybersecurity — Without a Degree or Experience</p>
+    <div class="foot-links">
+      <a href="https://cybersecproacademy.org/">Home</a>
+      <a href="https://cybersecproacademy.org/about/bonifacio-capuyan">About Bon</a>
+      <a href="https://cybersecproacademy.org/courses/break-into-cybersecurity">Course</a>
+      <a href="https://cybersecproacademy.org/free-resources">Free Resources</a>
+      <a href="https://square.link/u/ddpR15Ct">Mentorship</a>
+    </div>
+    <div class="foot-copy">
+      © 2026 Bonifacio Capuyan · CyberSec Pro Academy
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---------- TIMELINE DATA ----------
+const timelineData = [
+  {
+    year: '2000',
+    company: 'Franciscan University of Steubenville',
+    role: 'B.S. Business Administration (Management)',
+    comp: 'Student',
+    tech: 'Business fundamentals',
+    realTalk: "I flunked out of college for one semester with a 1.9 GPA. Got told to leave. It felt like the end of the world — and it wasn't. I returned, buckled down, and graduated. The GPA on that diploma doesn't tell you who hit the wall along the way.",
+    story: "Earned my degree in Business Management — but not in a straight line. I failed out for a semester, had to come back, and eventually graduated. Not a technical degree, not a perfect record. The degree didn't define the career; the curiosity afterward did.",
+    lesson: "A non-technical degree is NOT a disqualifier for tech. Neither is a 1.9 GPA or a semester off. Your willingness to come back and keep going matters more than your transcript — nobody asks for it after your first job anyway."
+  },
+  {
+    year: '2001',
+    company: 'Nortel Networks',
+    role: 'Contractor (entry-level)',
+    comp: '$20 / hour',
+    tech: 'Self-study on computers, networking basics',
+    story: "My first real tech role. Played a lot of video games after work — but I also started serious self-study on computers. That off-hours learning is what carried me to the next job.",
+    lesson: "Your first job funds your curiosity. Use evenings and weekends to build the skills your next job will require — not the one you're in."
+  },
+  {
+    year: '2002',
+    company: 'VeriSign',
+    role: 'Technical Support',
+    comp: '$48,000 / year',
+    tech: 'PHP · Perl · MySQL',
+    story: "Moved into technical support and taught myself to code on the job. PHP, Perl, and MySQL were the web stack back then — picking them up opened the door to every technical role that followed.",
+    lesson: "Support roles are a cheat code. You're paid to see real production problems every day — use that exposure to learn the stack under them."
+  },
+  {
+    year: '2005',
+    company: 'Fraud Analyst',
+    role: 'Fraud Analyst',
+    comp: 'Mid-career growth',
+    tech: 'Advanced MySQL · Data analysis · Investigation mindset',
+    story: "Pivoted into fraud analysis. Sharpened my MySQL skills by writing real investigative queries — learned how to ask good questions of a database, not just read rows back.",
+    lesson: "Specialize in something the business cares about losing money over. Fraud, risk, and security all pay a premium because they protect revenue."
+  },
+  {
+    year: '2007',
+    company: 'Robert Half',
+    role: 'Security Analyst (Contractor) — Forensics & eDiscovery',
+    comp: '$70,000 / year',
+    tech: 'EnCase · Snort IDS · Forensic methodology',
+    story: "Landed a contract doing digital forensics and eDiscovery. Learned on the job — nobody teaches you this in school. Started studying for the CISSP on nights and weekends — and it was harder than I expected.",
+    lesson: "\"Learned on the job\" is a skill in itself. Say yes to the assignment you don't know how to do yet — then go figure it out."
+  },
+  {
+    year: '2009',
+    company: 'Robert Half',
+    role: 'Supervisor, Security Operations',
+    comp: '$100,000+ / year',
+    tech: 'SecOps leadership · CISSP',
+    realTalk: "I FAILED the CISSP on my first attempt. After two years of studying, I walked out of that test center gutted. Most people give up there. I didn't — went back, figured out where I went wrong, and passed on the second try.",
+    story: "Promoted to SecOps Supervisor and finally earned my CISSP — on the SECOND try. The first attempt was a hard no. Passing the second time, paired with the promotion, broke me through the six-figure mark for the first time.",
+    lesson: "Certs don't make you money by themselves. Certs + a promotion + a new responsibility = the leap. And if you fail the exam on round one? Welcome to the club. Failing the CISSP forced me to actually learn the material instead of just memorize it — that's the cert that got me hired."
+  },
+  {
+    year: '2010',
+    company: 'Robert Half',
+    role: 'Manager, Incident Response & Forensics',
+    comp: 'Steady growth',
+    tech: 'AWS · Linux · Splunk',
+    story: "Stepped up to manage IR and forensics. This is where I picked up AWS, Linux, and Splunk — three tools that became career-long investments.",
+    lesson: "Management doesn't mean you stop being technical. Pick three tools you'll use for the next 10 years and go deep on them."
+  },
+  {
+    year: '2012',
+    company: 'Electronic Arts (EA)',
+    role: 'Global Incident Response Manager',
+    comp: 'Senior IC / Manager',
+    tech: 'Advanced forensics · PHP · EnCase Enterprise',
+    story: "Joined EA as a Global IR Manager. This was my \"big name on the resume\" moment — going deep on forensics at enterprise scale across a global footprint.",
+    lesson: "One stint at a recognizable brand reprices your career. Recruiters read the logo before they read the bullets."
+  },
+  {
+    year: '2012',
+    company: 'Fremont Bank',
+    role: 'Lead Information Security Engineer',
+    comp: 'Regulated-industry premium',
+    tech: 'QRadar · McAfee EPO · Imperva · EnCase Enterprise',
+    story: "Rebuilt Fremont Bank's entire information security infrastructure from the ground up — SIEM, WAF, endpoint, forensics, vulnerability management. Also ran the FDIC audit response and took critical vulnerabilities to zero.",
+    lesson: "Regulated industries (banking, healthcare, government) pay well and teach you rigor. If you can pass a federal audit, you can work anywhere."
+  },
+  {
+    year: '2014',
+    company: 'Robert Half',
+    role: 'Senior Security Engineer',
+    comp: 'Base growth',
+    tech: 'Splunk (deep) · FireEye · QRadar · ServiceNow',
+    story: "Returned to Robert Half as a Senior Security Engineer. First real exposure to ServiceNow — which I didn't yet realize would become the platform that built the rest of my career.",
+    lesson: "Stay open to the tool you've \"never heard of.\" The platform bet you make in your 30s is the one you retire on."
+  },
+  {
+    year: '2016',
+    company: 'Robert Half',
+    role: 'Software Engineer',
+    comp: 'Engineer-track comp',
+    tech: 'Power BI · AWS · Hadoop · REST APIs',
+    story: "Made a lateral move into software engineering — built REST APIs and data pipelines from ServiceNow, Prisma, and Rapid7 into Power BI for executive reporting.",
+    lesson: "Lateral moves into code are underrated. Security engineers who can actually ship code command way more than those who can't."
+  },
+  {
+    year: '2020',
+    company: 'Nuvolo',
+    role: 'Security Solution Architect',
+    comp: '$170,000',
+    tech: 'ServiceNow (architect-level) · OT/IoT security · Healthcare',
+    story: "Joined Nuvolo as a Security Solution Architect at $170K. Became the ServiceNow security expert for major healthcare clients (including GE). This was the jump from \"engineer\" to \"architect.\"",
+    lesson: "\"Architect\" titles unlock a different pay band. Position yourself as the person who designs the system — not just the one who builds it."
+  },
+  {
+    year: '2020',
+    company: 'ServiceNow',
+    role: 'Senior Staff Information Security Engineer',
+    comp: '$320,000+ (base + stock + bonus)',
+    tech: 'ServiceNow SecOps (VR · GRC · CVR · SIR · CC) · FedRAMP · Tenable · Prisma Cloud',
+    story: "Landed at ServiceNow as a Sr Staff Security Engineer. $195K base plus stock options and bonuses pushed total comp past $320K. Led a team of 7 developers on the SecOps product suite.",
+    lesson: "Going to the vendor of the platform you specialized in is the cheat code. If you're a Splunk expert, work at Splunk. If you're a ServiceNow expert, work at ServiceNow."
+  },
+  {
+    year: '2025',
+    company: 'ServiceNow',
+    role: 'Senior Staff Inbound Product Manager — SecOps',
+    comp: 'Continued growth',
+    tech: 'Product strategy · Roadmapping · Agile · Cross-functional leadership',
+    story: "Made the pivot every senior engineer eventually considers: engineer → product manager. Now I drive the product vision and roadmap for ServiceNow SecOps (VR, GRC, CVR, SIR, CC).",
+    lesson: "At some point the highest-leverage move isn't more code — it's deciding what gets built. If you've earned that seat, take it."
+  }
+];
+
+// Render timeline
+const tl = document.getElementById('timeline');
+const escapeHTML = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+timelineData.forEach((e) => {
+  const div = document.createElement('div');
+  div.className = 'event';
+  const realTalkBlock = e.realTalk
+    ? `<div class="event-real-talk">${escapeHTML(e.realTalk)}</div>`
+    : '';
+  div.innerHTML = `
+    <span class="event-dot"></span>
+    <span class="event-year">${escapeHTML(e.year)}</span>
+    <div class="event-card">
+      <div class="event-company">${escapeHTML(e.company)}</div>
+      <div class="event-role">${escapeHTML(e.role)}</div>
+      <div class="event-comp">${escapeHTML(e.comp)}</div>
+      <div class="event-tech"><span class="event-tech-label">Learned:</span>${escapeHTML(e.tech)}</div>
+      ${realTalkBlock}
+      <p class="event-story">${escapeHTML(e.story)}</p>
+      <div class="event-lesson">${escapeHTML(e.lesson)}</div>
+    </div>
+  `;
+  tl.appendChild(div);
+});
+
+// ---------- COMP CHART ----------
+const compYears = [2001, 2002, 2007, 2009, 2020, 2021];
+const compValues = [41600, 48000, 70000, 100000, 170000, 320000];
+const compLabels = ['Nortel', 'VeriSign', 'Robert Half', 'Robert Half (CISSP)', 'Nuvolo', 'ServiceNow'];
+
+const ctx = document.getElementById('compChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: compYears,
+    datasets: [{
+      label: 'Total Comp',
+      data: compValues,
+      borderColor: '#00c896',
+      backgroundColor: 'rgba(0, 200, 150, 0.12)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.35,
+      pointRadius: 7,
+      pointHoverRadius: 11,
+      pointBackgroundColor: '#0a1628',
+      pointBorderColor: '#00c896',
+      pointBorderWidth: 3,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#0a1628',
+        titleColor: '#00c896',
+        bodyColor: '#fff',
+        padding: 12,
+        borderColor: '#00c896',
+        borderWidth: 1,
+        callbacks: {
+          title: (items) => `${items[0].label} — ${compLabels[items[0].dataIndex]}`,
+          label: (ctx) => '  $' + ctx.parsed.y.toLocaleString()
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Year', color: '#4a5568', font: { weight: '600', family: 'Segoe UI' } },
+        grid: { color: 'rgba(10, 22, 40, 0.05)' },
+        ticks: { color: '#4a5568' }
+      },
+      y: {
+        title: { display: true, text: 'Total Comp ($)', color: '#4a5568', font: { weight: '600', family: 'Segoe UI' } },
+        grid: { color: 'rgba(10, 22, 40, 0.05)' },
+        ticks: {
+          color: '#4a5568',
+          callback: (v) => '$' + (v/1000) + 'K'
+        }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>

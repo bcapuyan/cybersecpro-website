@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CyberSec Pro Academy sitemap
+  Upload to the site root so it's reachable at:
+    https://cybersecproacademy.org/sitemap.xml
+  Then submit it in Google Search Console → Sitemaps.
+
+  If your site does NOT actually have one of the URLs below
+  (e.g. /about), delete that <url> block. If you have URLs
+  not listed here, add a new <url> block following the same
+  pattern.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://cybersecproacademy.org/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://cybersecproacademy.org/free-resources</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://cybersecproacademy.org/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://cybersecproacademy.org/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://cybersecproacademy.org/career-roadmap</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://cybersecproacademy.org/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>
