@@ -312,8 +312,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="faq-a">Yes — 30-day money-back guarantee. If you're not satisfied within the first 30 days, email info@cybersecproacademy.org for a full refund, no questions asked.</div>
         </div>
         <div class="faq-item">
-          <div class="faq-q">What's the difference between $19/month and $497 one-time?</div>
-          <div class="faq-a">Both plans give you the exact same course content — all 20 AI labs, 17 topics, and lifetime access. The $19/month plan lets you start with a low commitment and cancel anytime. The $497 one-time payment saves you money long-term (normally $997) and locks in lifetime access with one payment. Both come with a 30-day money-back guarantee.</div>
+          <div class="faq-q">What do I get for $997?</div>
+          <div class="faq-a">Lifetime access to the full course — all 20 AI labs, 17 core topics, the 8-week structured roadmap, the Week 7 Job Readiness module, the free Beginner's Guide PDF, and one year of lab/course support. One payment, no subscription. Backed by a 30-day money-back guarantee.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q">Do I need prior cybersecurity experience?</div>
@@ -332,31 +332,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div>
     <div class="checkout-card">
       <div class="card-header">
-        <div class="pricing-toggle">
-          <button class="pricing-toggle-btn active" onclick="showMonthly()">$19/mo <span class="popular-tag">Popular</span></button>
-          <button class="pricing-toggle-btn" onclick="showOneTime()">$497 One-Time</button>
-        </div>
-        <div id="monthly-price" class="price-row" style="margin-bottom:6px;">
-          <div class="price">$19</div>
-          <div class="price-label">/month</div>
-        </div>
-        <div id="onetime-price" class="price-row" style="display:none; margin-bottom:6px;">
-          <div class="price">$497</div>
+        <div class="price-row" style="margin-bottom:6px;">
+          <div class="price">$997</div>
           <div class="price-label">One-Time</div>
         </div>
-        <div id="monthly-savings" style="color:#a0c4e8; font-size:13px;">Cancel anytime · 30-day refund</div>
-        <div id="onetime-savings" style="display:none;color:#a0c4e8; font-size:13px;">Lifetime access · 30-day refund</div>
+        <div style="color:#a0c4e8; font-size:13px;">Lifetime access · pay once · 30-day refund</div>
       </div>
       <div class="card-body">
         <div style="text-align:center;margin-bottom:12px;font-size:13px;color:#555;">
           Taught by <strong>Bonifacio Capuyan</strong> · CISM · CISA · CSA · CAD · CIS-VR ·
           <a href="https://www.linkedin.com/in/boncapuyan/" target="_blank" rel="noopener" style="color:#0a66c2;font-weight:700;">LinkedIn</a>
         </div>
-        <a id="enroll-monthly" href="https://checkout.teachable.com/secure/779189/checkout/order_3b28w47q" class="enroll-btn">
-          🔒 Enroll Now — $19/month
-        </a>
-        <a id="enroll-onetime" href="https://checkout.teachable.com/secure/779189/checkout/order_y35y0jzk" class="enroll-btn-alt" style="display:none;">
-          🔒 Enroll Now — $497 One-Time
+        <a href="https://cybersecurity-education.teachable.com/purchase?product_id=6717067" class="enroll-btn">
+          🔒 Enroll Now — $997 One-Time
         </a>
         <div class="or-divider">or</div>
         <a href="https://square.link/u/ddpR15Ct" class="mentorship-btn">
@@ -405,27 +393,5 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p style="margin-top:6px; font-size:11px; color:#444;"><a href="/" style="color:#00c896;">← Back to CyberSec Pro Academy</a> · <a href="/price-comparison.html" style="color:#00c896;">Compare Prices</a></p>
 </footer>
 
-<script>
-function showMonthly() {
-  document.getElementById('monthly-price').style.display = 'flex';
-  document.getElementById('onetime-price').style.display = 'none';
-  document.getElementById('monthly-savings').style.display = 'block';
-  document.getElementById('onetime-savings').style.display = 'none';
-  document.getElementById('enroll-monthly').style.display = 'block';
-  document.getElementById('enroll-onetime').style.display = 'none';
-  document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.pricing-toggle-btn')[0].classList.add('active');
-}
-function showOneTime() {
-  document.getElementById('monthly-price').style.display = 'none';
-  document.getElementById('onetime-price').style.display = 'flex';
-  document.getElementById('monthly-savings').style.display = 'none';
-  document.getElementById('onetime-savings').style.display = 'block';
-  document.getElementById('enroll-monthly').style.display = 'none';
-  document.getElementById('enroll-onetime').style.display = 'block';
-  document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.pricing-toggle-btn')[1].classList.add('active');
-}
-</script>
 </body>
 </html>
