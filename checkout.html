@@ -162,48 +162,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<!-- ── FIRST50 LAUNCH BANNER (48-HR FOUNDER'S OFFER) ── -->
-<style>
-  .launch-banner {
-    background: linear-gradient(90deg,#ff5252 0%,#ff8e53 100%);
-    color:#fff; font-family:'Segoe UI',Arial,sans-serif;
-    padding:10px 18px; text-align:center; font-weight:700; font-size:14px;
-    line-height:1.4; position:relative; z-index:200;
-    display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:10px;
-  }
-  .launch-banner .lb-code {
-    background:#fff; color:#c92a2a; padding:3px 10px; border-radius:6px;
-    font-weight:900; letter-spacing:1px; font-size:13px;
-  }
-  .launch-banner .lb-cd {
-    background:rgba(0,0,0,.28); color:#fff; padding:3px 10px; border-radius:6px;
-    font-weight:900; font-variant-numeric:tabular-nums; font-size:13px;
-  }
-  @media (max-width:520px){ .launch-banner { font-size:12px; padding:8px 12px; gap:8px; } }
-</style>
-<div class="launch-banner" role="alert" aria-live="polite">
-  <span>🔥 <strong>48-HR FOUNDER'S LAUNCH:</strong> 50% off applied · Code <span class="lb-code">FIRST50</span></span>
-  <span>· First 5 buyers get a free 1:1 with Bon</span>
-  <span>· Ends in <span class="lb-cd" id="lbCountdown">--:--:--</span></span>
-</div>
-<script>
-(function(){
-  var end = new Date('2026-04-24T23:59:59-05:00').getTime();
-  var el = document.getElementById('lbCountdown');
-  function tick(){
-    if(!el) return;
-    var d = end - Date.now();
-    if (d <= 0) { el.textContent = '00:00:00'; return; }
-    var h = Math.floor(d/3600000);
-    var m = Math.floor((d%3600000)/60000);
-    var s = Math.floor((d%60000)/1000);
-    el.textContent = (h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
-  }
-  tick(); setInterval(tick, 1000);
-})();
-</script>
-<!-- ── END FIRST50 BANNER ── -->
-
 <!-- NAV -->
 <nav class="nav">
   <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
@@ -212,9 +170,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- HERO STRIP -->
 <div class="hero-strip">
-  <div class="urgency-badge">🔥 48-Hour Founder's Launch — 50% Off</div>
   <h1>You're One Step Away From<br><span>Breaking Into Cybersecurity</span></h1>
-  <p>Code <strong style="background:#fff;color:#c92a2a;padding:2px 8px;border-radius:5px;letter-spacing:.5px;">FIRST50</strong> applied at checkout · First 5 buyers get a free 30-min 1:1 with Bon · 30-day money-back guarantee.</p>
+  <p>Lifetime access · 20 AI cybersecurity labs · 30-day money-back guarantee.</p>
 </div>
 
 <!-- MAIN LAYOUT -->
@@ -375,38 +332,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div>
     <div class="checkout-card">
       <div class="card-header">
-        <div style="background:#ff5252;color:#fff;font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:12px;display:inline-block;margin-bottom:14px;">FIRST50 · 50% OFF · 48 HOURS</div>
         <div class="pricing-toggle">
-          <button class="pricing-toggle-btn active" onclick="showMonthly()">$9.50/mo <span class="popular-tag">Popular</span></button>
-          <button class="pricing-toggle-btn" onclick="showOneTime()">$248 One-Time</button>
+          <button class="pricing-toggle-btn active" onclick="showMonthly()">$19/mo <span class="popular-tag">Popular</span></button>
+          <button class="pricing-toggle-btn" onclick="showOneTime()">$497 One-Time</button>
         </div>
         <div id="monthly-price" class="price-row" style="margin-bottom:6px;">
-          <span style="font-size:18px;color:#7a8aa0;text-decoration:line-through;align-self:center;">$19</span>
-          <div class="price">$9.50</div>
+          <div class="price">$19</div>
           <div class="price-label">/month</div>
         </div>
         <div id="onetime-price" class="price-row" style="display:none; margin-bottom:6px;">
-          <span style="font-size:18px;color:#7a8aa0;text-decoration:line-through;align-self:center;">$497</span>
-          <div class="price">$248</div>
+          <div class="price">$497</div>
           <div class="price-label">One-Time</div>
         </div>
-        <div id="monthly-savings" style="color:#a0c4e8; font-size:13px;">Code <strong style="color:#fff;">FIRST50</strong> applied · Cancel anytime · 30-day refund</div>
-        <div id="onetime-savings" style="display:none;"><span class="orig-price">Reg: $497</span> · <span class="badge" style="margin-top:6px;">Save $249 with FIRST50</span></div>
+        <div id="monthly-savings" style="color:#a0c4e8; font-size:13px;">Cancel anytime · 30-day refund</div>
+        <div id="onetime-savings" style="display:none;color:#a0c4e8; font-size:13px;">Lifetime access · 30-day refund</div>
       </div>
       <div class="card-body">
         <div style="text-align:center;margin-bottom:12px;font-size:13px;color:#555;">
           Taught by <strong>Bonifacio Capuyan</strong> · CISM · CISA · CSA · CAD · CIS-VR ·
           <a href="https://www.linkedin.com/in/boncapuyan/" target="_blank" rel="noopener" style="color:#0a66c2;font-weight:700;">LinkedIn</a>
         </div>
-        <a id="enroll-monthly" href="https://checkout.teachable.com/secure/779189/checkout/order_3b28w47q?coupon_code=FIRST50" class="enroll-btn">
-          🔒 Enroll Now — $9.50/month (50% Off)
+        <a id="enroll-monthly" href="https://checkout.teachable.com/secure/779189/checkout/order_3b28w47q" class="enroll-btn">
+          🔒 Enroll Now — $19/month
         </a>
-        <a id="enroll-onetime" href="https://checkout.teachable.com/secure/779189/checkout/order_y35y0jzk?coupon_code=FIRST50" class="enroll-btn-alt" style="display:none;">
-          🔒 Enroll Now — $248 (50% Off)
+        <a id="enroll-onetime" href="https://checkout.teachable.com/secure/779189/checkout/order_y35y0jzk" class="enroll-btn-alt" style="display:none;">
+          🔒 Enroll Now — $497 One-Time
         </a>
-        <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px 12px;margin:6px 0 12px;font-size:12px;color:#9a3412;line-height:1.5;text-align:center;">
-          ⏰ Code <strong>FIRST50</strong> auto-applies. If not, enter <strong>FIRST50</strong> on the next page.<br>First 5 buyers get a free 30-min 1:1 onboarding call with Bon.
-        </div>
         <div class="or-divider">or</div>
         <a href="https://square.link/u/ddpR15Ct" class="mentorship-btn">
           Book 1-on-1 Mentorship Instead

@@ -377,49 +377,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<!-- ── FIRST50 LAUNCH BANNER (48-HR FOUNDER'S OFFER) ── -->
-<style>
-  .launch-banner {
-    background: linear-gradient(90deg,#ff5252 0%,#ff8e53 100%);
-    color:#fff; font-family:'Segoe UI',Arial,sans-serif;
-    padding:10px 18px; text-align:center; font-weight:700; font-size:14px;
-    line-height:1.4; position:relative; z-index:200;
-    display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:10px;
-  }
-  .launch-banner .lb-code {
-    background:#fff; color:#c92a2a; padding:3px 10px; border-radius:6px;
-    font-weight:900; letter-spacing:1px; font-size:13px;
-  }
-  .launch-banner .lb-cd {
-    background:rgba(0,0,0,.28); color:#fff; padding:3px 10px; border-radius:6px;
-    font-weight:900; font-variant-numeric:tabular-nums; font-size:13px;
-  }
-  .launch-banner a.lb-cta { color:#fff; text-decoration:underline; font-weight:900; }
-  @media (max-width:520px){ .launch-banner { font-size:12px; padding:8px 12px; gap:8px; } }
-</style>
-<div class="launch-banner" role="alert" aria-live="polite">
-  <span>🔥 <strong>48-HR FOUNDER'S LAUNCH:</strong> 50% off · Code <span class="lb-code">FIRST50</span></span>
-  <span>· First 5 buyers get a free 1:1 with Bon</span>
-  <span>· Ends in <span class="lb-cd" id="lbCountdown">--:--:--</span></span>
-  <span>· <a class="lb-cta" href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=banner&utm_campaign=first50">Claim it →</a></span>
-</div>
-<script>
-(function(){
-  var end = new Date('2026-04-24T23:59:59-05:00').getTime();
-  var el = document.getElementById('lbCountdown');
-  function tick(){
-    if(!el) return;
-    var d = end - Date.now();
-    if (d <= 0) { el.textContent = '00:00:00'; return; }
-    var h = Math.floor(d/3600000);
-    var m = Math.floor((d%3600000)/60000);
-    var s = Math.floor((d%60000)/1000);
-    el.textContent = (h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
-  }
-  tick(); setInterval(tick, 1000);
-})();
-</script>
-<!-- ── END FIRST50 BANNER ── -->
 <!-- EMAIL CAPTURE MODAL -->
 <div class="modal-overlay" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal-box">
@@ -468,7 +425,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="/price-comparison.html">Compare Prices</a>
     <a href="/blog/">Blog</a>
     <a href="#" class="nav-cta" onclick="openModal(); return false;">Free Guide</a>
-    <a href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=nav&utm_campaign=first50" class="nav-enroll">Enroll — 50% Off</a>
+    <a href="/checkout.html?utm_source=site&utm_medium=nav" class="nav-enroll">Enroll Now</a>
   </div>
   <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -484,7 +441,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <a href="/price-comparison.html" onclick="closeDrawer()">Compare Prices</a>
   <a href="/blog/" onclick="closeDrawer()">Blog</a>
   <a href="#" onclick="openModal(); closeDrawer(); return false;">Get Free Guide</a>
-  <a href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=nav_drawer&utm_campaign=first50" class="drawer-enroll">Enroll — 50% Off (FIRST50)</a>
+  <a href="/checkout.html?utm_source=site&utm_medium=nav_drawer" class="drawer-enroll">Enroll Now</a>
 </div>
 <script>
   function toggleDrawer() {
@@ -502,11 +459,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="hero-text">
       <h1>Break Into <em>Cybersecurity</em> Without a Degree or Experience</h1>
       <p>A self-paced course built by a mentor who has watched 200+ students try this — and knows exactly what separates the ones who get hired from the ones who don't.</p>
-      <div style="background:rgba(255,82,82,.15); border:1px solid rgba(255,142,83,.55); border-radius:10px; padding:12px 16px; margin-bottom:20px; max-width:520px; font-size:14px; color:#ffd9c2; line-height:1.55;">
-        🔥 <strong style="color:#fff;">48-Hour Founder's Launch.</strong> 50% off with code <strong style="background:#fff;color:#c92a2a;padding:2px 8px;border-radius:5px;letter-spacing:.5px;">FIRST50</strong>. First 5 buyers get a free 30-min 1:1 with Bon.
-      </div>
       <div class="hero-actions">
-        <a href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=hero&utm_campaign=first50" class="btn btn-green">Enroll Now — 50% Off →</a>
+        <a href="/checkout.html?utm_source=site&utm_medium=hero" class="btn btn-green">Enroll Now →</a>
         <a href="#" class="btn btn-outline" onclick="openModal(); return false;">Free Guide</a>
       </div>
     </div>
@@ -525,12 +479,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="desc">Instructor's current annual salary — this path works</div>
       </div>
       <div class="hero-divider"></div>
-      <a href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=hero_card&utm_campaign=first50" class="hero-price" style="text-decoration:none;color:inherit;display:block;cursor:pointer;" aria-label="Enroll — Founder's launch 50% off with code FIRST50">
-        <div class="price-label" style="color:#ffd9c2;">48-HR Launch · Code FIRST50</div>
-        <div style="font-size:13px;color:#a0c4e8;text-decoration:line-through;margin-top:4px;">Reg. $497 / $19 mo</div>
-        <div class="price-num" style="margin-top:2px;">$248<span style="font-size:18px;color:#a0c4e8"> one-time</span></div>
-        <div class="price-sub">or just $9.50/mo · save $249 vs. regular price</div>
-        <div style="margin-top:8px;font-size:11px;color:#00c896;font-weight:700;">30-DAY MONEY-BACK GUARANTEE · FIRST 5 GET A 1:1 WITH BON</div>
+      <a href="/checkout.html?utm_source=site&utm_medium=hero_card" class="hero-price" style="text-decoration:none;color:inherit;display:block;cursor:pointer;" aria-label="Enroll in the course">
+        <div class="price-label">Course Price</div>
+        <div class="price-num" style="margin-top:2px;">$497<span style="font-size:18px;color:#a0c4e8"> one-time</span></div>
+        <div class="price-sub">or $19/month · lifetime access</div>
+        <div style="margin-top:8px;font-size:11px;color:#00c896;font-weight:700;">30-DAY MONEY-BACK GUARANTEE</div>
       </a>
     </div>
   </div>
@@ -598,12 +551,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div class="product-footer">
           <div class="product-price">
-            <span style="font-size:16px;color:#9ca3af;text-decoration:line-through;font-weight:600;">$497</span>
-            <span style="color:#ff5252;">$248</span><span style="font-size:14px;color:#6b7280;font-weight:600;"> one-time</span>
-            <div style="font-size:13px;color:#6b7280;font-weight:500;margin-top:4px;">or $9.50/mo (reg $19) — code <strong style="color:#c92a2a;">FIRST50</strong></div>
+            <span>$497</span><span style="font-size:14px;color:#6b7280;font-weight:600;"> one-time</span>
+            <div style="font-size:13px;color:#6b7280;font-weight:500;margin-top:4px;">or $19/month — lifetime access</div>
           </div>
-          <a href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=card&utm_campaign=first50" class="product-btn green">Enroll Now — 50% Off →</a>
-          <div style="text-align:center;margin-top:8px;font-size:12px;color:#00c896;font-weight:700;">✓ 30-Day Money-Back · ✓ First 5 buyers get a 1:1 with Bon</div>
+          <a href="/checkout.html?utm_source=site&utm_medium=card" class="product-btn green">Enroll Now →</a>
+          <div style="text-align:center;margin-top:8px;font-size:12px;color:#00c896;font-weight:700;">✓ 30-Day Money-Back Guarantee</div>
         </div>
       </div>
 
@@ -987,7 +939,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>Download the free guide. Enroll in the course. Book a 1-on-1 session. Pick your starting point.</p>
   <div class="actions">
     <a href="#" class="btn btn-dark">Download Free Guide</a>
-    <a href="/checkout.html?coupon_code=FIRST50&utm_source=site&utm_medium=cta_strip&utm_campaign=first50" class="btn btn-white">Enroll — 50% Off (FIRST50)</a>
+    <a href="/checkout.html?utm_source=site&utm_medium=cta_strip" class="btn btn-white">Enroll Now</a>
     <a href="https://square.link/u/ddpR15Ct" class="btn btn-dark">Book Mentorship — $100/30 min</a>
   </div>
   <p style="margin-top:24px; font-size:14px;">Questions? Email us directly: <strong>info@cybersecproacademy.org</strong></p>
