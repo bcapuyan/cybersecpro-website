@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enroll — CyberSec Pro Academy</title>
+<title>Reserve Your Seat — After-Messer SOC & Vulnerability Analyst Job-Launch</title>
+<meta name="description" content="12-week instructor-led cohort that picks up where Professor Messer's free Sec+ training stops. Self-Guided $497 · Cohort $1,497 · Cohort + Coaching $1,997.">
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -32,108 +33,85 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   /* HERO STRIP */
   .hero-strip {
-    background: linear-gradient(135deg, #0a1628 0%, #0d3b6e 100%);
+    background: linear-gradient(135deg, #0a1628 0%, #0d3b6e 55%, #0e5f7a 100%);
     color: white; text-align: center; padding: 48px 24px 40px;
   }
   .urgency-badge {
     display: inline-block; background: #ff6b6b; color: white;
     font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
-    padding: 5px 14px; border-radius: 20px; margin-bottom: 20px;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 16px;
   }
-  .hero-strip h1 { font-size: clamp(26px, 4vw, 42px); font-weight: 900; line-height: 1.15; margin-bottom: 10px; }
+  .hero-strip h1 { font-size: clamp(26px, 4vw, 40px); font-weight: 900; line-height: 1.15; margin-bottom: 12px; max-width: 820px; margin-left: auto; margin-right: auto; }
   .hero-strip h1 span { color: #00c896; }
-  .hero-strip p { color: #a0c4e8; font-size: 16px; max-width: 560px; margin: 0 auto; line-height: 1.6; }
+  .hero-strip p { color: #a0c4e8; font-size: 16px; max-width: 640px; margin: 0 auto; line-height: 1.6; }
+
+  /* PREREQ STRIP */
+  .prereq-bar {
+    background: #ffeec9; color: #6b4d00; padding: 12px 16px; text-align: center;
+    font-size: 14px; font-weight: 600; border-bottom: 1px solid #f0d97a;
+  }
+  .prereq-bar strong { color: #5a3d00; }
 
   /* LAYOUT */
-  .checkout-wrap { max-width: 1060px; margin: 0 auto; padding: 40px 20px 60px; display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
-  @media (max-width: 760px) { .checkout-wrap { grid-template-columns: 1fr; } }
+  .checkout-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 20px 60px; }
 
-  /* LEFT — Course Summary */
-  .course-summary { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
-  .course-summary h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; color: #0a1628; }
+  /* COHORT SUMMARY */
+  .course-summary { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); margin-bottom: 32px; }
+  .course-summary h2 { font-size: 24px; font-weight: 800; margin-bottom: 6px; color: #0a1628; }
   .course-summary .subtitle { color: #555; font-size: 14px; margin-bottom: 28px; }
 
-  .includes-list { list-style: none; margin-bottom: 28px; }
-  .includes-list li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f4f8; font-size: 14px; }
+  .includes-list { list-style: none; margin-bottom: 0; }
+  .includes-list li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f8; font-size: 14px; }
   .includes-list li:last-child { border-bottom: none; }
-  .includes-list .icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .includes-list .icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
   .includes-list .text strong { display: block; font-weight: 700; color: #0a1628; margin-bottom: 2px; }
-  .includes-list .text span { color: #666; font-size: 13px; line-height: 1.4; }
+  .includes-list .text span { color: #555; font-size: 13px; line-height: 1.5; }
+
+  /* TIER PICKER */
+  .tier-section { margin-bottom: 32px; }
+  .tier-section h2 { font-size: 22px; font-weight: 800; color: #0a1628; margin-bottom: 8px; }
+  .tier-section .sub { color: #555; font-size: 14px; margin-bottom: 24px; }
+  .tier-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .tier-grid { grid-template-columns: 1fr; } }
+  .tier-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 2px solid #e8eef5; display: flex; flex-direction: column; }
+  .tier-card.featured { border-color: #00c896; box-shadow: 0 8px 32px rgba(0,200,150,0.15); position: relative; }
+  .tier-card.featured::before { content: "MOST POPULAR"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #00c896; color: #0a1628; font-size: 11px; font-weight: 800; letter-spacing: 1px; padding: 4px 12px; border-radius: 12px; }
+  .tier-card .tier-name { font-size: 14px; font-weight: 700; color: #0d3b6e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .tier-card .tier-price { font-size: 36px; font-weight: 900; color: #0a1628; line-height: 1; }
+  .tier-card .tier-price span { font-size: 14px; font-weight: 600; color: #6b7280; }
+  .tier-card .tier-tag { font-size: 12px; color: #6b7280; margin-top: 4px; min-height: 20px; }
+  .tier-card .tier-features { list-style: none; margin: 18px 0; flex-grow: 1; }
+  .tier-card .tier-features li { font-size: 13px; color: #444; padding: 6px 0; display: flex; gap: 8px; line-height: 1.4; }
+  .tier-card .tier-features li::before { content: "✓"; color: #00c896; font-weight: 900; flex-shrink: 0; }
+  .tier-card .tier-cta { display: block; text-align: center; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 800; text-decoration: none; transition: transform 0.15s, opacity 0.15s; margin-top: 8px; }
+  .tier-card .tier-cta.green { background: #00c896; color: #0a1628; }
+  .tier-card .tier-cta.green:hover { background: #00b487; transform: translateY(-1px); }
+  .tier-card .tier-cta.dark { background: #0a1628; color: #ffffff; border: 2px solid #0a1628; }
+  .tier-card .tier-cta.dark:hover { opacity: 0.9; transform: translateY(-1px); }
+  .tier-card .tier-cta.outline { background: transparent; color: #0a1628; border: 2px solid #0a1628; }
+  .tier-card .tier-cta.outline:hover { background: #0a1628; color: #ffffff; }
+  .tier-card .tier-fineprint { text-align: center; font-size: 11px; color: #6b7280; margin-top: 10px; }
 
   /* HOW IT WORKS */
-  .how-section { margin-top: 32px; }
-  .how-section h3 { font-size: 17px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
-  .steps { display: flex; flex-direction: column; gap: 16px; }
-  .step { display: flex; align-items: flex-start; gap: 16px; }
+  .how-section { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); margin-bottom: 32px; }
+  .how-section h3 { font-size: 20px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .step { display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: #f7fbff; border-radius: 10px; }
   .step-num {
     background: #00c896; color: #0a1628; width: 32px; height: 32px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 14px; flex-shrink: 0;
   }
-  .step-body strong { display: block; font-weight: 700; font-size: 14px; color: #0a1628; }
-  .step-body span { font-size: 13px; color: #666; line-height: 1.5; }
-
-  /* RIGHT — Checkout Card */
-  .checkout-card { background: white; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.13); overflow: hidden; position: sticky; top: 24px; }
-  .card-header { background: #0a1628; padding: 24px; text-align: center; }
-  .card-header .price-row { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 6px; }
-  .card-header .price { font-size: 52px; font-weight: 900; color: #00c896; line-height: 1; }
-  .card-header .price-label { font-size: 14px; color: #a0c4e8; }
-  .card-header .orig-price { font-size: 14px; color: #666; text-decoration: line-through; }
-  .card-header .badge { display: inline-block; background: #00c896; color: #0a1628; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
-
-  .card-body { padding: 24px; }
-
-  .enroll-btn {
-    display: block; width: 100%; background: #00c896; color: #0a1628;
-    text-align: center; padding: 18px; border-radius: 10px;
-    font-size: 18px; font-weight: 900; text-decoration: none;
-    transition: transform 0.15s, background 0.15s; letter-spacing: 0.3px;
-    margin-bottom: 12px;
-  }
-  .enroll-btn:hover { background: #00a870; transform: translateY(-2px); }
-
-  .enroll-btn-alt {
-    display: block; width: 100%; background: #0a1628; color: #00c896;
-    text-align: center; padding: 16px; border-radius: 10px;
-    font-size: 16px; font-weight: 800; text-decoration: none;
-    transition: transform 0.15s, opacity 0.15s; letter-spacing: 0.3px;
-    margin-bottom: 12px; border: 2px solid #00c896;
-  }
-  .enroll-btn-alt:hover { opacity: 0.9; transform: translateY(-2px); }
-
-  .or-divider { text-align: center; font-size: 12px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin: 4px 0; }
-
-  .mentorship-btn {
-    display: block; width: 100%; background: transparent; color: #0a1628;
-    text-align: center; padding: 14px; border-radius: 10px; border: 2px solid #0a1628;
-    font-size: 15px; font-weight: 700; text-decoration: none;
-    transition: background 0.15s; margin-bottom: 20px;
-  }
-  .mentorship-btn:hover { background: #f0f4f8; }
-
-  .pricing-toggle { display: flex; gap: 0; margin-bottom: 12px; border-radius: 10px; overflow: hidden; border: 2px solid #00c896; }
-  .pricing-toggle-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; background: transparent; color: #a0c4e8; border: none; }
-  .pricing-toggle-btn.active { background: #00c896; color: #0a1628; }
-  .popular-tag { display: inline-block; background: #ff6b6b; color: white; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 4px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  .secure-row { display: flex; align-items: center; justify-content: center; gap: 6px; color: #666; font-size: 12px; margin-bottom: 20px; }
-  .secure-row .lock { font-size: 14px; }
-
-  .mini-includes { border-top: 1px solid #f0f4f8; padding-top: 20px; }
-  .mini-includes p { font-size: 12px; font-weight: 700; color: #0a1628; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .mini-includes ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .mini-includes li { font-size: 13px; color: #444; display: flex; align-items: center; gap: 8px; }
-  .mini-includes li::before { content: "✓"; color: #00c896; font-weight: 900; flex-shrink: 0; }
-
-  .guarantee { background: #f0fff8; border: 1px solid #00c896; border-radius: 10px; padding: 14px 16px; margin-top: 16px; font-size: 12px; color: #444; line-height: 1.5; }
-  .guarantee strong { color: #00874a; }
+  .step-body strong { display: block; font-weight: 700; font-size: 14px; color: #0a1628; margin-bottom: 2px; }
+  .step-body span { font-size: 13px; color: #555; line-height: 1.5; }
 
   /* TESTIMONIALS */
-  .testimonials { margin-top: 32px; }
-  .testimonials h3 { font-size: 17px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
+  .testimonials { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); margin-bottom: 32px; }
+  .testimonials h3 { font-size: 20px; font-weight: 800; color: #0a1628; margin-bottom: 6px; }
+  .testimonials .verified { font-size: 12px; color: #888; margin-bottom: 16px; }
   .testimonial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 500px) { .testimonial-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .testimonial-grid { grid-template-columns: 1fr; } }
   .testimonial {
     background: #f7fbff; border-left: 3px solid #00c896;
     border-radius: 0 10px 10px 0; padding: 16px;
@@ -143,12 +121,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .testimonial .role { font-size: 11px; color: #888; }
 
   /* FAQ */
-  .faq-section { margin-top: 32px; }
-  .faq-section h3 { font-size: 17px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
+  .faq-section { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  .faq-section h3 { font-size: 20px; font-weight: 800; color: #0a1628; margin-bottom: 20px; }
   .faq-item { border-bottom: 1px solid #e8f0fe; padding: 16px 0; }
   .faq-item:last-child { border-bottom: none; }
-  .faq-q { font-weight: 700; font-size: 14px; color: #0a1628; margin-bottom: 6px; }
-  .faq-a { font-size: 13px; color: #555; line-height: 1.6; }
+  .faq-q { font-weight: 700; font-size: 15px; color: #0a1628; margin-bottom: 6px; }
+  .faq-a { font-size: 14px; color: #444; line-height: 1.6; }
 
   /* FOOTER */
   footer { background: #0a1628; color: #666; text-align: center; padding: 24px; font-size: 13px; }
@@ -170,218 +148,259 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- HERO STRIP -->
 <div class="hero-strip">
-  <h1>You're One Step Away From<br><span>Breaking Into Cybersecurity</span></h1>
-  <p>Lifetime access · 20 AI cybersecurity labs · 30-day money-back guarantee.</p>
+  <div class="urgency-badge">8 Seats per Cohort · First Come, First Seated</div>
+  <h1>Reserve Your Seat — <span>After-Messer SOC &amp; Vulnerability Analyst Job-Launch</span></h1>
+  <p>The 12-week instructor-led cohort that picks up where Professor Messer's free Sec+ training stops. Hands-on labs, dual-track resume, mock interviews, and 60 days of coaching after the cohort wraps.</p>
 </div>
 
-<!-- MAIN LAYOUT -->
+<!-- PREREQ STRIP -->
+<div class="prereq-bar">
+  ⚠️ <strong>Sec+ is the prerequisite.</strong> If you haven't passed CompTIA Security+ SY0-701 yet, finish Professor Messer's free training first — then come back.
+</div>
+
+<!-- MAIN -->
 <div class="checkout-wrap">
 
-  <!-- LEFT COLUMN -->
-  <div>
+  <!-- WHAT'S INCLUDED -->
+  <div class="course-summary">
+    <h2>What's in the Cohort</h2>
+    <p class="subtitle">12 weeks · instructor-led · capped at 8 seats per cohort</p>
 
-    <!-- Course Summary -->
-    <div class="course-summary">
-      <h2>Break Into Cybersecurity — The Course</h2>
-      <p class="subtitle">8 weeks · Self-paced · CompTIA Security+ aligned · Lifetime access</p>
-
-      <ul class="includes-list">
-        <li>
-          <span class="icon">🤖</span>
-          <div class="text">
-            <strong>20 AI Cybersecurity Labs</strong>
-            <span>Wireshark, OpenSSL, Nessus, Splunk, Active Directory + 15 AI-powered labs covering threat detection, malware analysis, and network defense automation.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">📚</span>
-          <div class="text">
-            <strong>17 Core Learning Topics</strong>
-            <span>Full CompTIA Security+ SY0-701 coverage across all 5 exam domains, plus 4 dedicated AI units integrated throughout.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">🗓️</span>
-          <div class="text">
-            <strong>8-Week Structured Roadmap</strong>
-            <span>Each week has a clear theme, lab deliverable, and milestone. Week 7 is 100% dedicated to resume, LinkedIn, and job search.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">👨‍💻</span>
-          <div class="text">
-            <strong>1-on-1 Mentorship Available</strong>
-            <span>Book directly with your instructor — CISM, CISA, 20+ years industry, 200+ students mentored. From $100/session.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">📘</span>
-          <div class="text">
-            <strong>Free Beginner's Guide Included</strong>
-            <span>10-section PDF covering career roadmaps, cert pathways, salary data, and how to get a college degree for free or near-free.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">♾️</span>
-          <div class="text">
-            <strong>Lifetime Access + Updates</strong>
-            <span>The course doesn't expire. As cybersecurity evolves, your content is updated — no extra charge.</span>
-          </div>
-        </li>
-      </ul>
-
-      <!-- HOW IT WORKS -->
-      <div class="how-section">
-        <h3>⚡ How Instant Access Works</h3>
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-body">
-              <strong>Click "Enroll Now" below</strong>
-              <span>You'll be taken to our secure Teachable checkout page. Takes about 60 seconds to complete.</span>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-body">
-              <strong>Complete payment securely</strong>
-              <span>Pay by card or PayPal. Teachable uses bank-grade encryption. Your information is never stored on our servers.</span>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-body">
-              <strong>Instant access — no waiting</strong>
-              <span>The moment payment clears, Teachable automatically creates your account and sends login details to your email. You can start your first lesson within minutes.</span>
-            </div>
-          </div>
+    <ul class="includes-list">
+      <li>
+        <span class="icon">📞</span>
+        <div class="text">
+          <strong>12 Live Cohort Calls (90 min each, recorded)</strong>
+          <span>Weekly instructor-led sessions — walk through the labs, the resume, the interview prep, and live Q&amp;A. Miss a session? All recordings are posted within 24 hours.</span>
         </div>
-      </div>
-
-      <!-- TESTIMONIALS -->
-      <div class="testimonials">
-        <h3>What Students Say</h3>
-        <p style="font-size:12px;color:#888;margin:-10px 0 16px;">Verified LinkedIn Recommendations</p>
-        <div class="testimonial-grid">
-          <div class="testimonial">
-            <p>"I was lucky enough to have been partnered with Bon when I was enrolled in my cybersecurity bootcamp. His expertise helped guide me as I navigated through the course. He was patient and readily available to answer any questions. Great mentor, highly recommended!"</p>
-            <div class="author">Vanessa</div>
-            <div class="role">Information Technology · LinkedIn Recommendation</div>
-          </div>
-          <div class="testimonial">
-            <p>"Bon is awesome at what he does and is very knowledgeable with a lot of experience in cybersecurity! He was my mentor for my cybersecurity boot camp and helped me with whatever questions I had — leading me to create a roadmap and advice to break into the Cyber industry!"</p>
-            <div class="author">Javonis</div>
-            <div class="role">SOC & Security Analyst · LinkedIn Recommendation</div>
-          </div>
-          <div class="testimonial">
-            <p>"Bon is an amazing resource in the Cybersecurity industry. His enthusiasm in teaching this subject ignited a passion in me for the same industry and keeps me motivated. He is one person I'll always come back to for any questions and help."</p>
-            <div class="author">David</div>
-            <div class="role">Transportation Security Officer · LinkedIn Recommendation</div>
-          </div>
-          <div class="testimonial">
-            <p>"I had the honor of having Bon as my mentor during my USF Cybersecurity Bootcamp. He is very knowledgeable, always on time, and worth my while. I most definitely recommend him for any mentoring position! He is patient and knows how to explain what needs to be accomplished."</p>
-            <div class="author">Kim</div>
-            <div class="role">Teacher · LinkedIn Recommendation</div>
-          </div>
-          <div class="testimonial">
-            <p>"Bon has been more than a mere mentor — he has been a great help. He always takes the time to ensure I grasp different concepts regardless of difficulty. Always available, extremely reliable and dedicated to my success. My experience in this bootcamp was so smooth because I had him in my corner."</p>
-            <div class="author">Andrew</div>
-            <div class="role">Cybersecurity Specialist | CompTIA Security+ · LinkedIn Recommendation</div>
-          </div>
-          <div class="testimonial">
-            <p>"I was mentored in Cyber Security and my experience was fantastic! He knows his stuff!"</p>
-            <div class="author">Donald</div>
-            <div class="role">IT Specialist · LinkedIn Recommendation</div>
-          </div>
+      </li>
+      <li>
+        <span class="icon">🔬</span>
+        <div class="text">
+          <strong>Hands-On SOC + Vulnerability Lab Environment</strong>
+          <span>The tools real analysts use: Splunk, Microsoft Sentinel, Nessus, OWASP ZAP, TheHive, Wireshark, plus 25 prebuilt SOC + vulnerability-management scenarios.</span>
         </div>
-      </div>
-
-      <!-- FAQ -->
-      <div class="faq-section">
-        <h3>Frequently Asked Questions</h3>
-        <div class="faq-item">
-          <div class="faq-q">When do I get access after purchasing?</div>
-          <div class="faq-a">Immediately. Teachable automatically sends your login credentials as soon as payment is confirmed — typically within 60 seconds of purchase. Check your inbox (and spam folder) for an email from no-reply@teachable.com.</div>
+      </li>
+      <li>
+        <span class="icon">📄</span>
+        <div class="text">
+          <strong>Dual-Track Resume: SOC L1 + Vulnerability Analyst I</strong>
+          <span>You'll graduate with two ATS-tuned resumes — one positioned for SOC roles, one for vulnerability-analyst roles — so you can apply to both pipelines without rewriting.</span>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">What payment methods are accepted?</div>
-          <div class="faq-a">All major credit and debit cards (Visa, Mastercard, Amex, Discover) and PayPal. Checkout is processed securely by Teachable — your card details are encrypted and never shared with us.</div>
+      </li>
+      <li>
+        <span class="icon">🎤</span>
+        <div class="text">
+          <strong>2 Recorded Mock Interviews + LinkedIn Rewrite</strong>
+          <span>Live mock interviews with feedback you can replay. LinkedIn profile rewritten to surface in recruiter searches for SOC and vuln-analyst keywords.</span>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">Is there a refund policy?</div>
-          <div class="faq-a">Yes — 30-day money-back guarantee. If you're not satisfied within the first 30 days, email info@cybersecproacademy.org for a full refund, no questions asked.</div>
+      </li>
+      <li>
+        <span class="icon">🤝</span>
+        <div class="text">
+          <strong>Warm Intros to Hiring Managers</strong>
+          <span>Where the instructor's network has SOC or vuln-analyst openings, we make the introduction. No guarantees — just real intros to real people.</span>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">What do I get for $997?</div>
-          <div class="faq-a">Lifetime access to the full course — all 20 AI labs, 17 core topics, the 8-week structured roadmap, the Week 7 Job Readiness module, the free Beginner's Guide PDF, and one year of lab/course support. One payment, no subscription. Backed by a 30-day money-back guarantee.</div>
+      </li>
+      <li>
+        <span class="icon">⏰</span>
+        <div class="text">
+          <strong>60-Day Post-Cohort Coaching Window</strong>
+          <span>After week 12, you keep working with us through your job search for another 60 days — resume tweaks, interview debriefs, application strategy.</span>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">Do I need prior cybersecurity experience?</div>
-          <div class="faq-a">No. The course starts from absolute basics and builds systematically. Many students started with no IT background at all. If you can use a computer, you can start this course today.</div>
+      </li>
+      <li>
+        <span class="icon">🤖</span>
+        <div class="text">
+          <strong>CyberSecPro AI Tutor (Claude-powered)</strong>
+          <span>Stuck on a lab at 11 p.m.? The AI tutor knows the curriculum and can walk you through every step without giving away the answer.</span>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">How long do I have to complete the course?</div>
-          <div class="faq-a">Forever. Lifetime access means you can go at your own pace — whether that's 8 weeks or 8 months. Content updates are included at no extra charge.</div>
+      </li>
+      <li>
+        <span class="icon">📘</span>
+        <div class="text">
+          <strong>Free Beginner's Guide PDF (yours to keep)</strong>
+          <span>10-section guide covering the cybersecurity career landscape, cert pathways, salary data, and how to get a degree for free or near-free. Yours regardless of which tier you pick.</span>
         </div>
-      </div>
-    </div>
-
+      </li>
+    </ul>
   </div>
 
-  <!-- RIGHT COLUMN — Checkout Card -->
-  <div>
-    <div class="checkout-card">
-      <div class="card-header">
-        <div class="price-row" style="margin-bottom:6px;">
-          <div class="price">$997</div>
-          <div class="price-label">One-Time</div>
-        </div>
-        <div style="color:#a0c4e8; font-size:13px;">Lifetime access · pay once · 30-day refund</div>
+  <!-- TIER PICKER -->
+  <div class="tier-section">
+    <h2>Pick Your Tier</h2>
+    <p class="sub">Same labs and curriculum across all three. The tiers differ in how much live support you get.</p>
+
+    <div class="tier-grid">
+
+      <!-- SELF-GUIDED -->
+      <div class="tier-card">
+        <div class="tier-name">Self-Guided</div>
+        <div class="tier-price">$497<span> one-time</span></div>
+        <div class="tier-tag">Self-paced · no live cohort</div>
+        <ul class="tier-features">
+          <li>All 12 modules unlocked on purchase</li>
+          <li>Full lab environment + 25 scenarios</li>
+          <li>CyberSecPro AI Tutor</li>
+          <li>Free Beginner's Guide PDF</li>
+          <li>Lifetime access to content + updates</li>
+        </ul>
+        <!-- TODO_TEACHABLE_SELFGUIDED_URL: replace with the Teachable Self-Guided plan URL once created -->
+        <a href="https://cybersecurity-education.teachable.com/p/after-messer-soc-vulnerability-analyst-job-launch?tier=selfguided" class="tier-cta outline">Start Self-Guided →</a>
+        <div class="tier-fineprint">30-day refund on Self-Guided</div>
       </div>
-      <div class="card-body">
-        <div style="text-align:center;margin-bottom:12px;font-size:13px;color:#555;">
-          Taught by <strong>Bonifacio Capuyan</strong> · CISM · CISA · CSA · CAD · CIS-VR ·
-          <a href="https://www.linkedin.com/in/boncapuyan/" target="_blank" rel="noopener" style="color:#0a66c2;font-weight:700;">LinkedIn</a>
-        </div>
-        <a href="https://cybersecurity-education.teachable.com/purchase?product_id=6717067" class="enroll-btn">
-          🔒 Enroll Now — $997 One-Time
-        </a>
-        <div class="or-divider">or</div>
-        <a href="https://square.link/u/ddpR15Ct" class="mentorship-btn">
-          Book 1-on-1 Mentorship Instead
-        </a>
-        <div class="secure-row">
-          <span class="lock">🔒</span>
-          <span>Secure checkout via Teachable · 256-bit SSL</span>
-        </div>
 
-        <div class="mini-includes">
-          <p>What's included</p>
-          <ul>
-            <li>20 AI Cybersecurity Labs</li>
-            <li>17 Core Learning Topics</li>
-            <li>4 Dedicated AI Units</li>
-            <li>8-Week Structured Roadmap</li>
-            <li>Week 7 Job Readiness Module</li>
-            <li>Free Beginner's Guide PDF</li>
-            <li>Lifetime Access + Updates</li>
-            <li>1 Year Lab & Course Support</li>
-            <li>CompTIA Security+ SY0-701 Aligned</li>
-          </ul>
-        </div>
+      <!-- COHORT -->
+      <div class="tier-card featured">
+        <div class="tier-name">Cohort</div>
+        <div class="tier-price">$1,497<span> one-time</span></div>
+        <div class="tier-tag">8 seats · 12 weeks instructor-led</div>
+        <ul class="tier-features">
+          <li>Everything in Self-Guided</li>
+          <li>12 live cohort calls (90 min each, recorded)</li>
+          <li>Peer accountability pods (3–4 students)</li>
+          <li>Dual-track resume: SOC L1 + Vuln Analyst</li>
+          <li>2 mock interviews + LinkedIn rewrite</li>
+          <li>Warm intros to hiring managers</li>
+          <li>60-day post-cohort coaching window</li>
+        </ul>
+        <a href="https://cybersecurity-education.teachable.com/p/after-messer-soc-vulnerability-analyst-job-launch" class="tier-cta green">🔒 Reserve Cohort Seat — $1,497</a>
+        <div class="tier-fineprint">14-day refund · 60-day coaching window</div>
+      </div>
 
-        <div class="guarantee">
-          <strong>30-Day Money-Back Guarantee.</strong> If you're not satisfied in the first 30 days, email us for a full refund — no questions asked. Zero risk.
+      <!-- COHORT + COACHING -->
+      <div class="tier-card">
+        <div class="tier-name">Cohort + Coaching</div>
+        <div class="tier-price">$1,997<span> one-time</span></div>
+        <div class="tier-tag">4 seats · premium</div>
+        <ul class="tier-features">
+          <li>Everything in Cohort</li>
+          <li>4 × 60-min 1:1 coaching calls (resume, LinkedIn, mock interview, career strategy)</li>
+          <li>Direct Slack/Discord access to the founder for 90 days post-graduation</li>
+          <li>Custom "second 90 days" plan if you're still job-searching at graduation</li>
+        </ul>
+        <a href="https://cybersecurity-education.teachable.com/p/after-messer-soc-vulnerability-analyst-job-launch?tier=coaching" class="tier-cta dark">Reserve Premium Seat →</a>
+        <div class="tier-fineprint">14-day refund · 90 days direct access</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-section">
+    <h3>⚡ How Enrollment Works</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Reserve your seat above</strong>
+          <span>Pick your tier and complete payment through Teachable's secure checkout (Visa/MC/Amex/Discover/PayPal). Takes about 60 seconds.</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Sec+ prerequisite check</strong>
+          <span>We confirm you've passed Sec+ SY0-701 (your CompTIA badge or score report). Haven't passed yet? Finish Professor Messer's free training first.</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Cohort kickoff (Cohort tiers only)</strong>
+          <span>You're locked into the next available cohort start. Welcome email with the 12-week schedule, lab access, and the kickoff call link goes out same day.</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>60-day coaching window after week 12</strong>
+          <span>Cohort wraps at week 12 — then you keep working with us for another 60 days through your job search. Resume tweaks, interview debriefs, application strategy.</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Below card trust signals -->
-    <div style="text-align:center; margin-top:20px; font-size:13px; color:#666; line-height:1.8;">
-      <div>🎓 CompTIA Security+ Aligned</div>
-      <div>⭐ 200+ Students Mentored</div>
-      <div>🏆 CISM · CISA · CSA · CAD · CIS-VR</div>
-      <div>📧 Questions? <a href="mailto:info@cybersecproacademy.org" style="color:#0d3b6e;">info@cybersecproacademy.org</a></div>
+  <!-- TESTIMONIALS -->
+  <div class="testimonials">
+    <h3>What Students Say About the Instructor</h3>
+    <p class="verified">Verified LinkedIn Recommendations · 200+ students mentored</p>
+    <div class="testimonial-grid">
+      <div class="testimonial">
+        <p>"I was lucky enough to have been partnered with Bon when I was enrolled in my cybersecurity bootcamp. His expertise helped guide me as I navigated through the course. He was patient and readily available to answer any questions. Great mentor, highly recommended!"</p>
+        <div class="author">Vanessa</div>
+        <div class="role">Information Technology · LinkedIn Recommendation</div>
+      </div>
+      <div class="testimonial">
+        <p>"Bon is awesome at what he does and is very knowledgeable with a lot of experience in cybersecurity! He was my mentor for my cybersecurity boot camp and helped me with whatever questions I had — leading me to create a roadmap and advice to break into the Cyber industry!"</p>
+        <div class="author">Javonis</div>
+        <div class="role">SOC &amp; Security Analyst · LinkedIn Recommendation</div>
+      </div>
+      <div class="testimonial">
+        <p>"Bon is an amazing resource in the Cybersecurity industry. His enthusiasm in teaching this subject ignited a passion in me for the same industry and keeps me motivated. He is one person I'll always come back to for any questions and help."</p>
+        <div class="author">David</div>
+        <div class="role">Transportation Security Officer · LinkedIn Recommendation</div>
+      </div>
+      <div class="testimonial">
+        <p>"I had the honor of having Bon as my mentor during my USF Cybersecurity Bootcamp. He is very knowledgeable, always on time, and worth my while. I most definitely recommend him for any mentoring position! He is patient and knows how to explain what needs to be accomplished."</p>
+        <div class="author">Kim</div>
+        <div class="role">Teacher · LinkedIn Recommendation</div>
+      </div>
+      <div class="testimonial">
+        <p>"Bon has been more than a mere mentor — he has been a great help. He always takes the time to ensure I grasp different concepts regardless of difficulty. Always available, extremely reliable and dedicated to my success."</p>
+        <div class="author">Andrew</div>
+        <div class="role">Cybersecurity Specialist | CompTIA Security+ · LinkedIn Recommendation</div>
+      </div>
+      <div class="testimonial">
+        <p>"I was mentored in Cyber Security and my experience was fantastic! He knows his stuff!"</p>
+        <div class="author">Donald</div>
+        <div class="role">IT Specialist · LinkedIn Recommendation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section" style="margin-top:32px;">
+    <h3>Frequently Asked Questions</h3>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I need Sec+ to enroll?</div>
+      <div class="faq-a">Yes — for the Cohort and Cohort+Coaching tiers. This program assumes Sec+ knowledge and picks up where Professor Messer's free Sec+ training stops. If you haven't passed Sec+ yet, finish Messer's free training and the exam first, then come back. The Self-Guided tier doesn't require Sec+, but you'll get more out of it if you have it.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">When does the next cohort start?</div>
+      <div class="faq-a">Cohorts run on a rolling basis as seats fill. Reserve your seat and you'll be locked into the next available start date. We send the schedule and kickoff call link the same day your seat is confirmed.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What's the difference between the three tiers?</div>
+      <div class="faq-a"><strong>Self-Guided ($497)</strong> is content-only — all 12 modules, the lab environment, AI Tutor, and lifetime access. <strong>Cohort ($1,497)</strong> adds 12 live weekly calls, peer pods, dual-track resume, mock interviews, warm intros, and the 60-day post-cohort coaching window. <strong>Cohort + Coaching ($1,997)</strong> adds 4 one-on-one coaching calls plus direct Slack/Discord access to the founder for 90 days post-graduation.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What's the refund policy?</div>
+      <div class="faq-a"><strong>Self-Guided:</strong> 30-day money-back guarantee from the date of purchase. <strong>Cohort and Cohort+Coaching:</strong> 14-day refund from your cohort's start date — full refund, no questions asked. Email info@cybersecproacademy.org.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do you offer a job guarantee?</div>
+      <div class="faq-a">No — and we don't pretend to. Hiring is on the other side of the table. What we do offer is the 60-day post-cohort coaching window, mock interviews, dual-track resume work, LinkedIn rewrite, and warm intros to hiring managers in our network where openings exist. The work you do controls the outcome.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How long do I have access to the content?</div>
+      <div class="faq-a"><strong>Self-Guided:</strong> Lifetime access to content and updates. <strong>Cohort tiers:</strong> Full lab/content access through your cohort plus the 60-day post-cohort coaching window — that's roughly 5 months of active access from kickoff.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I switch tiers after enrolling?</div>
+      <div class="faq-a">Yes, before your cohort starts. Email info@cybersecproacademy.org with your order number and we'll handle the upgrade or downgrade.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What payment methods do you accept?</div>
+      <div class="faq-a">All major credit and debit cards (Visa, Mastercard, Amex, Discover) and PayPal. Checkout is processed securely by Teachable — your card details are encrypted and never touch our servers.</div>
     </div>
   </div>
 
@@ -389,8 +408,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <footer>
   <p>© 2026 CyberSec Pro Academy · <a href="mailto:info@cybersecproacademy.org">info@cybersecproacademy.org</a> · CISM · CISA · CSA · CAD · CIS-VR</p>
-  <p style="margin-top:8px; font-size:11px; color:#444;">Payment processed securely by Teachable. Course support and lab assistance available for one (1) year from date of purchase. Content access is lifetime. 30-day money-back guarantee subject to terms.</p>
-  <p style="margin-top:6px; font-size:11px; color:#444;"><a href="/" style="color:#00c896;">← Back to CyberSec Pro Academy</a> · <a href="/price-comparison.html" style="color:#00c896;">Compare Prices</a></p>
+  <p style="margin-top:8px; font-size:11px; color:#444;">Payment processed securely by Teachable. Self-Guided tier: lifetime content access · 30-day refund. Cohort tiers: cohort access + 60-day post-cohort coaching window · 14-day refund from cohort start.</p>
+  <p style="margin-top:6px; font-size:11px; color:#444;"><a href="/" style="color:#00c896;">← Back to homepage</a> · <a href="/price-comparison.html" style="color:#00c896;">Compare Prices</a></p>
 </footer>
 
 </body>
