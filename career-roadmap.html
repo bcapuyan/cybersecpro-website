@@ -41,77 +41,24 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ---------- NAV (matches site) ---------- */
-  .site-nav {
-    background: var(--navy-deep);
-    color: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  }
-  .nav-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-  }
-  .nav-brand {
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-  }
-  .nav-brand span { color: var(--green); }
-  .nav-links {
-    display: flex;
-    gap: 24px;
-    list-style: none;
-    align-items: center;
-  }
-  .nav-links a {
-    color: var(--light-blue-soft);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: color 0.15s;
-  }
-  .nav-links a:hover { color: var(--green); }
-  .nav-cta {
-    background: var(--green);
-    color: var(--navy-deep);
-    padding: 10px 18px;
-    font-weight: 800;
-    font-size: 14px;
-    text-decoration: none;
-    transition: background 0.15s;
-    white-space: nowrap;
-  }
-  .nav-cta:hover { background: var(--green-hover); }
-  .nav-menu-toggle { display: none; background: none; border: 0; color: #fff; font-size: 22px; cursor: pointer; }
-
-  @media (max-width: 900px) {
-    .nav-links { display: none; }
-    .nav-menu-toggle { display: block; }
-    .nav-links.open {
-      display: flex;
-      flex-direction: column;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: var(--navy-deep);
-      padding: 20px 24px;
-      gap: 16px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    .nav-cta { padding: 8px 14px; font-size: 13px; }
-  }
+  /* === SITE NAV (canonical — must match other pages) === */
+  nav { position: sticky; top: 0; z-index: 100; background: #0a1628; border-bottom: 2px solid #00c896; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 68px; }
+  nav .nav-logo { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; text-decoration: none; }
+  nav .nav-logo span { color: #00c896; }
+  nav .nav-links { display: flex; gap: 24px; align-items: center; list-style: none; padding: 0; margin: 0; }
+  nav .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; text-decoration: none; }
+  nav .nav-links a:hover { color: #00c896; }
+  nav .nav-cta, nav .nav-enroll { background: #00c896; color: #0a1628 !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; transition: opacity .15s !important; white-space: nowrap; text-decoration: none; }
+  nav .nav-cta:hover, nav .nav-enroll:hover { opacity: .85; }
+  nav .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+  nav .nav-hamburger span { display: block; width: 24px; height: 2px; background: #ffffff; border-radius: 2px; }
+  .nav-drawer { display: none; flex-direction: column; gap: 0; background: #0a1628; border-top: 1px solid rgba(255,255,255,.1); position: absolute; top: 68px; left: 0; right: 0; z-index: 99; padding: 16px 24px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a { color: #c8d8e8; font-size: 15px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.08); transition: color .15s; text-decoration: none; }
+  .nav-drawer a:last-child { border-bottom: none; }
+  .nav-drawer a:hover { color: #00c896; }
+  .nav-drawer .drawer-enroll { margin-top: 16px; background: #00c896; color: #0a1628 !important; font-weight: 800 !important; padding: 14px; border-radius: 8px; text-align: center; font-size: 15px !important; border: none; }
+  @media (max-width: 860px) { nav { padding: 0 20px; } nav .nav-links { display: none; } nav .nav-hamburger { display: flex; } }
 
   /* ---------- HERO ---------- */
   .hero {
@@ -726,7 +673,7 @@
 
   /* ---------- Print ---------- */
   @media print {
-    .site-nav, .hero-ctas, .inline-cta, .lead-section, .offer-section, footer { display: none !important; }
+    nav, .nav-drawer, .hero-ctas, .inline-cta, .lead-section, .offer-section, footer { display: none !important; }
     .hero, .northstar, .decades-section { background: #fff !important; color: var(--navy-deep) !important; }
     .hero h1, .hero h1 .highlight, .stat-num, .stat-label, .hero-sub,
     .northstar h2, .northstar-intro, .rule h4, .rule p, .decade h3, .decade-stage, .decade-focus, .decade p { color: var(--navy-deep) !important; }
@@ -736,20 +683,35 @@
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="site-nav">
-  <div class="nav-inner">
-    <a href="https://cybersecproacademy.org/" class="nav-brand">CyberSec<span>Pro</span>Academy</a>
-    <button class="nav-menu-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="https://cybersecproacademy.org/about/bonifacio-capuyan">About</a></li>
-      <li><a href="https://cybersecproacademy.org/courses/break-into-cybersecurity">Course</a></li>
-      <li><a href="https://cybersecproacademy.org/curriculum/security-plus-sy0-701">Curriculum</a></li>
-      <li><a href="https://cybersecproacademy.org/free-resources">Free Resources</a></li>
-      <li><a href="https://cybersecproacademy.org/checkout" class="nav-cta">Enroll Now</a></li>
-    </ul>
+<!-- SITE NAV (canonical) -->
+<nav>
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="/about/bonifacio-capuyan">About</a>
+    <a href="/courses/break-into-cybersecurity">Courses</a>
+    <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
+    <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
+    <a href="/free-resources.html">Resources</a>
+    <a href="/price-comparison.html">Compare Prices</a>
+    <a href="/blog/">Blog</a>
+    <a href="/" class="nav-cta">Free Guide</a>
+    <a href="/checkout.html" class="nav-enroll">Reserve Seat</a>
   </div>
+  <button class="nav-hamburger" onclick="document.getElementById('navDrawer').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
+  <a href="/courses/break-into-cybersecurity" onclick="this.closest('.nav-drawer').classList.remove('open')">Courses</a>
+  <a href="/curriculum/security-plus-sy0-701" onclick="this.closest('.nav-drawer').classList.remove('open')">Curriculum</a>
+  <a href="/labs/ai-cybersecurity-labs" onclick="this.closest('.nav-drawer').classList.remove('open')">AI Labs</a>
+  <a href="/free-resources.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Resources</a>
+  <a href="/price-comparison.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Compare Prices</a>
+  <a href="/blog/" onclick="this.closest('.nav-drawer').classList.remove('open')">Blog</a>
+  <a href="/" onclick="this.closest('.nav-drawer').classList.remove('open')">Get Free Guide</a>
+  <a href="/checkout.html" class="drawer-enroll">Reserve Your Seat</a>
+</div>
 
 <!-- HERO -->
 <header class="hero">

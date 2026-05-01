@@ -33,51 +33,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             background-color: #ffffff;
         }
 
-        /* Navigation */
-        nav {
-            background-color: var(--navy);
-            padding: 1.25rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-            text-decoration: none;
-        }
-
-        .logo-pro {
-            color: var(--green);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--green);
-        }
+        /* === SITE NAV (canonical — must match other pages) === */
+        nav { position: sticky; top: 0; z-index: 100; background: #0a1628; border-bottom: 2px solid #00c896; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 68px; }
+        nav .nav-logo { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; text-decoration: none; }
+        nav .nav-logo span { color: #00c896; }
+        nav .nav-links { display: flex; gap: 24px; align-items: center; list-style: none; padding: 0; margin: 0; }
+        nav .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; text-decoration: none; }
+        nav .nav-links a:hover { color: #00c896; }
+        nav .nav-cta, nav .nav-enroll { background: #00c896; color: #0a1628 !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; transition: opacity .15s !important; white-space: nowrap; text-decoration: none; }
+        nav .nav-cta:hover, nav .nav-enroll:hover { opacity: .85; }
+        nav .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+        nav .nav-hamburger span { display: block; width: 24px; height: 2px; background: #ffffff; border-radius: 2px; }
+        .nav-drawer { display: none; flex-direction: column; gap: 0; background: #0a1628; border-top: 1px solid rgba(255,255,255,.1); position: absolute; top: 68px; left: 0; right: 0; z-index: 99; padding: 16px 24px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+        .nav-drawer.open { display: flex; }
+        .nav-drawer a { color: #c8d8e8; font-size: 15px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.08); transition: color .15s; text-decoration: none; }
+        .nav-drawer a:last-child { border-bottom: none; }
+        .nav-drawer a:hover { color: #00c896; }
+        .nav-drawer .drawer-enroll { margin-top: 16px; background: #00c896; color: #0a1628 !important; font-weight: 800 !important; padding: 14px; border-radius: 8px; text-align: center; font-size: 15px !important; border: none; }
+        @media (max-width: 860px) { nav { padding: 0 20px; } nav .nav-links { display: none; } nav .nav-hamburger { display: flex; } }
 
         /* Hero Section */
         .hero {
@@ -464,19 +437,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-<!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <a href="index.html" class="logo">CyberSecPro <span class="logo-pro">Academy</span></a>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="lab-setup.html">Labs</a></li>
-                <li><a href="/blog/">Blog</a></li>
-                <li><a href="price-comparison.html">Pricing</a></li>
-                <li><a href="checkout.html">Enroll</a></li>
-            </ul>
-        </div>
-    </nav>
+<!-- SITE NAV (canonical) -->
+<nav>
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="/about/bonifacio-capuyan">About</a>
+    <a href="/courses/break-into-cybersecurity">Courses</a>
+    <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
+    <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
+    <a href="/free-resources.html">Resources</a>
+    <a href="/price-comparison.html">Compare Prices</a>
+    <a href="/blog/">Blog</a>
+    <a href="/" class="nav-cta">Free Guide</a>
+    <a href="/checkout.html" class="nav-enroll">Reserve Seat</a>
+  </div>
+  <button class="nav-hamburger" onclick="document.getElementById('navDrawer').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
+  <a href="/courses/break-into-cybersecurity" onclick="this.closest('.nav-drawer').classList.remove('open')">Courses</a>
+  <a href="/curriculum/security-plus-sy0-701" onclick="this.closest('.nav-drawer').classList.remove('open')">Curriculum</a>
+  <a href="/labs/ai-cybersecurity-labs" onclick="this.closest('.nav-drawer').classList.remove('open')">AI Labs</a>
+  <a href="/free-resources.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Resources</a>
+  <a href="/price-comparison.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Compare Prices</a>
+  <a href="/blog/" onclick="this.closest('.nav-drawer').classList.remove('open')">Blog</a>
+  <a href="/" onclick="this.closest('.nav-drawer').classList.remove('open')">Get Free Guide</a>
+  <a href="/checkout.html" class="drawer-enroll">Reserve Your Seat</a>
+</div>
 
     <!-- Hero Section -->
     <section class="hero">

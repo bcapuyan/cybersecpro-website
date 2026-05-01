@@ -144,6 +144,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .comparison-table thead th, .comparison-table td { padding: 8px 6px; font-size: 11px; }
     .comparison-table td.our-price { font-size: 12px; }
   }
+
+  /* === SITE NAV (canonical — must match other pages) === */
+  nav { position: sticky; top: 0; z-index: 100; background: #0a1628; border-bottom: 2px solid #00c896; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 68px; }
+  nav .nav-logo { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; text-decoration: none; }
+  nav .nav-logo span { color: #00c896; }
+  nav .nav-links { display: flex; gap: 24px; align-items: center; }
+  nav .nav-links a { color: #c8d8e8; font-size: 14px; font-weight: 500; transition: color .15s; text-decoration: none; }
+  nav .nav-links a:hover { color: #00c896; }
+  nav .nav-cta, nav .nav-enroll { background: #00c896; color: #0a1628 !important; font-weight: 800 !important; padding: 10px 22px; border-radius: 8px; font-size: 14px !important; transition: opacity .15s !important; white-space: nowrap; text-decoration: none; }
+  nav .nav-cta:hover, nav .nav-enroll:hover { opacity: .85; }
+  nav .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+  nav .nav-hamburger span { display: block; width: 24px; height: 2px; background: #ffffff; border-radius: 2px; }
+  .nav-drawer { display: none; flex-direction: column; gap: 0; background: #0a1628; border-top: 1px solid rgba(255,255,255,.1); position: absolute; top: 68px; left: 0; right: 0; z-index: 99; padding: 16px 24px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a { color: #c8d8e8; font-size: 15px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.08); transition: color .15s; text-decoration: none; }
+  .nav-drawer a:last-child { border-bottom: none; }
+  .nav-drawer a:hover { color: #00c896; }
+  .nav-drawer .drawer-enroll { margin-top: 16px; background: #00c896; color: #0a1628 !important; font-weight: 800 !important; padding: 14px; border-radius: 8px; text-align: center; font-size: 15px !important; border: none; }
+  @media (max-width: 860px) { nav { padding: 0 20px; } nav .nav-links { display: none; } nav .nav-hamburger { display: flex; } }
 </style>
 </head>
 <body>
@@ -152,14 +171,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5H69GGB"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-<!-- NAV -->
-<nav style="background:#0a1628; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,0.3);">
-  <a href="/index.html" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
-    <span style="font-size:22px; font-weight:900; color:#00c896;">⚡</span>
-    <span style="color:white; font-weight:800; font-size:16px;">CyberSec Pro Academy</span>
-  </a>
-  <a href="/index.html" style="color:#00c896; font-weight:700; font-size:14px; text-decoration:none; border:1px solid #00c896; padding:8px 18px; border-radius:8px; transition:background 0.2s;" onmouseover="this.style.background='#00c896';this.style.color='#0a1628'" onmouseout="this.style.background='transparent';this.style.color='#00c896'">← Back to Home</a>
+<!-- SITE NAV (canonical) -->
+<nav>
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
+  <div class="nav-links">
+    <a href="/about/bonifacio-capuyan">About</a>
+    <a href="/courses/break-into-cybersecurity">Courses</a>
+    <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
+    <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
+    <a href="/free-resources.html">Resources</a>
+    <a href="/price-comparison.html">Compare Prices</a>
+    <a href="/blog/">Blog</a>
+    <a href="/" class="nav-cta">Free Guide</a>
+    <a href="/checkout.html" class="nav-enroll">Reserve Seat</a>
+  </div>
+  <button class="nav-hamburger" onclick="document.getElementById('navDrawer').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
+  <a href="/courses/break-into-cybersecurity" onclick="this.closest('.nav-drawer').classList.remove('open')">Courses</a>
+  <a href="/curriculum/security-plus-sy0-701" onclick="this.closest('.nav-drawer').classList.remove('open')">Curriculum</a>
+  <a href="/labs/ai-cybersecurity-labs" onclick="this.closest('.nav-drawer').classList.remove('open')">AI Labs</a>
+  <a href="/free-resources.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Resources</a>
+  <a href="/price-comparison.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Compare Prices</a>
+  <a href="/blog/" onclick="this.closest('.nav-drawer').classList.remove('open')">Blog</a>
+  <a href="/" onclick="this.closest('.nav-drawer').classList.remove('open')">Get Free Guide</a>
+  <a href="/checkout.html" class="drawer-enroll">Reserve Your Seat</a>
+</div>
 
 <!-- HERO -->
 <section class="hero">
