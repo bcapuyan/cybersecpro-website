@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L23: Phishing Investigation — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="../labs.html">← All Labs</a><a href="../lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="../labs.html">Labs</a> › <a href="../labs.html">SOC Analyst</a> › L23</div>
+    <div class="lab-num-badge">LAB L23 · SOC ANALYST · INTERMEDIATE</div>
+    <h1>Phishing <em>Investigation</em></h1>
+    <p>Receive a simulated phishing email with a malicious attachment. Pull and analyze email headers, sandbox the payload in any.run, decode IOCs, enrich indicators, and write a complete incident report.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Browser + Kali Linux</strong></div>
+      <div class="lab-meta-item">🔧 <strong>any.run · VirusTotal · MXToolbox · CyberChef</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI IOC Analyst</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-teal">
+    <div class="scenario-label">📊 Lab Scenario</div>
+    <p>An employee at your organization forwarded a suspicious email to the security team: Subject "Invoice #84921 — Action Required", from an external address, with a .docm attachment. The employee did not open it. Your manager just assigned you the ticket: "Triage this, determine if it's malicious, extract all IOCs, and write the report — you have 90 minutes." This is the #1 task you will do on Day 1 at most L1 SOC jobs.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Email Header Analysis</div><div class="phase-desc">Headers tell the full story of where an email really came from</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Extract and read the full email headers</div><div class="step-desc">Every phishing email investigation starts here</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Use this sample phishing email header for the lab (represents a real phishing structure):</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c">Received: from mail-relay-01.suspiciousdomain.ru (45.142.212.100)</span><br><span class="c">  by mx.yourcompany.com with SMTP; Mon, 28 Apr 2026 08:14:33 -0500</span><br><span class="c">Received: from WIN-K8J3P1.local (unknown [10.10.55.22])</span><br><span class="c">  by mail-relay-01.suspiciousdomain.ru; Mon, 28 Apr 2026 14:13:51 +0100</span><br><span class="c">From: "Accounts Payable" &lt;ap-noreply@suspiciousdomain.ru&gt;</span><br><span class="c">Reply-To: invoice-payments@gmaii.com</span><br><span class="c">To: employee@yourcompany.com</span><br><span class="c">Subject: Invoice #84921 — Action Required</span><br><span class="c">Date: Mon, 28 Apr 2026 14:13:48 +0100</span><br><span class="c">MIME-Version: 1.0</span><br><span class="c">X-Mailer: Microsoft Outlook 16.0</span><br><span class="c">X-Originating-IP: 45.142.212.100</span><br><span class="c">Authentication-Results: mx.yourcompany.com;</span><br><span class="c">  spf=fail (domain of suspiciousdomain.ru does not designate 45.142.212.100)</span><br><span class="c">  dkim=none</span><br><span class="c">  dmarc=fail</span></div></div>
+          <div class="step-detail">Paste these headers into <strong>mxtoolbox.com/EmailHeaders</strong> for a visual analysis. Note: SPF fail + DKIM none + DMARC fail = all three email authentication checks failed. This email is not legitimate.</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst</div><p>Paste any email headers and the AI will identify every red flag, extract all indicators (IPs, domains, Reply-To mismatches), and tell you which authentication failures matter most.</p><button class="ai-prompt-btn" onclick="qp('headers')">Analyze email headers →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Extract IOCs from headers</div><div class="step-desc">Document every observable indicator from the header analysis</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">From the headers above, extract and document:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c">IOC Type          Value                              Source</span><br><span class="c">IP Address        45.142.212.100                     X-Originating-IP + Received</span><br><span class="c">Domain            suspiciousdomain.ru                From / Received</span><br><span class="c">Email Address     ap-noreply@suspiciousdomain.ru     From</span><br><span class="c">Email Address     invoice-payments@gmaii.com         Reply-To (typosquat of gmail)</span><br><span class="c">Domain            gmaii.com                          Reply-To (note: gmaii not gmail)</span><br><span class="c">Auth Failure      SPF fail / DKIM none / DMARC fail  Authentication-Results</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Payload Sandboxing</div><div class="phase-desc">Never open a suspicious attachment — sandbox it</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Submit the attachment to any.run interactive sandbox</div><div class="step-desc">any.run runs the file in a live Windows VM and records all behavior</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Go to <strong>app.any.run</strong> (free account required). Click <strong>New Task → Upload file</strong>. For this lab, use the any.run public task database — search for a .docm sample: <strong>app.any.run/tasks/public</strong> → filter by MIME type: application/vnd.ms-word.document.macroEnabled → pick any recent one.</div>
+          <div class="step-detail">During the sandbox run, note:<br>• <strong>Process tree</strong> — what processes does the document spawn? (Word → PowerShell = red flag)<br>• <strong>Network connections</strong> — what domains/IPs does it beacon to?<br>• <strong>File system</strong> — what files does it drop or modify?<br>• <strong>Registry</strong> — does it write persistence keys (Run, RunOnce)?</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst</div><p>Paste the any.run sandbox summary or process tree. The AI will identify the malware family, explain the kill chain, extract all IOCs, and map the behavior to MITRE ATT&CK techniques.</p><button class="ai-prompt-btn" onclick="qp('sandbox')">Analyze sandbox results →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Hash the file and check VirusTotal</div><div class="step-desc">MD5/SHA256 hash lookup is the fastest first triage step</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># On Kali — compute hashes before submitting</span><br><span class="k">md5sum invoice_84921.docm</span><br><span class="k">sha256sum invoice_84921.docm</span><br><br><span class="c"># Submit SHA256 to VirusTotal API</span><br><span class="k">curl -s "https://www.virustotal.com/api/v3/files/[SHA256]" \</span><br><span class="k">  -H "x-apikey: YOUR_VT_API_KEY" | python3 -m json.tool | grep -E '"malicious"|"suspicious"|"harmless"'</span><br><br><span class="c"># Or just paste the hash at virustotal.com/gui/file/[SHA256]</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Decode any Base64 or obfuscated strings with CyberChef</div><div class="step-desc">Macro payloads almost always use Base64 or char-code obfuscation</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">If any.run shows a PowerShell command like <code>powershell -enc JABzAD0ATgBlAHcALQBP...</code>, decode it at <strong>gchq.github.io/CyberChef</strong>:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># CyberChef recipe for encoded PowerShell:</span><br><span class="c"># 1. Input: paste the Base64 string after -enc</span><br><span class="c"># 2. Recipe: From Base64 → Decode text (UTF-16LE)</span><br><span class="c"># Reveals the actual PowerShell command</span><br><br><span class="c"># Example output reveals the C2 callback URL:</span><br><span class="k">$s=New-Object IO.MemoryStream(,[Convert]::FromBase64String("H4sIAAAAAAAEAK..."));</span><br><span class="k">IEX (New-Object IO.StreamReader(New-Object IO.Compression.GzipStream($s,[IO.Compression.CompressionMode]::Decompress))).ReadToEnd();</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst</div><p>Paste any obfuscated PowerShell, VBA macro code, or encoded string. The AI will decode it, explain what it does, and extract all IOCs (C2 URLs, dropped file paths, registry keys).</p><button class="ai-prompt-btn" onclick="qp('decode')">Decode obfuscated payload →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — IOC Enrichment</div><div class="phase-desc">Enrich every indicator before writing the report</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Enrich IP and domains with threat intel APIs</div><div class="step-desc">Three free APIs cover 90% of what you need in an L1 investigation</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># AbuseIPDB — check IP reputation</span><br><span class="k">curl -s "https://api.abuseipdb.com/api/v2/check?ipAddress=45.142.212.100&maxAgeInDays=90" \</span><br><span class="k">  -H "Key: YOUR_ABUSEIPDB_KEY" -H "Accept: application/json" | python3 -m json.tool</span><br><br><span class="c"># VirusTotal — check domain</span><br><span class="k">curl -s "https://www.virustotal.com/api/v3/domains/suspiciousdomain.ru" \</span><br><span class="k">  -H "x-apikey: YOUR_VT_KEY" | python3 -m json.tool | grep -E '"malicious"|"last_analysis_date"'</span><br><br><span class="c"># Whois — when was the domain registered?</span><br><span class="k">whois suspiciousdomain.ru | grep -E "Creation Date|Registrar|Registrant"</span></div></div>
+          <div class="step-detail"><strong>Red flags:</strong> Domain registered &lt; 30 days ago, AbuseIPDB confidence &gt; 50%, VirusTotal 2+ vendor detections, registrant privacy-masked, hosting on bulletproof provider (OVH, Frantech, M247).</div>
+        </div>
+      </div>
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Check if the C2 domain appears in your SIEM logs</div><div class="step-desc">Did anyone else in the organization visit this domain?</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Splunk — search DNS logs for the C2 domain across all endpoints</span><br><span class="k">index=* sourcetype=dns OR sourcetype=syslog</span><br><span class="k">| search query="*suspiciousdomain.ru*" OR dest="45.142.212.100"</span><br><span class="k">| stats count by src, _time</span><br><span class="k">| sort -_time</span><br><br><span class="c"># KQL version in Sentinel</span><br><span class="k">DnsEvents</span><br><span class="k">| where Name has "suspiciousdomain.ru" or IPAddresses has "45.142.212.100"</span><br><span class="k">| project TimeGenerated, Computer, ClientIP, Name, IPAddresses</span><br><span class="k">| order by TimeGenerated desc</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst</div><p>Paste your SIEM search results. If there are hits, the AI will help you scope the investigation — identify all affected hosts, determine the timeline, and recommend containment actions.</p><button class="ai-prompt-btn" onclick="qp('scope')">Scope the impact →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — Write the Incident Report</div><div class="phase-desc">The report is the deliverable — this is what gets you promoted</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Write the phishing incident report</div><div class="step-desc">Use the standard SOC report structure</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Your report must include these sections:<br><br><strong>1. Executive Summary</strong> (2–3 sentences: what happened, who was targeted, was it opened?)<br><strong>2. Timeline</strong> (email received, reported, investigated)<br><strong>3. Email Analysis</strong> (From, Reply-To, SPF/DKIM/DMARC results, red flags)<br><strong>4. Payload Analysis</strong> (file name, hash, sandbox behavior summary, malware family if identified)<br><strong>5. IOCs</strong> (table: Type / Value / Source / Confidence)<br><strong>6. Impact Assessment</strong> (was it opened? any C2 connections seen in SIEM?)<br><strong>7. Containment Actions Taken</strong> (block IP/domain in firewall, quarantine mailbox, notify user)<br><strong>8. Recommendations</strong></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst</div><p>Paste your findings from all phases and the AI will write a complete, professional phishing incident report in the structure above — ready to submit to your manager and add to your portfolio.</p><button class="ai-prompt-btn" onclick="qp('report')">Write phishing incident report →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Block IOCs — add to SIEM watchlists and firewall</div><div class="step-desc">Containment is not optional — close the threat before you close the ticket</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Splunk — add IOCs to a threat intel lookup table</span><br><span class="k">| makeresults | eval ioc="45.142.212.100", type="ip", confidence=90, source="L23-phishing-lab"</span><br><span class="k">| outputlookup append=true threat_intel.csv</span><br><br><span class="c"># Sentinel — add indicator to Threat Intelligence</span><br><span class="c"># Sentinel > Threat Intelligence > + Add new > IP / Domain / URL</span><br><span class="c"># Confidence: 90, Threat type: malicious-activity, Valid until: +90 days</span><br><br><span class="c"># Firewall (iptables on Kali/Ubuntu — simulate blocking)</span><br><span class="k">sudo iptables -A OUTPUT -d 45.142.212.100 -j DROP</span><br><span class="k">sudo iptables -A OUTPUT -d suspiciousdomain.ru -j DROP</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Interview prep — phishing IR walkthrough</div><div class="step-desc">"Walk me through how you would investigate a reported phishing email" — asked in every L1 interview</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst — Interview Mode</div><p>Practice your verbal walkthrough of the phishing investigation process. The AI will give you feedback on completeness, correct tool naming, and whether your containment steps are in the right order.</p><button class="ai-prompt-btn" onclick="qp('interview')">Practice phishing IR answer →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Security awareness tip — email to the targeted employee</div><div class="step-desc">Part of the SOC job is communicating findings to non-technical staff</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IOC Analyst</div><p>The AI will write a brief, non-technical email to the employee explaining what was found, confirming they are safe since they did not open the attachment, and what to watch for next time.</p><button class="ai-prompt-btn" onclick="qp('awareness')">Write employee awareness email →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — deliverables checkpoint</div><div class="step-desc"></div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ Email headers fully analyzed and authenticated (SPF/DKIM/DMARC)<br>✅ File hash checked on VirusTotal<br>✅ Payload sandboxed in any.run — behavior documented<br>✅ Obfuscated payload decoded in CyberChef<br>✅ IPs and domains enriched (AbuseIPDB, VirusTotal, Whois)<br>✅ SIEM searched for C2 domain across all endpoints<br>✅ Full incident report written in standard format<br>✅ IOCs blocked and added to watchlist</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L24 — Endpoint Detection &amp; Response</h4><p>Investigate a live malware sample using CrowdStrike Falcon and Microsoft Defender for Endpoint.</p><a href="lab-crowdstrike-edr.html">Start L24 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L23 — Phishing Investigation Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Phishing investigation — email headers, payload sandboxing (any.run), IOC extraction, CyberChef decoding, VirusTotal/AbuseIPDB enrichment, incident report writing.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('headers')">Analyze Headers</button>
+      <button class="quick-btn" onclick="qp('sandbox')">Sandbox Results</button>
+      <button class="quick-btn" onclick="qp('decode')">Decode Payload</button>
+      <button class="quick-btn" onclick="qp('scope')">Scope Impact</button>
+      <button class="quick-btn" onclick="qp('report')">Write Report</button>
+      <button class="quick-btn" onclick="qp('interview')">Interview Prep</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste email headers, sandbox output, encoded strings, or IOCs for analysis..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L23', totalSteps: 12, modeLabel: 'Phishing Investigation Mode',
+  welcomeMsg: "I'm your IOC analyst for Lab L23. I can:\n- Analyze email headers and identify authentication failures (SPF/DKIM/DMARC)\n- Interpret any.run sandbox behavior reports\n- Decode Base64 and obfuscated PowerShell/VBA payloads\n- Enrich IPs and domains with threat intel context\n- Scope SIEM impact searches\n- Write complete phishing incident reports\n- Prep you for the 'walk me through a phishing investigation' interview question\n\nPaste any headers, sandbox output, or encoded string to start.",
+  systemPrompt: `You are a senior threat analyst helping a student with Lab L23: Phishing Investigation. The lab covers: analyzing email headers (SPF/DKIM/DMARC failures, typosquatting, Reply-To mismatch), submitting payloads to any.run sandbox, computing file hashes and checking VirusTotal, decoding Base64/encoded PowerShell with CyberChef, enriching IOCs with AbuseIPDB and VirusTotal API, searching SIEM (Splunk SPL / Sentinel KQL) for C2 indicators, and writing phishing incident reports. Be precise: extract every IOC, identify the malware family and ATT&CK mapping when possible, and provide ready-to-use report text. For interview prep, give actionable feedback on step completeness and tool naming.`,
+  quickPrompts: {
+    headers: "Please analyze these email headers. Identify all red flags, extract every IOC (IPs, domains, email addresses), and explain what the SPF/DKIM/DMARC results mean:\n\n[PASTE EMAIL HEADERS]",
+    sandbox: "Please analyze this any.run sandbox report. Identify the malware family, explain the kill chain, list all IOCs (IPs, domains, dropped files, registry keys), and map the behavior to MITRE ATT&CK:\n\n[PASTE SANDBOX SUMMARY OR PROCESS TREE]",
+    decode: "Please decode this obfuscated payload and explain what it does step by step. Extract all IOCs (C2 URLs, file paths, registry keys):\n\n[PASTE ENCODED/OBFUSCATED STRING OR MACRO CODE]",
+    scope: "My SIEM search for the C2 domain returned these results. Please help me scope the investigation — how many hosts are affected, what is the timeline, and what containment actions should I take first:\n\n[PASTE SIEM RESULTS]",
+    report: "Please write a complete phishing incident report using my investigation findings below. Format: Executive Summary / Timeline / Email Analysis / Payload Analysis / IOCs table / Impact Assessment / Containment Actions / Recommendations:\n\n[PASTE YOUR FINDINGS]",
+    interview: "I want to practice the interview question: 'Walk me through how you would investigate a reported phishing email from start to finish.' Here is my answer:\n\n[YOUR ANSWER]\n\nPlease give me feedback — am I missing any steps, using the right tool names, and are my containment actions in the correct order?"
+  }
+});
+</script>
+</body>
+</html>

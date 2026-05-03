@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L24: Endpoint Detection & Response — CrowdStrike + Defender — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="../labs.html">← All Labs</a><a href="../lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="../labs.html">Labs</a> › <a href="../labs.html">SOC Analyst</a> › L24</div>
+    <div class="lab-num-badge">LAB L24 · SOC ANALYST · INTERMEDIATE</div>
+    <h1>Endpoint Detection &amp; Response — <em>CrowdStrike + Defender</em></h1>
+    <p>Investigate a live malware sample using CrowdStrike Falcon Go (free trial) and Microsoft Defender for Endpoint demo tenant. Perform memory analysis with Volatility 3, map IOCs to STIX/TAXII, and write an EDR investigation report.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Windows VM + Kali Linux</strong></div>
+      <div class="lab-meta-item">🔧 <strong>CrowdStrike Falcon · MDE · Volatility 3 · STIX</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI EDR Analyst</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-teal">
+    <div class="scenario-label">📊 Lab Scenario</div>
+    <p>Your Splunk SIEM fired an alert: a process named <code>svchost.exe</code> on WORKSTATION-04 is making outbound HTTPS connections to an IP that resolved in last week's phishing investigation. CrowdStrike Falcon just elevated this to a "Detection" with severity High. Your task: investigate the detection in Falcon, validate it in the Microsoft Defender demo tenant, dump and analyze memory with Volatility, extract all IOCs, and determine if this is an active compromise requiring immediate containment.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Access EDR Consoles</div><div class="phase-desc">Get into CrowdStrike Falcon and Microsoft Defender without spending money</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Activate CrowdStrike Falcon Go free trial</div><div class="step-desc">Falcon Go is a real EDR console — your resume can legitimately say you've used it</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Go to <strong>crowdstrike.com/products/endpoint-security/falcon-go</strong> → Start Free Trial (15-day, no credit card required). Install the Falcon sensor on your Windows VM: download the sensor installer from the Falcon console → Hosts → Sensor Downloads → Windows. Run the installer:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Install Falcon sensor silently — replace CID with your Customer ID from the console</span><br><span class="k">WindowsSensor.exe /install /quiet /norestart CID=YOUR_CID_HERE</span><br><br><span class="c"># Verify sensor is running</span><br><span class="k">sc query csagent</span><br><span class="c"># Should show: STATE: RUNNING</span><br><br><span class="c"># Your host appears in Falcon: Hosts > Host Management within ~2 minutes</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Access Microsoft Defender for Endpoint demo tenant</div><div class="step-desc">Microsoft provides a free pre-loaded demo environment — no setup needed</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Go to <strong>aka.ms/m365ep/demo</strong> or search "Microsoft Defender for Endpoint demo". This demo environment has pre-loaded incidents, alerts, and device timelines — you can investigate them without enrolling a real device. Navigate to <strong>Incidents & alerts → Incidents</strong> to see real sample investigations.</div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>The MDE demo has a live investigation of a "Ransomware behavior" incident pre-loaded. Use this for the Defender portion of the lab.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Investigate in CrowdStrike Falcon</div><div class="phase-desc">Navigate the Falcon console the way a real SOC analyst does</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Triage the detection in Falcon</div><div class="step-desc">Falcon Detections show the process tree, behavior classification, and MITRE ATT&CK mapping</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Falcon Console: <strong>Endpoint Security → Detections</strong>. For each detection, review:<br><br>• <strong>Tactic / Technique:</strong> ATT&CK mapping (e.g., T1059.001 PowerShell)<br>• <strong>Process Tree:</strong> parent → child process chain — what spawned what?<br>• <strong>Command Line:</strong> exact command arguments used<br>• <strong>Severity:</strong> Critical / High / Medium / Low<br>• <strong>Prevention Policy Action:</strong> Blocked / Detected / Allowed (did Falcon stop it?)</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI EDR Analyst</div><p>Paste the Falcon detection details. The AI will explain the ATT&CK technique, describe what the attacker was trying to do, assess severity, and recommend your next investigation step.</p><button class="ai-prompt-btn" onclick="qp('detection')">Analyze Falcon detection →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Run a Real Time Response (RTR) session</div><div class="step-desc">RTR lets you run commands on the live endpoint from the Falcon console — like a remote shell</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Falcon: <strong>Detection → Host → Respond → Start Real Time Response</strong>. In the RTR shell:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># RTR commands (Falcon's shell language, similar to PowerShell)</span><br><span class="k">netstat -an</span>                   <span class="c"># Show all active connections</span><br><span class="k">ps</span>                             <span class="c"># List all running processes with PIDs</span><br><span class="k">reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run</span>  <span class="c"># Check persistence</span><br><span class="k">ls C:\Users\Public\</span>             <span class="c"># Common malware drop location</span><br><span class="k">ls C:\Windows\Temp\</span>             <span class="c"># Another common drop location</span><br><span class="k">memdump --pid [PID]</span>             <span class="c"># Dump memory of suspicious process for Volatility</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Run a Falcon Event Search (Event Activity Monitor)</div><div class="step-desc">Falcon's event search is like Splunk but for endpoint-native telemetry</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Falcon Event Search queries (Splunk-like syntax)</span><br><span class="c"># In Falcon: Investigate > Event Search</span><br><br><span class="c"># Find network connections from the suspicious process</span><br><span class="k">event_simpleName=NetworkConnectIP4 RemoteAddressIP4=45.142.212.100</span><br><span class="k">| table ComputerName, UserName, ImageFileName, RemoteAddressIP4, RemotePort, _time</span><br><br><span class="c"># Find all processes with suspicious parent-child chains</span><br><span class="k">event_simpleName=ProcessRollup2 ParentBaseFileName=Word.exe FileName=powershell.exe</span><br><span class="k">| table _time, ComputerName, CommandLine, ParentCommandLine</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Microsoft Defender for Endpoint Investigation</div><div class="phase-desc">Validate and cross-reference in the Microsoft security stack</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Investigate the pre-loaded incident in MDE demo</div><div class="step-desc">Navigate the MDE incident graph — this is what real analysts use daily at Microsoft-stack organizations</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In the MDE demo: <strong>Incidents & alerts → Incidents → [Ransomware behavior incident]</strong>. Review the <strong>Attack story</strong> tab — this is a visual kill chain graph. For each alert in the incident:<br>• What ATT&CK technique was detected?<br>• Was it Blocked, Prevented, or Allowed?<br>• What is the device and user involved?<br>• What is the lateral movement path?</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI EDR Analyst</div><p>Paste the MDE incident summary or alert descriptions. The AI will map the full attack kill chain, identify the initial access vector, and recommend a containment sequence (which device to isolate first, which credential to reset).</p><button class="ai-prompt-btn" onclick="qp('incident')">Map MDE incident kill chain →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Use Advanced Hunting (KQL) in MDE</div><div class="step-desc">Advanced Hunting is KQL on top of 30 days of endpoint telemetry — the most powerful pivot tool in the Microsoft stack</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c">// MDE Advanced Hunting — find the malicious process</span><br><span class="k">DeviceProcessEvents</span><br><span class="k">| where FileName == "svchost.exe"</span><br><span class="k">| where InitiatingProcessParentFileName != "services.exe"</span>  <span class="c">// Legitimate svchost ALWAYS has services.exe as parent</span><br><span class="k">| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, InitiatingProcessFileName</span><br><span class="k">| order by Timestamp desc</span><br><br><span class="c">// Find all network connections from the suspicious svchost</span><br><span class="k">DeviceNetworkEvents</span><br><span class="k">| where InitiatingProcessFileName == "svchost.exe"</span><br><span class="k">| where RemoteIPType == "Public"</span><br><span class="k">| where RemoteIP == "45.142.212.100"</span><br><span class="k">| project Timestamp, DeviceName, RemoteIP, RemotePort, RemoteUrl</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — Memory Analysis with Volatility 3</div><div class="phase-desc">The evidence that survives after the process is killed</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Acquire and analyze a memory dump</div><div class="step-desc">Volatility 3 runs on your Kali VM and analyzes a Windows memory image</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Install Volatility 3 on Kali</span><br><span class="k">git clone https://github.com/volatilityfoundation/volatility3.git</span><br><span class="k">cd volatility3 && pip3 install -r requirements.txt</span><br><br><span class="c"># Use a sample Windows memory image for the lab:</span><br><span class="c"># Download from: github.com/volatilityfoundation/volatility3/releases (test images)</span><br><span class="c"># Or use DFIR.science sample images: dfir.science/samples</span><br><br><span class="c"># List all processes</span><br><span class="k">python3 vol.py -f memory.dmp windows.pslist</span><br><br><span class="c"># Find hidden/injected processes</span><br><span class="k">python3 vol.py -f memory.dmp windows.psscan</span><br><br><span class="c"># List network connections in memory</span><br><span class="k">python3 vol.py -f memory.dmp windows.netscan</span><br><br><span class="c"># Scan for code injection in process memory</span><br><span class="k">python3 vol.py -f memory.dmp windows.malfind</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI EDR Analyst</div><p>Paste Volatility output from pslist, netscan, or malfind. The AI will identify suspicious processes, explain what the anomalies mean, and tell you which process memory sections to extract and submit to VirusTotal.</p><button class="ai-prompt-btn" onclick="qp('volatility')">Analyze Volatility output →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Map IOCs to STIX/TAXII</div><div class="step-desc">STIX is the machine-readable format for threat intelligence sharing — L1 and vuln analysts both use it</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Create a STIX 2.1 indicator from your IOCs (Python)</span><br><span class="k">pip3 install stix2</span><br><br><span class="k">from stix2 import Indicator, Bundle</span><br><span class="k">indicator = Indicator(</span><br><span class="k">    name="C2 IP from Invoice phishing campaign",</span><br><span class="k">    pattern="[ipv4-addr:value = '45.142.212.100']",</span><br><span class="k">    pattern_type="stix",</span><br><span class="k">    valid_from="2026-04-28T08:00:00Z",</span><br><span class="k">    labels=["malicious-activity"],</span><br><span class="k">    confidence=90</span><br><span class="k">)</span><br><span class="k">bundle = Bundle(objects=[indicator])</span><br><span class="k">print(bundle.serialize(pretty=True))</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Containment decision — isolate or monitor?</div><div class="step-desc">The containment call is the most important decision in any EDR investigation</div></div></div>
+        <div class="step-body">
+          <div class="step-detail"><strong>Containment options in CrowdStrike Falcon:</strong><br>• <strong>Network Contain:</strong> blocks ALL network traffic except Falcon sensor (drastic — isolates the host)<br>• <strong>Custom Blocking:</strong> block specific process hash or network IOC<br>• <strong>No Action / Monitor:</strong> keep watching — appropriate if you need more evidence or suspect a false positive<br><br><strong>Decision framework:</strong><br>✅ Isolate if: confirmed C2 connection, active lateral movement, ransomware behavior<br>⏳ Monitor if: detection is high-confidence but no active exfil, need to map full scope first<br>❌ Close if: confirmed false positive with documented justification</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI EDR Analyst</div><p>Describe your findings from the Falcon and MDE investigation. The AI will recommend a containment action with justification and help you write the escalation decision memo to your manager.</p><button class="ai-prompt-btn" onclick="qp('contain')">Recommend containment action →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Write the EDR investigation report</div><div class="step-desc">Portfolio piece: a real EDR investigation, documented end to end</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI EDR Analyst</div><p>Paste your full investigation findings and the AI will write a professional EDR investigation report covering: Detection summary / Process tree analysis / Network IOCs / Memory findings / ATT&CK mapping / Containment actions / Recommendations.</p><button class="ai-prompt-btn" onclick="qp('report')">Write EDR investigation report →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — deliverables checkpoint</div><div class="step-desc"></div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ CrowdStrike Falcon sensor enrolled and detection investigated<br>✅ RTR session run — process list, network connections, persistence checked<br>✅ Falcon Event Search query run for malicious activity<br>✅ MDE demo incident kill chain mapped<br>✅ MDE Advanced Hunting KQL query run<br>✅ Volatility 3 memory analysis: pslist, netscan, malfind<br>✅ IOCs exported to STIX 2.1 bundle<br>✅ Containment decision made and documented<br>✅ EDR investigation report written</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L01 — Network Forensics &amp; Recon</h4><p>PCAP analysis with Wireshark and Zeek. Reconstruct an attacker session and run an Nmap discovery scan.</p><a href="lab-wireshark.html">Start L01 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L24 — EDR Investigation Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> CrowdStrike Falcon + Microsoft Defender for Endpoint + Volatility 3 — investigating a live endpoint compromise from detection through containment.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('detection')">Analyze Detection</button>
+      <button class="quick-btn" onclick="qp('incident')">Kill Chain</button>
+      <button class="quick-btn" onclick="qp('volatility')">Memory Analysis</button>
+      <button class="quick-btn" onclick="qp('contain')">Containment</button>
+      <button class="quick-btn" onclick="qp('report')">Write Report</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste Falcon detections, MDE alerts, Volatility output, or ask about EDR investigation steps..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L24', totalSteps: 12, modeLabel: 'EDR Investigation Mode',
+  welcomeMsg: "I'm your EDR analyst for Lab L24. I can:\n- Explain CrowdStrike Falcon detection fields and ATT&CK mappings\n- Interpret Microsoft Defender incident graphs and kill chains\n- Analyze Volatility 3 output (pslist, netscan, malfind)\n- Recommend containment actions with justification\n- Write STIX 2.1 indicators from your IOCs\n- Write EDR investigation reports\n- Prep you for 'walk me through an EDR investigation' interview questions\n\nPaste any detection, memory output, or incident summary to get started.",
+  systemPrompt: `You are a senior SOC analyst and EDR specialist helping a student with Lab L24: Endpoint Detection & Response using CrowdStrike Falcon, Microsoft Defender for Endpoint, and Volatility 3. Help with: interpreting Falcon detections (process trees, ATT&CK mappings, severity), navigating the Falcon Event Search (FQL), running MDE Advanced Hunting KQL queries, analyzing MDE incident graphs and kill chains, interpreting Volatility 3 output (pslist, psscan, netscan, malfind), making containment decisions (network containment vs. monitor vs. close), creating STIX 2.1 indicators, and writing EDR investigation reports. For every suspicious process: check if the parent-child relationship is legitimate, explain what the attacker was doing, and map to MITRE ATT&CK.`,
+  quickPrompts: {
+    detection: "Please analyze this CrowdStrike Falcon detection. Explain the ATT&CK technique, what the attacker was trying to do, whether Falcon blocked or only detected it, and what my next investigation step should be:\n\n[PASTE FALCON DETECTION DETAILS]",
+    incident: "Please map the kill chain for this Microsoft Defender for Endpoint incident. Identify the initial access vector, all lateral movement steps, the impact stage, and recommend a containment sequence (which host to isolate first):\n\n[PASTE MDE INCIDENT SUMMARY]",
+    volatility: "Please analyze this Volatility 3 output. Identify any suspicious processes, hidden processes (psscan vs pslist discrepancy), suspicious network connections, and memory injection signs from malfind:\n\n[PASTE VOLATILITY OUTPUT]",
+    contain: "Based on my EDR investigation findings below, should I Network Contain the host, apply custom blocking, or continue monitoring? Please give a recommendation with justification and help me write the containment decision memo:\n\n[PASTE INVESTIGATION FINDINGS]",
+    report: "Please write a professional EDR investigation report from my findings. Format: Detection Summary / Process Tree Analysis / Network IOCs / Memory Findings / ATT&CK Mapping / Containment Actions Taken / Recommendations:\n\n[PASTE YOUR FINDINGS]"
+  }
+});
+</script>
+</body>
+</html>

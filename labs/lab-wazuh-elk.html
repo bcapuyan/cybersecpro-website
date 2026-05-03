@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L21: Endpoint Telemetry & Log Pipelines — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="../labs.html">← All Labs</a><a href="../lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="../labs.html">Labs</a> › <a href="../labs.html">SOC Analyst</a> › L21</div>
+    <div class="lab-num-badge">LAB L21 · SOC ANALYST · INTERMEDIATE</div>
+    <h1>Endpoint Telemetry &amp; <em>Log Pipelines</em></h1>
+    <p>Configure Sysmon on a Windows host, ship logs to Wazuh and the ELK stack, build saved searches, and use AI to interpret what each log type reveals about endpoint behavior.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Windows VM + Kali/Ubuntu</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Sysmon · Wazuh · ELK · Winlogbeat</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI Log Interpreter</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-teal">
+    <div class="scenario-label">📊 Lab Scenario</div>
+    <p>You're a new L1 SOC analyst. Your manager asks you to build the endpoint telemetry pipeline for a small office — 1 Windows workstation, forwarding logs into Wazuh and ELK. By end of shift you need a working pipeline and 3 saved searches that your team can use for daily triage. An attacker-simulation script will fire at the end so you can validate detections before you leave.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Install Sysmon</div><div class="phase-desc">Deploy Microsoft Sysmon with the SwiftOnSecurity config — the industry standard</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Download Sysmon and the SwiftOnSecurity config</div><div class="step-desc">SwiftOnSecurity's sysmonconfig-export.xml is used by thousands of real SOCs</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">On your Windows VM, open PowerShell as Administrator:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Download Sysmon (part of Sysinternals Suite)</span><br><span class="k">Invoke-WebRequest -Uri "https://download.sysinternals.com/files/Sysmon.zip" -OutFile "$env:TEMP\Sysmon.zip"</span><br><span class="k">Expand-Archive "$env:TEMP\Sysmon.zip" -DestinationPath "$env:TEMP\Sysmon"</span><br><br><span class="c"># Download the SwiftOnSecurity config</span><br><span class="k">Invoke-WebRequest -Uri "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml" -OutFile "$env:TEMP\sysmonconfig.xml"</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Install Sysmon with the config</div><div class="step-desc">This enables process creation, network connections, file hashing, and DNS query logging</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Install Sysmon as a service</span><br><span class="k">cd "$env:TEMP\Sysmon"</span><br><span class="k">.\Sysmon64.exe -accepteula -i ..\sysmonconfig.xml</span><br><br><span class="c"># Verify Sysmon is running</span><br><span class="k">Get-Service Sysmon64 | Select-Object Status, DisplayName</span><br><br><span class="c"># View the first Sysmon events in Event Viewer</span><br><span class="c"># Applications and Services Logs > Microsoft > Windows > Sysmon > Operational</span><br><span class="k">Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational" -MaxEvents 10 | Format-List</span></div></div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>Sysmon Event ID 1 = Process Create, ID 3 = Network Connection, ID 11 = File Create, ID 22 = DNS Query. These four are the backbone of endpoint detection.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Install Winlogbeat to ship logs</div><div class="step-desc">Winlogbeat is the lightweight Elastic agent that forwards Windows Event Logs to ELK or Wazuh</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Download and install Winlogbeat</span><br><span class="k">Invoke-WebRequest -Uri "https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.12.0-windows-x86_64.zip" -OutFile "$env:TEMP\winlogbeat.zip"</span><br><span class="k">Expand-Archive "$env:TEMP\winlogbeat.zip" -DestinationPath "C:\winlogbeat"</span><br><br><span class="c"># Edit C:\winlogbeat\winlogbeat.yml — set output.elasticsearch.hosts or output.logstash.hosts</span><br><span class="c"># Then install as service:</span><br><span class="k">cd C:\winlogbeat</span><br><span class="k">.\install-service-winlogbeat.ps1</span><br><span class="k">Start-Service winlogbeat</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste your Winlogbeat config and tell the AI your Wazuh or ELK server IP. It will review the config for common misconfigurations and suggest the optimal channel selectors for SOC use.</p><button class="ai-prompt-btn" onclick="qp('config')">Review my Winlogbeat config →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Set Up Wazuh</div><div class="phase-desc">Deploy Wazuh all-in-one and enroll your Windows endpoint</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Deploy Wazuh all-in-one on Ubuntu/Kali</div><div class="step-desc">The quickest path to a full SIEM + HIDS stack</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># On your Ubuntu or Kali SIEM VM</span><br><span class="k">curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh</span><br><span class="k">sudo bash wazuh-install.sh -a</span><br><span class="c"># Installation takes 10–15 minutes</span><br><span class="c"># Dashboard: https://[SIEM-IP] — default creds printed at end of install</span></div></div>
+          <div class="alert alert-warning"><span class="alert-icon">⚠️</span><div>Wazuh requires at least 4GB RAM for the all-in-one install. If your VM has less, install Wazuh server only and point Winlogbeat at it via syslog.</div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Enroll the Windows agent</div><div class="step-desc">Generate an enrollment key and register the Windows endpoint</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># In Wazuh dashboard: Agents > Deploy New Agent > Windows</span><br><span class="c"># Copy the PowerShell command — looks like:</span><br><span class="k">Invoke-WebRequest -Uri https://packages.wazuh.com/4.x/windows/wazuh-agent-4.7.0-1.msi -OutFile ${env.tmp}\wazuh-agent.msi; msiexec.exe /i ${env.tmp}\wazuh-agent.msi /q WAZUH_MANAGER='[SIEM-IP]' WAZUH_AGENT_NAME='WIN-LAB-01'</span><br><span class="k">NET START WazuhSvc</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Verify Sysmon events appear in Wazuh</div><div class="step-desc">Confirm the pipeline is flowing end to end</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Wazuh Dashboard: <strong>Security Events → search for rule.groups: sysmon</strong>. You should see Sysmon Event ID 1 (Process Create) events from your Windows VM. Run a simple command on Windows to generate telemetry:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Run on Windows — each of these generates a Sysmon Event ID 1 + 3</span><br><span class="k">ipconfig /all</span><br><span class="k">nslookup cybersecproacademy.org</span><br><span class="k">powershell -c "Invoke-WebRequest https://example.com"</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste a raw Sysmon Event ID 1 log from Wazuh. The AI will explain every field — CommandLine, ParentImage, Hashes — and tell you which field to pivot on for threat hunting.</p><button class="ai-prompt-btn" onclick="qp('sysmon')">Explain this Sysmon event →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — ELK Stack + 3 Saved Searches</div><div class="phase-desc">Build the searches your team will use for daily morning triage</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">Open Kibana Discover and filter to Sysmon events</div><div class="step-desc">Kibana is the ELK frontend — learn to navigate it fast</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Kibana (port 5601): <strong>Discover → select your index pattern → filter: winlog.channel: "Microsoft-Windows-Sysmon/Operational"</strong></div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># KQL filters for Kibana Discover</span><br><span class="k">winlog.event_id: 1</span>                        <span class="c"># Process Create</span><br><span class="k">winlog.event_id: 3</span>                        <span class="c"># Network Connection</span><br><span class="k">winlog.event_id: 22</span>                       <span class="c"># DNS Query</span><br><span class="k">winlog.event_data.Image: *powershell*</span>    <span class="c"># Any PowerShell process</span><br><span class="k">winlog.event_data.CommandLine: *-enc*</span>    <span class="c"># Base64 encoded commands (red flag)</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">Build and save 3 triage searches</div><div class="step-desc">Save these as your morning-triage dashboard in Kibana</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Search 1: Suspicious PowerShell execution</span><br><span class="k">winlog.event_id: 1 AND winlog.event_data.Image: *powershell* AND winlog.event_data.CommandLine: (*-enc* OR *-nop* OR *bypass* OR *hidden*)</span><br><br><span class="c"># Search 2: External network connections from unexpected processes</span><br><span class="k">winlog.event_id: 3 AND NOT winlog.event_data.Image: (*chrome* OR *firefox* OR *svchost* OR *lsass*) AND NOT winlog.event_data.DestinationIp: 192.168.*</span><br><br><span class="c"># Search 3: New service or scheduled task creation</span><br><span class="k">winlog.event_id: (7045 OR 4698) AND NOT winlog.event_data.ServiceName: ("Windows*" OR "Microsoft*")</span></div></div>
+          <div class="step-detail">For each search: run it → click <strong>Save</strong> → give it a name → click <strong>Save and add to library</strong>. Now your team can open saved searches from Kibana &gt; Library.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — Validate with Attack Simulation</div><div class="phase-desc">Trigger real detections and document your findings</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Run atomic attacker simulation on Windows</div><div class="step-desc">Atomic Red Team fires real MITRE ATT&CK techniques safely in a lab</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Install Atomic Red Team (PowerShell, run as Admin)</span><br><span class="k">IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing)</span><br><span class="k">Install-AtomicRedTeam -getAtomics</span><br><br><span class="c"># Fire T1059.001 — PowerShell execution (generates Sysmon EID 1)</span><br><span class="k">Invoke-AtomicTest T1059.001</span><br><br><span class="c"># Fire T1053.005 — Scheduled Task creation (generates EID 4698)</span><br><span class="k">Invoke-AtomicTest T1053.005</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Paste the Wazuh/ELK alert that fired from the simulation. The AI will map it to MITRE ATT&CK, explain the technique, and write a triage decision tree for your runbook.</p><button class="ai-prompt-btn" onclick="qp('attack')">Map alert to ATT&CK →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">Write your deliverable: pipeline diagram + 3 saved searches</div><div class="step-desc">This goes in your portfolio as proof of real SOC engineering work</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Document the following in a single page (Notion, Google Doc, or PDF):<br><br><strong>Pipeline Diagram:</strong> Windows VM → Sysmon → Winlogbeat → Wazuh Manager → ELK → Kibana<br><br><strong>Saved Search 1:</strong> Name, KQL query, why it matters, example true positive<br><strong>Saved Search 2:</strong> Name, KQL query, why it matters, example true positive<br><strong>Saved Search 3:</strong> Name, KQL query, why it matters, example true positive<br><br><strong>Simulation Finding:</strong> Which ATT&CK technique fired, which search caught it, what the raw log showed</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst</div><p>Describe your pipeline and the AI will write a professional portfolio write-up you can add to your resume under "Projects."</p><button class="ai-prompt-btn" onclick="qp('portfolio')">Write portfolio entry →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Interview prep — Sysmon and log pipeline questions</div><div class="step-desc">These questions appear in nearly every L1 SOC interview</div></div></div>
+        <div class="step-body">
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Analyst — Interview Mode</div><p>Practice answering: "Walk me through how you would set up endpoint telemetry for a 50-seat office." The AI will give you feedback on completeness, tool naming, and delivery.</p><button class="ai-prompt-btn" onclick="qp('interview')">Practice SOC interview answer →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — checkpoint</div><div class="step-desc">Confirm all deliverables before moving to Week 3</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ Sysmon installed with SwiftOnSecurity config<br>✅ Winlogbeat shipping logs to Wazuh and ELK<br>✅ Wazuh agent enrolled and reporting<br>✅ 3 saved Kibana searches built and documented<br>✅ Atomic Red Team simulation fired and detected<br>✅ Pipeline diagram and portfolio entry written</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L22 — SIEM Triage with Splunk + Microsoft Sentinel</h4><p>Put your pipeline to work triaging real alert queues in both Splunk and Sentinel KQL.</p><a href="lab-sentinel-kql.html">Start L22 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L21 — Endpoint Telemetry Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Sysmon, Wazuh, ELK, Winlogbeat — building endpoint telemetry pipelines and triage searches for SOC use.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('sysmon')">Explain Event</button>
+      <button class="quick-btn" onclick="qp('config')">Review Config</button>
+      <button class="quick-btn" onclick="qp('attack')">Map to ATT&CK</button>
+      <button class="quick-btn" onclick="qp('portfolio')">Portfolio Entry</button>
+      <button class="quick-btn" onclick="qp('interview')">Interview Prep</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste Sysmon events, Wazuh alerts, KQL queries, or ask about log analysis..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L21', totalSteps: 12, modeLabel: 'Endpoint Telemetry Mode',
+  welcomeMsg: "I'm your SOC engineer for Lab L21. I can:\n- Explain Sysmon event fields and what to hunt in each\n- Review and fix Winlogbeat/Wazuh configs\n- Write KQL/Kibana saved searches for triage\n- Map Atomic Red Team findings to MITRE ATT&CK\n- Write portfolio entries for your resume\n- Prep you for 'walk me through your SIEM pipeline' interview questions\n\nPaste any log, config, or alert to get started.",
+  systemPrompt: `You are a senior SOC engineer helping a student with Lab L21: Endpoint Telemetry & Log Pipelines. The lab uses Sysmon (SwiftOnSecurity config), Winlogbeat, Wazuh all-in-one, and the ELK stack (Kibana). Help with: interpreting Sysmon event fields (especially Event IDs 1, 3, 11, 22), configuring Winlogbeat YAML, enrolling Wazuh agents, writing Kibana KQL saved searches for SOC triage, validating detections with Atomic Red Team, mapping events to MITRE ATT&CK, and writing portfolio documentation. Be practical — generate working configs and queries that can be copy-pasted.`,
+  quickPrompts: {
+    sysmon: "Please explain every field in this Sysmon event and tell me which fields to pivot on for threat hunting:\n\n[PASTE SYSMON EVENT]",
+    config: "Please review my Winlogbeat config and identify any misconfigurations. My Wazuh/ELK server IP is [IP]. Here is the config:\n\n[PASTE WINLOGBEAT.YML]",
+    attack: "This Wazuh/ELK alert fired from my Atomic Red Team simulation. Please map it to the MITRE ATT&CK technique, explain what the attacker was doing, and write a 3-step triage decision tree:\n\n[PASTE ALERT]",
+    portfolio: "I built an endpoint telemetry pipeline: Windows VM → Sysmon → Winlogbeat → Wazuh → ELK → Kibana. I built 3 saved searches and validated with Atomic Red Team. Please write a professional portfolio project entry (3–4 bullet points, action-verb format) I can add to my resume under Projects.",
+    interview: "I want to practice answering this SOC interview question: 'Walk me through how you would set up endpoint telemetry for a 50-seat office from scratch.' Here is my answer:\n\n[YOUR ANSWER]\n\nPlease give me feedback on completeness, tool naming, and what I should add."
+  }
+});
+</script>
+</body>
+</html>

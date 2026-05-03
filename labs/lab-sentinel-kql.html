@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L22: SIEM Triage — Splunk + Microsoft Sentinel/KQL — CyberSec Pro Academy</title>
+<link rel="stylesheet" href="lab-base.css">
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <div class="nav-links"><a href="../labs.html">← All Labs</a><a href="../lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
+</nav>
+<div class="lab-progress-bar">
+  <span class="lp-label">Lab Progress</span>
+  <div class="lp-track"><div class="lp-fill" id="lpFill"></div></div>
+  <span class="lp-pct" id="lpPct">0%</span>
+  <span class="lp-steps" id="lpSteps">0 / 12 steps</span>
+</div>
+<div class="lab-layout">
+<div class="lab-guide">
+  <div class="lab-header">
+    <div class="lab-breadcrumb"><a href="../labs.html">Labs</a> › <a href="../labs.html">SOC Analyst</a> › L22</div>
+    <div class="lab-num-badge">LAB L22 · SOC ANALYST · INTERMEDIATE</div>
+    <h1>SIEM Triage — <em>Splunk + Microsoft Sentinel/KQL</em></h1>
+    <p>Work through 5 prebuilt alerts in Splunk, re-run two in Microsoft Sentinel using KQL, write triage notes the way an L1 analyst does, and close your first mock ticket queue.</p>
+    <div class="lab-meta">
+      <div class="lab-meta-item">⏱ <strong>90 min</strong></div>
+      <div class="lab-meta-item">🖥️ <strong>Browser (Splunk + Azure Free Trial)</strong></div>
+      <div class="lab-meta-item">🔧 <strong>Splunk Free · Microsoft Sentinel · KQL</strong></div>
+      <div class="lab-meta-item">🤖 <strong>AI Triage Coach</strong></div>
+    </div>
+  </div>
+  <div class="scenario-box scenario-teal">
+    <div class="scenario-label">📊 Lab Scenario</div>
+    <p>It's 8:07 AM. You just sat down at the SOC console. The overnight queue has 5 open alerts in Splunk. Your team also runs Microsoft Sentinel for the cloud workloads. You have 90 minutes to triage all 5 alerts in Splunk, re-run 2 of them in Sentinel using KQL, write triage notes for each, and close the tickets with a disposition: True Positive, False Positive, or Needs Escalation.</p>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">0</div><div><div class="phase-name">Phase 0 — Set Up Both Environments</div><div class="phase-desc">Get Splunk and a Sentinel trial workspace ready before the clock starts</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-0" onclick="toggleStep(0)">
+        <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Verify Splunk is running with BOTS data</div><div class="step-desc">If you completed Lab L21 you already have this — just confirm it's running</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Confirm Splunk is running on your VM</span><br><span class="k">sudo /opt/splunk/bin/splunk status</span><br><span class="c"># Navigate to http://localhost:8000</span><br><span class="c"># Run a quick sanity check:</span><br><span class="k">index=* | head 5</span><br><span class="c"># Should return events — if 0 results, ingest the BOTS dataset from Lab L02 first</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-1" onclick="toggleStep(1)">
+        <div class="step-header"><div class="step-num" data-n="2"></div><div class="step-content"><div class="step-title">Create a free Microsoft Sentinel trial workspace</div><div class="step-desc">Azure gives you 90 days free — no credit card charge if you stay under the free tier</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">Go to <strong>portal.azure.com</strong> → Create a resource → Microsoft Sentinel → Create → New workspace → Region: East US → Review + Create. Takes about 3 minutes. Then in Sentinel: <strong>Content hub → install "Windows Security Events" solution</strong> to get sample KQL queries.</div>
+          <div class="alert alert-info"><span class="alert-icon">💡</span><div>For the KQL exercises below you do not need live data flowing into Sentinel — you can use the built-in <strong>Demo environment</strong> at <strong>aka.ms/sentineldemo</strong> which has pre-loaded incident data and is free with no signup.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">1</div><div><div class="phase-name">Phase 1 — Triage 5 Alerts in Splunk</div><div class="phase-desc">Work through the morning queue using real analyst methodology</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-2" onclick="toggleStep(2)">
+        <div class="step-header"><div class="step-num" data-n="3"></div><div class="step-content"><div class="step-title">Alert 1 — Brute force: 50 failed logins, then success</div><div class="step-desc">Classic credential stuffing pattern</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Run in Splunk — last 24 hours</span><br><span class="k">index=* (EventCode=4625 OR EventCode=4624)</span><br><span class="k">| eval outcome=if(EventCode=4624,"success","failure")</span><br><span class="k">| stats count(eval(outcome="failure")) as fails, count(eval(outcome="success")) as logins by src_ip, user</span><br><span class="k">| where fails > 20 AND logins > 0</span><br><span class="k">| sort -fails</span></div></div>
+          <div class="step-detail"><strong>Triage question:</strong> Is the src_ip internal or external? Is the user account a service account or human? Did the successful login happen from the same IP that failed? Write your triage note below the query results.</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Triage Coach</div><p>Paste your query results. The AI will walk you through the analyst decision tree and help you write a professional triage note with a True Positive / False Positive / Escalate disposition.</p><button class="ai-prompt-btn" onclick="qp('triage')">Triage this alert with AI →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-3" onclick="toggleStep(3)">
+        <div class="step-header"><div class="step-num" data-n="4"></div><div class="step-content"><div class="step-title">Alert 2 — PowerShell with encoded command</div><div class="step-desc">Encoded PowerShell is a common malware delivery and LOLBin technique</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Detect encoded PowerShell (Event ID 4688 or Sysmon EID 1)</span><br><span class="k">index=* (EventCode=4688 OR source="WinEventLog:Microsoft-Windows-Sysmon/Operational")</span><br><span class="k">| search (CommandLine="*-enc*" OR CommandLine="*-EncodedCommand*" OR CommandLine="*-e JAB*")</span><br><span class="k">| table _time, ComputerName, User, CommandLine, ParentCommandLine</span><br><span class="k">| sort -_time</span></div></div>
+          <div class="step-detail"><strong>Pivot steps:</strong> 1) Decode the Base64 payload: <code>echo [BASE64] | base64 -d</code> in Linux. 2) Hash the decoded script and check VirusTotal. 3) Check if the parent process makes sense (Word.exe spawning PowerShell = red flag).</div>
+        </div>
+      </div>
+      <div class="step-item" id="step-4" onclick="toggleStep(4)">
+        <div class="step-header"><div class="step-num" data-n="5"></div><div class="step-content"><div class="step-title">Alert 3 — Impossible travel: login from 2 countries in 10 minutes</div><div class="step-desc">A compromised credential indicator — cannot be a real user</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Impossible travel detection — requires IP geolocation enrichment</span><br><span class="k">index=* EventCode=4624 src_ip!=192.168.*</span><br><span class="k">| iplocation src_ip</span><br><span class="k">| stats values(Country) as countries, values(src_ip) as ips, min(_time) as first, max(_time) as last by user</span><br><span class="k">| eval time_diff_min=round((last-first)/60,1)</span><br><span class="k">| where mvcount(countries) > 1 AND time_diff_min < 60</span><br><span class="k">| table user, countries, ips, time_diff_min</span></div></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-5" onclick="toggleStep(5)">
+        <div class="step-header"><div class="step-num" data-n="6"></div><div class="step-content"><div class="step-title">Alerts 4 + 5 — Data exfil and new admin account</div><div class="step-desc">Two alerts, both low-and-slow techniques</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Alert 4: Large outbound data transfer (potential exfiltration)</span><br><span class="k">index=* sourcetype=firewall OR sourcetype=netflow</span><br><span class="k">| stats sum(bytes_out) as total_bytes by src_ip, dest_ip</span><br><span class="k">| where total_bytes > 100000000</span>            <span class="c"># 100MB threshold</span><br><span class="k">| eval total_mb=round(total_bytes/1048576,1)</span><br><span class="k">| sort -total_mb</span><br><br><span class="c"># Alert 5: New privileged account created outside business hours</span><br><span class="k">index=* EventCode=4720</span>                      <span class="c"># New account created</span><br><span class="k">| eval hour=strftime(_time,"%H")</span><br><span class="k">| where hour < 7 OR hour > 19</span>              <span class="c"># Outside 7AM–7PM</span><br><span class="k">| table _time, SubjectUserName, SAMAccountName, hour</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">2</div><div><div class="phase-name">Phase 2 — Re-Run 2 Alerts in Microsoft Sentinel (KQL)</div><div class="phase-desc">KQL fluency is the most leveraged SIEM skill in the 2026 job market</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-6" onclick="toggleStep(6)">
+        <div class="step-header"><div class="step-num" data-n="7"></div><div class="step-content"><div class="step-title">KQL equivalent of Alert 1 — Brute force in Sentinel</div><div class="step-desc">KQL syntax is different from SPL but the logic is the same</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Microsoft Sentinel (or aka.ms/sentineldemo) → <strong>Logs</strong> → paste this KQL:</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c">// KQL: Brute force followed by successful login</span><br><span class="k">let failedLogins = SecurityEvent</span><br><span class="k">    | where EventID == 4625</span><br><span class="k">    | summarize FailCount = count() by Account, IpAddress, bin(TimeGenerated, 5m);</span><br><span class="k">let successLogins = SecurityEvent</span><br><span class="k">    | where EventID == 4624</span><br><span class="k">    | project SuccessTime = TimeGenerated, Account, IpAddress;</span><br><span class="k">failedLogins</span><br><span class="k">| where FailCount > 10</span><br><span class="k">| join kind=inner successLogins on Account, IpAddress</span><br><span class="k">| where SuccessTime > TimeGenerated</span><br><span class="k">| project Account, IpAddress, FailCount, SuccessTime</span><br><span class="k">| order by FailCount desc</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Triage Coach</div><p>Paste a KQL query and tell the AI what you're trying to detect. It will explain each clause, suggest optimizations, and show you how to save it as a Sentinel Analytics Rule.</p><button class="ai-prompt-btn" onclick="qp('kql')">Explain / optimize this KQL →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-7" onclick="toggleStep(7)">
+        <div class="step-header"><div class="step-num" data-n="8"></div><div class="step-content"><div class="step-title">KQL equivalent of Alert 2 — Encoded PowerShell in Sentinel</div><div class="step-desc">The same detection, written in KQL against the SecurityEvent table</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c">// KQL: Encoded PowerShell execution</span><br><span class="k">SecurityEvent</span><br><span class="k">| where EventID == 4688</span><br><span class="k">| where Process has "powershell" and (</span><br><span class="k">    CommandLine has "-enc" or</span><br><span class="k">    CommandLine has "-EncodedCommand" or</span><br><span class="k">    CommandLine matches regex @"-[eE][nN][cC]")</span><br><span class="k">| project TimeGenerated, Computer, Account, CommandLine, ParentProcessName</span><br><span class="k">| order by TimeGenerated desc</span></div></div>
+          <div class="step-detail"><strong>Save as Sentinel Analytics Rule:</strong> Click <strong>New alert rule → Create from query → Scheduled</strong>. Set frequency to 5 minutes, lookback 1 hour. Severity: High. This is now a production detection rule on your resume.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-phase">
+    <div class="phase-title-row"><div class="phase-badge">3</div><div><div class="phase-name">Phase 3 — Triage Notes & Ticket Queue</div><div class="phase-desc">Write the notes that a real L1 analyst hands to L2 for escalation</div></div></div>
+    <div class="steps-list">
+      <div class="step-item" id="step-8" onclick="toggleStep(8)">
+        <div class="step-header"><div class="step-num" data-n="9"></div><div class="step-content"><div class="step-title">Write triage notes for all 5 alerts</div><div class="step-desc">Use the standard L1 format: Who, What, When, Where, Disposition, Next Action</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">For each alert, document:<br><br><strong>WHO:</strong> Account/IP involved<br><strong>WHAT:</strong> What the alert fired on (event ID, rule name)<br><strong>WHEN:</strong> Time range of the activity<br><strong>WHERE:</strong> Source host, destination host<br><strong>DISPOSITION:</strong> True Positive / False Positive / Benign True Positive / Escalate to L2<br><strong>NEXT ACTION:</strong> Close / Block IP / Reset password / Escalate with context memo</div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Triage Coach</div><p>Paste your raw alert data and the AI will write a complete L1 triage note in the format above — ready to copy into your ticket system or include in your portfolio.</p><button class="ai-prompt-btn" onclick="qp('note')">Write L1 triage note →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-9" onclick="toggleStep(9)">
+        <div class="step-header"><div class="step-num" data-n="10"></div><div class="step-content"><div class="step-title">SPL vs KQL side-by-side comparison</div><div class="step-desc">Understand the syntax differences — both appear on every SOC job description</div></div></div>
+        <div class="step-body">
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c">// SPL (Splunk)                    KQL (Sentinel / Defender)</span><br><span class="c">// ---                             ---</span><br><span class="k">index=* EventCode=4625           SecurityEvent | where EventID == 4625</span><br><span class="k">| stats count by src_ip           | summarize count() by IpAddress</span><br><span class="k">| where count > 5                 | where count_ > 5</span><br><span class="k">| sort -count                     | order by count_ desc</span><br><span class="k">| head 10                         | take 10</span><br><span class="k">| eval mb=bytes/1048576           | extend mb = bytes/1048576</span><br><span class="k">| table _time, src, dest          | project TimeGenerated, src, dest</span></div></div>
+          <div class="ai-prompt"><div class="ai-prompt-label">🤖 AI Triage Coach</div><p>Paste any SPL query and the AI will convert it to KQL, or vice versa. It will explain the syntax differences and flag any cases where the queries behave differently.</p><button class="ai-prompt-btn" onclick="qp('convert')">Convert SPL ↔ KQL →</button></div>
+        </div>
+      </div>
+      <div class="step-item" id="step-10" onclick="toggleStep(10)">
+        <div class="step-header"><div class="step-num" data-n="11"></div><div class="step-content"><div class="step-title">Save one detection as a Sentinel Analytics Rule</div><div class="step-desc">Turning a KQL query into a production analytics rule is a core analyst skill</div></div></div>
+        <div class="step-body">
+          <div class="step-detail">In Microsoft Sentinel → <strong>Analytics → + Create → Scheduled query rule</strong>:<br>• Name: "Brute Force Followed by Successful Login"<br>• Severity: High<br>• Query: paste your KQL from Phase 2<br>• Run query every: 5 minutes, Lookup data from: 1 hour<br>• Alert threshold: is greater than 0<br>• Entity mapping: map Account → Account, IpAddress → IP<br>• Click Review + Create<br><br>Screenshot the created rule for your portfolio.</div>
+        </div>
+      </div>
+      <div class="step-item" id="step-11" onclick="toggleStep(11)">
+        <div class="step-header"><div class="step-num" data-n="12"></div><div class="step-content"><div class="step-title">Lab complete — deliverables checkpoint</div><div class="step-desc"></div></div></div>
+        <div class="step-body">
+          <div class="step-detail">✅ 5 Splunk alerts triaged with written dispositions<br>✅ 2 alerts re-run in Microsoft Sentinel using KQL<br>✅ 1 Sentinel Analytics Rule created and saved<br>✅ Triage notes written in L1 format for all 5 alerts<br>✅ SPL ↔ KQL conversion reference saved<br>✅ Portfolio screenshot of your Sentinel rule</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="next-lab"><h4>Next: Lab L23 — Phishing Investigation</h4><p>Receive a simulated phishing email, pull headers, sandbox the payload, decode IOCs, and write the report.</p><a href="lab-phishing-investigation.html">Start L23 →</a></div>
+</div>
+
+<div class="ai-sidebar">
+  <div class="ai-header"><div class="ai-avatar">🤖</div><div><div class="ai-name">CyberSec AI Analyst</div><div class="ai-status" id="aiStatus">L22 — SIEM Triage Mode</div></div></div>
+  <div class="ai-context-chip"><strong>Lab Context:</strong> Splunk SPL + Microsoft Sentinel KQL — triaging a 5-alert morning queue and writing L1 analyst triage notes.</div>
+  <div class="api-mini-banner" id="apiBanner" onclick="openApiModal()"><p><strong>→ Connect AI Analyst</strong> — add your Claude API key</p></div>
+  <div class="ai-chat" id="aiChat"></div>
+  <div class="quick-actions">
+    <div class="quick-label">Quick Actions</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="qp('triage')">Triage Alert</button>
+      <button class="quick-btn" onclick="qp('kql')">Explain KQL</button>
+      <button class="quick-btn" onclick="qp('convert')">SPL ↔ KQL</button>
+      <button class="quick-btn" onclick="qp('note')">Write Note</button>
+      <button class="quick-btn" onclick="qp('escalate')">Escalation Memo</button>
+    </div>
+  </div>
+  <div class="ai-input-area"><div class="input-row"><textarea class="ai-textarea" id="aiInput" placeholder="Paste SPL queries, KQL queries, alert results, or ask for help triaging..." onkeydown="handleKey(event)"></textarea><button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button></div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="apiModal"><div class="modal"><h3>Connect AI Analyst</h3><p>Enter your Anthropic API key. Stored locally only.</p><input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-ant-..."><div class="modal-note">Get your key at console.anthropic.com.</div><div class="modal-btns"><button class="modal-skip" onclick="closeApiModal()">Skip</button><button class="modal-save" onclick="saveKey()">Connect →</button></div></div></div>
+
+<script src="lab-common.js"></script>
+<script>
+initLab({
+  id: 'L22', totalSteps: 12, modeLabel: 'SIEM Triage Mode',
+  welcomeMsg: "I'm your SIEM triage coach for Lab L22. I can:\n- Help you triage any of the 5 alerts with a decision tree\n- Write L1 triage notes in standard format\n- Explain and optimize KQL queries for Sentinel\n- Convert SPL queries to KQL and explain the differences\n- Write escalation memos to L2 for true positives\n- Save queries as Sentinel Analytics Rules\n\nPaste any alert data, SPL result, or KQL query to get started.",
+  systemPrompt: `You are a senior SOC analyst and SIEM expert helping a student with Lab L22: SIEM Triage using Splunk SPL and Microsoft Sentinel KQL. Help with: triaging security alerts (brute force, encoded PowerShell, impossible travel, data exfil, new admin account), writing L1 triage notes in Who/What/When/Where/Disposition/Next Action format, writing and explaining Splunk SPL queries, writing and explaining Microsoft Sentinel KQL queries, converting between SPL and KQL, creating Sentinel Analytics Rules, and writing escalation memos. Be direct and practical — analysts are time-pressured. Give dispositions (True Positive / False Positive / Escalate) with clear reasoning.`,
+  quickPrompts: {
+    triage: "Please help me triage this security alert. Walk me through the analyst decision tree and give me a final disposition (True Positive / False Positive / Benign True Positive / Escalate):\n\n[PASTE ALERT DATA OR QUERY RESULTS]",
+    kql: "Please explain this KQL query clause by clause and suggest any optimizations:\n\n[PASTE KQL QUERY]",
+    convert: "Please convert this query to the other language and explain any behavioral differences:\n\n[PASTE SPL OR KQL QUERY]\n\nTarget language: [SPL or KQL]",
+    note: "Please write a standard L1 triage note for this alert in the format: WHO / WHAT / WHEN / WHERE / DISPOSITION / NEXT ACTION:\n\n[PASTE RAW ALERT DATA]",
+    escalate: "I'm escalating this alert to L2. Please write a concise escalation memo with: alert summary, evidence found, my initial hypothesis, what L2 should investigate, and urgency level:\n\n[PASTE ALERT CONTEXT]"
+  }
+});
+</script>
+</body>
+</html>
