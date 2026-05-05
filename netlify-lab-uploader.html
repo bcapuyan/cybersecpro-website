@@ -1,88 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>CyberSecPro Lab Uploader</title>
+<title>CyberSecPro Lab Uploader v2</title>
 <style>
-  body { font-family: monospace; padding: 30px; background: #0f172a; color: #e2e8f0; max-width: 800px; margin: 0 auto; }
-  h1 { color: #60a5fa; }
-  .box { background: #1e293b; border-radius: 8px; padding: 20px; margin: 20px 0; }
-  .btn { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-family: monospace; }
+  body { font-family: monospace; padding: 30px; background: #0f172a; color: #e2e8f0; max-width: 860px; margin: 0 auto; }
+  h1 { color: #60a5fa; margin-bottom: 4px; }
+  .sub { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+  .box { background: #1e293b; border-radius: 8px; padding: 20px; margin: 16px 0; }
+  label { display: block; color: #94a3b8; font-size: 13px; margin-bottom: 6px; }
+  input[type=text], input[type=password] {
+    width: 100%; padding: 10px 14px; background: #0f172a; border: 1px solid #334155;
+    border-radius: 6px; color: #e2e8f0; font-family: monospace; font-size: 13px; box-sizing: border-box;
+  }
+  input[type=text]:focus, input[type=password]:focus { outline: none; border-color: #60a5fa; }
+  .btn { background: #2563eb; color: white; border: none; padding: 11px 22px; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: monospace; margin-right: 8px; }
   .btn:hover { background: #1d4ed8; }
   .btn:disabled { background: #475569; cursor: not-allowed; }
-  #log { background: #0f172a; border-radius: 6px; padding: 16px; margin-top: 16px; min-height: 200px; font-size: 13px; line-height: 1.6; overflow-y: auto; max-height: 400px; }
-  .ok { color: #4ade80; }
-  .err { color: #f87171; }
+  .btn-green { background: #16a34a; }
+  .btn-green:hover { background: #15803d; }
+  #log { background: #0f172a; border-radius: 6px; padding: 16px; min-height: 180px; font-size: 13px; line-height: 1.7; overflow-y: auto; max-height: 420px; white-space: pre-wrap; }
+  .ok   { color: #4ade80; }
+  .err  { color: #f87171; }
   .info { color: #60a5fa; }
   .warn { color: #fbbf24; }
+  .dim  { color: #475569; }
   #progress { height: 8px; background: #334155; border-radius: 4px; margin: 10px 0; }
   #progressBar { height: 100%; background: #2563eb; border-radius: 4px; width: 0%; transition: width 0.3s; }
+  .file-list { font-size: 12px; color: #64748b; margin-top: 8px; }
+  .step { background: #0f172a; border-left: 3px solid #2563eb; padding: 8px 14px; margin: 6px 0; border-radius: 0 6px 6px 0; font-size: 13px; color: #94a3b8; }
+  .step strong { color: #e2e8f0; }
 </style>
 </head>
 <body>
-<h1>🚀 CyberSecPro Lab Uploader</h1>
+<h1>🚀 CyberSecPro Lab Uploader <span style="color:#334155">v2</span></h1>
+<div class="sub">Deploys lab HTML files to cybersecproacademy.org via Netlify API</div>
 
 <div class="box">
-  <p><strong>Instructions:</strong></p>
-  <ol>
-    <li>Click <strong>Select lab_html folder</strong> below</li>
-    <li>Navigate to and select your <code>Claude_cowork/lab_html</code> folder</li>
-    <li>The uploader will automatically upload all 18 files (CSS + 17 labs) to Netlify</li>
-  </ol>
+  <div class="step"><strong>Step 1.</strong> Get a fresh Netlify token → netlify.com → User Settings → Applications → <em>New access token</em></div>
+  <div class="step"><strong>Step 2.</strong> Enter it below, then select your <code>_WEBSITE/labs</code> folder</div>
+  <div class="step"><strong>Step 3.</strong> Click Deploy — the tool auto-creates a new Netlify deploy and uploads the files</div>
+</div>
+
+<div class="box">
+  <label>Netlify Personal Access Token</label>
+  <input type="password" id="tokenInput" placeholder="nfp_..." style="margin-bottom:14px;">
+
+  <label>Netlify Site Name (leave as-is unless your site name changed)</label>
+  <input type="text" id="siteSlug" value="chic-bunny-7baf17" style="margin-bottom:14px;">
+
   <input type="file" id="folderInput" webkitdirectory multiple style="display:none">
-  <button class="btn" id="selectBtn" onclick="document.getElementById('folderInput').click()">📁 Select lab_html folder</button>
-  <button class="btn" id="uploadBtn" onclick="startUpload()" disabled style="margin-left:10px">⬆️ Upload to Netlify</button>
+  <button class="btn" id="selectBtn" onclick="document.getElementById('folderInput').click()">📁 Select labs folder</button>
+  <button class="btn btn-green" id="uploadBtn" onclick="startDeploy()" disabled>⬆️ Deploy to Netlify</button>
+  <div class="file-list" id="fileList"></div>
 </div>
 
 <div class="box">
   <div id="progress"><div id="progressBar"></div></div>
-  <div id="log"><span class="info">Waiting for folder selection...</span></div>
+  <div id="log"><span class="info">Enter your token and select the labs folder to begin...</span>
+</div>
 </div>
 
 <script>
-const TOKEN = 'nfp_1cuygWQvFhTRnxvwXHawtaNXxqyoa3Z48b3d';
-const DEPLOY_ID = '69d3505d98b1ce135212c858';
-
-const REQUIRED_FILES = [
+// Files that should be deployed to /labs/ on the site
+const TARGET_FILES = [
   'lab-base.css',
+  'lab-common.js',
+  // Original labs
   'lab-active-directory.html',
-  'lab-disk-forensics.html',
-  'lab-ghidra.html',
   'lab-cloud.html',
-  'lab-dynamic-malware.html',
-  'lab-memory-forensics.html',
-  'lab-phishing-nlp.html',
-  'lab-splunk.html',
-  'lab-ueba.html',
-  'lab-threat-intel.html',
-  'lab-yara.html',
-  'lab-ir.html',
-  'lab-network-anomaly.html',
   'lab-deepfake.html',
   'lab-devsecops.html',
+  'lab-disk-forensics.html',
+  'lab-dynamic-malware.html',
+  'lab-ghidra.html',
+  'lab-ir.html',
   'lab-log-analysis.html',
-  'lab-soc-simulation.html'
+  'lab-memory-forensics.html',
+  'lab-nessus.html',
+  'lab-network-anomaly.html',
+  'lab-phishing-nlp.html',
+  'lab-soc-simulation.html',
+  'lab-splunk.html',
+  'lab-threat-intel.html',
+  'lab-ueba.html',
+  'lab-yara.html',
+  // ── NEW labs (12-week program) ──
+  'lab-wazuh-elk.html',
+  'lab-sentinel-kql.html',
+  'lab-phishing-investigation.html',
+  'lab-crowdstrike-edr.html',
+  'lab-thehive-soar.html',
 ];
-
-const REMOTE_PATHS = {
-  'lab-base.css': '/labs/lab-base.css',
-  'lab-active-directory.html': '/labs/lab-active-directory.html',
-  'lab-disk-forensics.html': '/labs/lab-disk-forensics.html',
-  'lab-ghidra.html': '/labs/lab-ghidra.html',
-  'lab-cloud.html': '/labs/lab-cloud.html',
-  'lab-dynamic-malware.html': '/labs/lab-dynamic-malware.html',
-  'lab-memory-forensics.html': '/labs/lab-memory-forensics.html',
-  'lab-phishing-nlp.html': '/labs/lab-phishing-nlp.html',
-  'lab-splunk.html': '/labs/lab-splunk.html',
-  'lab-ueba.html': '/labs/lab-ueba.html',
-  'lab-threat-intel.html': '/labs/lab-threat-intel.html',
-  'lab-yara.html': '/labs/lab-yara.html',
-  'lab-ir.html': '/labs/lab-ir.html',
-  'lab-network-anomaly.html': '/labs/lab-network-anomaly.html',
-  'lab-deepfake.html': '/labs/lab-deepfake.html',
-  'lab-devsecops.html': '/labs/lab-devsecops.html',
-  'lab-log-analysis.html': '/labs/lab-log-analysis.html',
-  'lab-soc-simulation.html': '/labs/lab-soc-simulation.html'
-};
 
 let selectedFiles = {};
 
@@ -101,80 +109,190 @@ function setProgress(pct) {
 
 document.getElementById('folderInput').addEventListener('change', function(e) {
   selectedFiles = {};
-  const files = Array.from(e.target.files);
   document.getElementById('log').innerHTML = '';
+  const files = Array.from(e.target.files);
 
   for (const f of files) {
-    const name = f.name;
-    if (REQUIRED_FILES.includes(name)) {
-      selectedFiles[name] = f;
-    }
+    if (TARGET_FILES.includes(f.name)) selectedFiles[f.name] = f;
   }
 
-  log('Found ' + Object.keys(selectedFiles).length + '/' + REQUIRED_FILES.length + ' required lab files:', 'info');
+  const found = Object.keys(selectedFiles).length;
+  const total = TARGET_FILES.length;
+  const missing = TARGET_FILES.filter(f => !selectedFiles[f]);
+  const newLabs = ['lab-wazuh-elk.html','lab-sentinel-kql.html','lab-phishing-investigation.html','lab-crowdstrike-edr.html','lab-thehive-soar.html'];
 
-  const missing = REQUIRED_FILES.filter(f => !selectedFiles[f]);
-  Object.keys(selectedFiles).forEach(f => log('  ✓ ' + f, 'ok'));
-  missing.forEach(f => log('  ✗ MISSING: ' + f, 'err'));
+  log(`Found ${found}/${total} target files in selected folder:`, 'info');
+  TARGET_FILES.forEach(f => {
+    if (selectedFiles[f]) {
+      const tag = newLabs.includes(f) ? ' ★ NEW' : '';
+      log(`  ✓ ${f}${tag}`, 'ok');
+    }
+  });
+  if (missing.length) {
+    log(`\nMissing (${missing.length}):`, 'warn');
+    missing.forEach(f => log(`  ✗ ${f}`, 'err'));
+  }
 
-  if (Object.keys(selectedFiles).length > 0) {
+  document.getElementById('fileList').textContent = `${found} files selected`;
+  if (found > 0) {
     document.getElementById('uploadBtn').disabled = false;
-    log('\nReady to upload. Click "Upload to Netlify" to start.', 'info');
+    log(`\nReady — click "Deploy to Netlify" to start.`, 'info');
   }
 });
 
-async function uploadFile(filename, file) {
-  const remotePath = REMOTE_PATHS[filename];
-  const buf = await file.arrayBuffer();
-  log('  → PUT ' + remotePath + ' (' + buf.byteLength + ' bytes)...', 'info');
-
-  const r = await fetch('https://api.netlify.com/api/v1/deploys/' + DEPLOY_ID + '/files' + remotePath, {
-    method: 'PUT',
-    headers: {
-      'Authorization': 'Bearer ' + TOKEN,
-      'Content-Type': 'application/octet-stream'
-    },
-    body: buf
-  });
-
-  if (r.status === 200) {
-    log('  ✓ ' + r.status + ' ' + remotePath, 'ok');
-  } else {
-    log('  ✗ ' + r.status + ' ' + remotePath, 'err');
-  }
-  return r.status;
+// Compute SHA1 using SubtleCrypto
+async function sha1(buffer) {
+  const hashBuf = await crypto.subtle.digest('SHA-1', buffer);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-async function startUpload() {
+async function apiCall(token, method, path, body, isBinary) {
+  const opts = {
+    method,
+    headers: { 'Authorization': 'Bearer ' + token }
+  };
+  if (body && !isBinary) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  } else if (body && isBinary) {
+    opts.headers['Content-Type'] = 'application/octet-stream';
+    opts.body = body;
+  }
+  const r = await fetch('https://api.netlify.com/api/v1' + path, opts);
+  const text = await r.text();
+  let json = null;
+  try { json = JSON.parse(text); } catch(e) {}
+  return { status: r.status, json, text };
+}
+
+async function startDeploy() {
+  const token = document.getElementById('tokenInput').value.trim();
+  const siteSlug = document.getElementById('siteSlug').value.trim();
+
+  if (!token) { log('ERROR: Enter your Netlify access token first.', 'err'); return; }
+  if (Object.keys(selectedFiles).length === 0) { log('ERROR: Select the labs folder first.', 'err'); return; }
+
   document.getElementById('uploadBtn').disabled = true;
   document.getElementById('selectBtn').disabled = true;
-  log('\n=== Starting upload to Netlify deploy ' + DEPLOY_ID + ' ===', 'warn');
+  document.getElementById('log').innerHTML = '';
+  setProgress(0);
 
-  const files = Object.entries(selectedFiles);
-  let done = 0;
-  let errors = 0;
-
-  for (const [name, file] of files) {
-    log('[' + name + ']', 'info');
-    try {
-      const status = await uploadFile(name, file);
-      if (status !== 200) errors++;
-    } catch(e) {
-      log('  ✗ Error: ' + e.message, 'err');
-      errors++;
+  try {
+    // ── Step 1: Resolve site ID ──
+    log('Step 1/4 — Looking up site ID...', 'info');
+    const sitesRes = await apiCall(token, 'GET', `/sites/${siteSlug}.netlify.app`);
+    if (sitesRes.status !== 200) {
+      // Try by slug directly
+      const sitesRes2 = await apiCall(token, 'GET', `/sites?filter=owner`);
+      if (sitesRes2.status !== 200) {
+        log(`✗ Auth failed (${sitesRes2.status}). Check your token and try again.`, 'err');
+        log(sitesRes2.text, 'dim');
+        return;
+      }
+      const match = sitesRes2.json.find(s => s.name === siteSlug || s.id === siteSlug);
+      if (!match) {
+        log(`✗ Could not find site "${siteSlug}". Sites found:`, 'err');
+        sitesRes2.json.forEach(s => log(`  • ${s.name} (${s.id})`, 'dim'));
+        return;
+      }
+      var siteId = match.id;
+      log(`  ✓ Site found: ${match.name} → ${siteId}`, 'ok');
+    } else {
+      var siteId = sitesRes.json.id;
+      log(`  ✓ Site found: ${sitesRes.json.name} → ${siteId}`, 'ok');
     }
-    done++;
-    setProgress(Math.round(done / files.length * 100));
-  }
 
-  log('\n=== UPLOAD COMPLETE ===', 'warn');
-  log('Uploaded: ' + (done - errors) + '/' + files.length, errors === 0 ? 'ok' : 'warn');
+    // ── Step 2: Hash all files ──
+    log('\nStep 2/4 — Computing SHA1 hashes...', 'info');
+    const fileManifest = {};  // { "/labs/filename": "sha1hash" }
+    const fileBuffers = {};   // { "/labs/filename": ArrayBuffer }
 
-  if (errors === 0) {
-    log('\n✅ All files uploaded! Netlify will now process and deploy to cybersecproacademy.org', 'ok');
-    log('Check: https://app.netlify.com/projects/chic-bunny-7baf17/deploys', 'info');
-  } else {
-    log('\n⚠️  ' + errors + ' file(s) failed. Try again or check Netlify dashboard.', 'err');
+    const entries = Object.entries(selectedFiles);
+    for (let i = 0; i < entries.length; i++) {
+      const [name, file] = entries[i];
+      const buf = await file.arrayBuffer();
+      const hash = await sha1(buf);
+      const remotePath = `/labs/${name}`;
+      fileManifest[remotePath] = hash;
+      fileBuffers[remotePath] = buf;
+      log(`  ${name} → ${hash.slice(0,12)}...`, 'dim');
+      setProgress(Math.round((i+1) / entries.length * 20));
+    }
+    log(`  ✓ Hashed ${entries.length} files`, 'ok');
+
+    // ── Step 3: Create deploy ──
+    log('\nStep 3/4 — Creating Netlify deploy...', 'info');
+    const deployRes = await apiCall(token, 'POST', `/sites/${siteId}/deploys`, {
+      files: fileManifest,
+      async: false
+    });
+
+    if (deployRes.status !== 200 && deployRes.status !== 201) {
+      log(`✗ Deploy creation failed (${deployRes.status}):`, 'err');
+      log(deployRes.text, 'dim');
+      return;
+    }
+
+    const deployId = deployRes.json.id;
+    const required = deployRes.json.required || [];
+    log(`  ✓ Deploy created: ${deployId}`, 'ok');
+    log(`  Netlify needs ${required.length} file(s) uploaded (others already cached)`, 'info');
+
+    if (required.length === 0) {
+      log('\n✅ All files already cached — no uploads needed! Deploy is live.', 'ok');
+      log(`View: https://app.netlify.com/sites/${siteSlug}/deploys`, 'info');
+      return;
+    }
+
+    // Build reverse map: sha1 → remotePath
+    const sha1ToPath = {};
+    for (const [path, hash] of Object.entries(fileManifest)) sha1ToPath[hash] = path;
+
+    // ── Step 4: Upload required files ──
+    log(`\nStep 4/4 — Uploading ${required.length} file(s)...`, 'info');
+    let done = 0; let errors = 0;
+
+    for (const sha of required) {
+      const remotePath = sha1ToPath[sha];
+      if (!remotePath || !fileBuffers[remotePath]) {
+        log(`  ✗ Could not find file for hash ${sha.slice(0,12)}`, 'err');
+        errors++;
+        continue;
+      }
+      log(`  → ${remotePath}`, 'info');
+      const upRes = await apiCall(token, 'PUT', `/deploys/${deployId}/files${remotePath}`, fileBuffers[remotePath], true);
+      if (upRes.status === 200) {
+        log(`    ✓ ${upRes.status} OK`, 'ok');
+      } else {
+        log(`    ✗ ${upRes.status} — ${upRes.text.slice(0,120)}`, 'err');
+        errors++;
+      }
+      done++;
+      setProgress(20 + Math.round(done / required.length * 80));
+    }
+
+    log('\n=== DEPLOY COMPLETE ===', 'warn');
+    if (errors === 0) {
+      log(`✅ All ${done} file(s) uploaded successfully!`, 'ok');
+      log(`🌐 Live at: https://cybersecproacademy.org/labs/`, 'ok');
+      log(`📊 Dashboard: https://app.netlify.com/sites/${siteSlug}/deploys`, 'info');
+      log('\nNew labs now live:', 'info');
+      log('  • /labs/lab-wazuh-elk.html', 'ok');
+      log('  • /labs/lab-sentinel-kql.html', 'ok');
+      log('  • /labs/lab-phishing-investigation.html', 'ok');
+      log('  • /labs/lab-crowdstrike-edr.html', 'ok');
+      log('  • /labs/lab-thehive-soar.html', 'ok');
+    } else {
+      log(`⚠️  ${errors} error(s). ${done - errors} files uploaded OK.`, 'err');
+      log('Try running again — partial uploads can be retried.', 'warn');
+    }
+
+  } catch(e) {
+    log('✗ Unexpected error: ' + e.message, 'err');
+    console.error(e);
+  } finally {
+    document.getElementById('uploadBtn').disabled = false;
+    document.getElementById('selectBtn').disabled = false;
   }
 }
 </script>
