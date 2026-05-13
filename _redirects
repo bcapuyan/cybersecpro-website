@@ -2,3 +2,6 @@
 /curriculum/security-plus-sy0-701  /  301!
 /curriculum/security-plus-sy0-701/  /  301!
 /curriculum/*  /  301
+
+# /lab_html/ duplicate sunset 2026-05-13 — canonical labs live in /labs/
+/lab_html/*  /labs/:splat  301
