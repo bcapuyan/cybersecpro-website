@@ -624,6 +624,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                 // Post to Netlify Forms (backup ledger)
                 fetch('/', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams(new FormData(form)).toString()
                 })
