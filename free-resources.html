@@ -430,12 +430,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 max-width: 100%;
             }
         }
-    
-  /* nav-left group (About promoted to leftmost) */
-  .nav-left { display: flex; align-items: center; gap: 22px; }
-  .nav-about-left { color: #c8d8e8; font-size: 14px; font-weight: 600; text-decoration: none; transition: color .15s; white-space: nowrap; }
-  .nav-about-left:hover { color: #00c896; }
-  @media (max-width: 860px) { .nav-about-left { display: none; } }
 </style>
 </head>
 <body>
@@ -445,16 +439,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 <!-- SITE NAV (canonical) -->
 <nav>
-  <div class="nav-left">
-    <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
-    <a href="/about/bonifacio-capuyan" class="nav-about-left">About</a>
-  </div>
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
   <div class="nav-links">
     <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
     <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
     <a href="/free-resources.html">Resources</a>
     <a href="/price-comparison.html">Compare Prices</a>
     <a href="/blog/">Blog</a>
+    <a href="/about/bonifacio-capuyan">About</a>
     <a href="/" class="nav-cta">Free Guide</a>
     <a href="/checkout.html" class="nav-enroll">Reserve Seat</a>
   </div>
@@ -463,12 +455,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </button>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
   <a href="/curriculum/security-plus-sy0-701" onclick="this.closest('.nav-drawer').classList.remove('open')">Curriculum</a>
   <a href="/labs/ai-cybersecurity-labs" onclick="this.closest('.nav-drawer').classList.remove('open')">AI Labs</a>
   <a href="/free-resources.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Resources</a>
   <a href="/price-comparison.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Compare Prices</a>
   <a href="/blog/" onclick="this.closest('.nav-drawer').classList.remove('open')">Blog</a>
+  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
   <a href="/" onclick="this.closest('.nav-drawer').classList.remove('open')">Get Free Guide</a>
   <a href="/checkout.html" class="drawer-enroll">Reserve Your Seat</a>
 </div>

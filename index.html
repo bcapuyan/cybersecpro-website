@@ -368,12 +368,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     border-radius: 8px; text-decoration: none; transition: background .2s;
   }
   .modal-success .btn-download:hover { background: #00b085; }
-
-  /* nav-left group (About promoted to leftmost) */
-  .nav-left { display: flex; align-items: center; gap: 22px; }
-  .nav-about-left { color: #c8d8e8; font-size: 14px; font-weight: 600; text-decoration: none; transition: color .15s; white-space: nowrap; }
-  .nav-about-left:hover { color: #00c896; }
-  @media (max-width: 860px) { .nav-about-left { display: none; } }
 </style>
 </head>
 <body>
@@ -421,16 +415,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-left">
-    <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
-    <a href="/about/bonifacio-capuyan" class="nav-about-left">About</a>
-  </div>
+  <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
   <div class="nav-links">
     <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
     <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
     <a href="/free-resources.html">Resources</a>
     <a href="/price-comparison.html">Compare Prices</a>
     <a href="/blog/">Blog</a>
+    <a href="/about/bonifacio-capuyan">About</a>
     <a href="#" class="nav-cta" onclick="openModal(); return false;">Free Guide</a>
     <a href="/checkout.html?utm_source=site&utm_medium=nav" class="nav-enroll">Enroll Now</a>
   </div>
@@ -440,12 +432,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </nav>
 <!-- MOBILE DRAWER -->
 <div class="nav-drawer" id="navDrawer">
-  <a href="/about/bonifacio-capuyan" onclick="closeDrawer()">About</a>
   <a href="/curriculum/security-plus-sy0-701" onclick="closeDrawer()">Curriculum</a>
   <a href="/labs/ai-cybersecurity-labs" onclick="closeDrawer()">AI Labs</a>
   <a href="/free-resources.html" onclick="closeDrawer()">Resources</a>
   <a href="/price-comparison.html" onclick="closeDrawer()">Compare Prices</a>
   <a href="/blog/" onclick="closeDrawer()">Blog</a>
+  <a href="/about/bonifacio-capuyan" onclick="closeDrawer()">About</a>
   <a href="#" onclick="openModal(); closeDrawer(); return false;">Get Free Guide</a>
   <a href="/checkout.html?utm_source=site&utm_medium=nav_drawer" class="drawer-enroll">Enroll Now</a>
 </div>
