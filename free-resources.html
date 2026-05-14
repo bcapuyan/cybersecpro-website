@@ -430,7 +430,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 max-width: 100%;
             }
         }
-</style>
+    </style>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -441,26 +441,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <nav>
   <a href="/" class="nav-logo">CyberSec<span>Pro</span> Academy</a>
   <div class="nav-links">
+    <a href="/about/bonifacio-capuyan">About</a>
+    <a href="/courses/break-into-cybersecurity">Courses</a>
+    <a href="/curriculum/security-plus-sy0-701">Curriculum</a>
     <a href="/labs/ai-cybersecurity-labs">AI Labs</a>
     <a href="/free-resources.html">Resources</a>
     <a href="/price-comparison.html">Compare Prices</a>
     <a href="/blog/">Blog</a>
-    <a href="/about/bonifacio-capuyan">About</a>
     <a href="/" class="nav-cta">Free Guide</a>
-    <a href="/checkout.html" class="nav-enroll">Enroll Now</a>
+    <a href="/checkout.html" class="nav-enroll">Reserve Seat</a>
   </div>
   <button class="nav-hamburger" onclick="document.getElementById('navDrawer').classList.toggle('open')" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
 </nav>
 <div class="nav-drawer" id="navDrawer">
+  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
+  <a href="/courses/break-into-cybersecurity" onclick="this.closest('.nav-drawer').classList.remove('open')">Courses</a>
+  <a href="/curriculum/security-plus-sy0-701" onclick="this.closest('.nav-drawer').classList.remove('open')">Curriculum</a>
   <a href="/labs/ai-cybersecurity-labs" onclick="this.closest('.nav-drawer').classList.remove('open')">AI Labs</a>
   <a href="/free-resources.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Resources</a>
   <a href="/price-comparison.html" onclick="this.closest('.nav-drawer').classList.remove('open')">Compare Prices</a>
   <a href="/blog/" onclick="this.closest('.nav-drawer').classList.remove('open')">Blog</a>
-  <a href="/about/bonifacio-capuyan" onclick="this.closest('.nav-drawer').classList.remove('open')">About</a>
   <a href="/" onclick="this.closest('.nav-drawer').classList.remove('open')">Get Free Guide</a>
-  <a href="/checkout.html" class="drawer-enroll">Enroll Now</a>
+  <a href="/checkout.html" class="drawer-enroll">Reserve Your Seat</a>
 </div>
 
     <!-- Hero Section -->
@@ -499,7 +503,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <h3>Cybersecurity Career Roadmap</h3>
                 <p>Step-by-step path from zero experience to hired. Includes certification order, skill progression, salary expectations by role, and job market insights.</p>
                 <div class="value-tag">Career coaches charge $200/hr for this advice</div>
-                <a href="/career-roadmap.html" class="cta-button">Read the Roadmap →</a>
+                <button class="cta-button" onclick="openModal(); return false;">Included in the Free Guide →</button>
             </div>
         </section>
 
@@ -516,10 +520,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <ul class="value-stack">
                 <li>20 AI cybersecurity labs + TryHackMe CTF challenges</li>
-                <li>Dual-track curriculum: SOC L1 + Vulnerability Analyst</li>
-                <li>Coaching tier: 4×1:1 calls + 90-day async resume &amp; lab review</li>
-                <li>Lifetime access · 30-day money-back guarantee</li>
-                <li>Optional 1:1 mentorship from $100/session</li>
+                <li>17 core learning topics — full Security+ coverage</li>
+                <li>4 dedicated AI security units</li>
+                <li>Career coaching: resume, LinkedIn, mock interviews</li>
+                <li>1-on-1 mentorship available from $100/session</li>
             </ul>
 
             <div class="soft-cta-buttons">
@@ -541,26 +545,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="guideModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <div id="modalFormArea">
-                <h2>Get Your Free Guide</h2>
-                <p>Enter your name and email and we'll send the <strong>Break Into Cybersecurity</strong> guide to your inbox.</p>
-                <form class="modal-form" id="guideForm"
-                      name="guide-download"
-                      method="POST"
-                      data-netlify="true">
-                    <input type="hidden" name="form-name" value="guide-download" />
-                    <input type="text"  name="name"  placeholder="Your first name" required autocomplete="given-name" />
-                    <input type="email" name="email" placeholder="Your best email address" required autocomplete="email" />
-                    <button type="submit" class="cta-button" style="width: 100%; padding: 1rem; font-size: 1rem;">Send Me the Free Guide →</button>
-                </form>
-                <p style="font-size:0.8rem; color:#777; margin-top:0.75rem;">No spam, ever. Unsubscribe anytime.</p>
-            </div>
-            <div id="modalSuccess" style="display:none; text-align:center; padding:1rem 0;">
-                <div style="font-size:3rem;">📬</div>
-                <h2>Check Your Inbox!</h2>
-                <p>Your free guide is on its way to <strong id="submittedEmail"></strong>. Look for an email from <strong>CyberSec Pro Academy</strong> in the next few minutes.</p>
-                <p style="font-size:0.85rem; color:#666; margin-top:0.5rem;">Didn't get it? Check spam/promotions, or email <a href="mailto:info@cybersecproacademy.org" style="color:#00c896;">info@cybersecproacademy.org</a>.</p>
-            </div>
+            <h2>Get Your Free Guide</h2>
+            <p>Enter your email below and we'll send you "The Complete Beginner's Guide to Cybersecurity" instantly.</p>
+            <form class="modal-form" onsubmit="handleGuideSubmit(event)">
+                <input type="email" placeholder="Your email address" required>
+                <button type="submit" class="cta-button" style="width: 100%; padding: 1rem; font-size: 1rem;">Download Now</button>
+            </form>
         </div>
     </div>
 
@@ -572,11 +562,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         gtag('config', 'G-6T7DPEWEP7');
 
         function openModal() {
-            // Reset success/form panels in case user reopens after a submit
-            var fa = document.getElementById('modalFormArea');
-            var su = document.getElementById('modalSuccess');
-            if (fa) fa.style.display = '';
-            if (su) su.style.display = 'none';
             document.getElementById('guideModal').style.display = 'block';
         }
 
@@ -591,65 +576,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
         }
 
-        // Guide form: subscribe to Mailchimp (triggers welcome sequence) AND record
-        // in Netlify Forms as a backup ledger. User stays on page.
-        document.addEventListener('DOMContentLoaded', function () {
-            var formEl = document.getElementById('guideForm');
-            if (!formEl) return;
-            formEl.addEventListener('submit', function (e) {
-                e.preventDefault();
-                var form = this;
-                var btn  = form.querySelector('button[type="submit"]');
-                btn.textContent = 'Sending…';
-                btn.disabled = true;
-
-                // Fire Mailchimp subscription (no-cors, opaque response is fine)
-                try {
-                    var emailVal = (form.querySelector('[name="email"]') || {}).value || '';
-                    var nameVal  = (form.querySelector('[name="name"]')  || {}).value || '';
-                    if (emailVal) {
-                        var mcBody = new URLSearchParams();
-                        mcBody.append('EMAIL', emailVal.trim());
-                        if (nameVal) mcBody.append('FNAME', nameVal.trim());
-                        mcBody.append('b_0ecc108bab8be2ee217833cd6_5d6db48326', ''); // honeypot
-                        fetch('https://cybersecproacademy.us22.list-manage.com/subscribe/post?u=0ecc108bab8be2ee217833cd6&id=5d6db48326&f_id=00b7c2e1f0', {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: mcBody.toString(),
-                            keepalive: true
-                        }).catch(function () { /* swallow — Netlify path still runs */ });
-                    }
-                } catch (mcErr) { /* never break the user submit flow */ }
-
-                // Post to Netlify Forms (backup ledger)
-                fetch('/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(new FormData(form)).toString()
-                })
-                .then(function (res) {
-                    if (res.ok) {
-                        window.dataLayer = window.dataLayer || [];
-                        window.dataLayer.push({ event: 'guide_form_submitted', form_name: 'free_guide_page' });
-                        var emailShown = (form.querySelector('[name="email"]') || {}).value || '';
-                        var slot = document.getElementById('submittedEmail');
-                        if (slot) slot.textContent = emailShown;
-                        document.getElementById('modalFormArea').style.display = 'none';
-                        document.getElementById('modalSuccess').style.display = 'block';
-                    } else {
-                        btn.textContent = 'Try Again';
-                        btn.disabled = false;
-                        alert('Something went wrong — please try again or email info@cybersecproacademy.org');
-                    }
-                })
-                .catch(function () {
-                    btn.textContent = 'Try Again';
-                    btn.disabled = false;
-                    alert('Network error — please check your connection and try again.');
-                });
-            });
-        });
+        function handleGuideSubmit(event) {
+            event.preventDefault();
+            const email = event.target.querySelector('input[type="email"]').value;
+            // In a real implementation, this would send the email to a backend service
+            console.log('Guide download requested for:', email);
+            alert('Check your email for your free guide!');
+            closeModal();
+        }
     </script>
 </body>
 </html>

@@ -7,7 +7,7 @@
 </head>
 <body>
 <nav>
-  <a href="/" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <a href="../index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
   <div class="nav-links"><a href="labs.html">← All Labs</a><a href="lab-setup.html">Lab Setup</a><a href="../checkout.html" class="nav-cta">Enroll Now</a></div>
 </nav>
 <div class="lab-progress-bar">
@@ -41,7 +41,7 @@
       <div class="step-item" id="step-0" onclick="toggleStep(0)">
         <div class="step-header"><div class="step-num" data-n="1"></div><div class="step-content"><div class="step-title">Download and install Splunk Free</div><div class="step-desc">Free tier supports 500MB/day — more than enough for labs</div></div></div>
         <div class="step-body">
-          <div class="step-detail">Download from <strong>splunk.com/en_us/download/splunk-enterprise.html</strong> (requires free account). <strong>Install on your SIFT Workstation VM (192.168.56.20)</strong> — it has the 8 GB RAM headroom Splunk needs and matches the SOC-analyst workflow. Do <em>not</em> install Splunk on Kali; keep offensive tools and defensive monitoring on separate VMs.</div>
+          <div class="step-detail">Download from <strong>splunk.com/en_us/download/splunk-enterprise.html</strong> (requires free account). Install on your Kali VM or directly on your Windows host.</div>
           <div class="code-wrap"><button class="copy-btn" onclick="copyCmd(this)">Copy</button><div class="code-block"><span class="c"># Linux install</span><br><span class="k">wget -O splunk.deb 'https://download.splunk.com/products/splunk/releases/9.2.0/linux/splunk-9.2.0-deb.deb'</span><br><span class="k">sudo dpkg -i splunk.deb</span><br><span class="k">sudo /opt/splunk/bin/splunk start --accept-license</span><br><span class="c"># Then navigate to http://localhost:8000</span></div></div>
         </div>
       </div>

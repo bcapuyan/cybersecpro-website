@@ -261,7 +261,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 <!-- NAV -->
 <nav>
-  <a href="/" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
+  <a href="index.html" class="nav-logo">CyberSec <span>Pro</span> Academy</a>
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="lab-setup.html" style="color:var(--green)">Lab Setup</a>
@@ -294,60 +294,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <div class="page-wrap">
-
-  <!-- TOOLS MATRIX (lab → tool → host VM) -->
-  <div class="section-gap" id="tools-matrix">
-    <div class="phase-header">
-      <div class="phase-num" style="background:#0e5f7a;">📋</div>
-      <div>
-        <div class="phase-title">Lab → Tool → VM Matrix</div>
-        <div class="phase-sub">Each lab installs a specific tool on a specific VM. Use this to know what to build before each lab.</div>
-      </div>
-    </div>
-
-    <div style="overflow-x:auto;border:1px solid #e2e8f0;border-radius:12px;">
-      <table style="width:100%;border-collapse:collapse;font-size:14px;background:#fff;">
-        <thead>
-          <tr style="background:#0a1628;color:#fff;text-align:left;">
-            <th style="padding:14px 16px;font-weight:700;">Lab</th>
-            <th style="padding:14px 16px;font-weight:700;">Tool taught</th>
-            <th style="padding:14px 16px;font-weight:700;">Host VM</th>
-          </tr>
-        </thead>
-        <tbody style="color:#1a202c;">
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-wireshark.html" style="color:#00a67d;font-weight:600;">L01 Wireshark</a></td><td style="padding:12px 16px;">Wireshark + tshark</td><td style="padding:12px 16px;"><strong>Kali</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-splunk.html" style="color:#00a67d;font-weight:600;">L02 Splunk SIEM</a></td><td style="padding:12px 16px;">Splunk Free + BOTS dataset</td><td style="padding:12px 16px;"><strong>SIFT</strong> (recommended) or dedicated Ubuntu VM</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-dynamic-malware.html" style="color:#00a67d;font-weight:600;">L04 Dynamic Malware</a></td><td style="padding:12px 16px;">Procmon, ProcExp, FakeNet-NG</td><td style="padding:12px 16px;"><strong>Flare-VM</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-phishing-nlp.html" style="color:#00a67d;font-weight:600;">L05 Phishing NLP</a></td><td style="padding:12px 16px;">Python + scikit-learn + Phishtank</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-network-anomaly.html" style="color:#00a67d;font-weight:600;">L06 Network Anomaly</a></td><td style="padding:12px 16px;">tshark + scikit-learn</td><td style="padding:12px 16px;"><strong>Kali</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-ueba.html" style="color:#00a67d;font-weight:600;">L07 UEBA</a></td><td style="padding:12px 16px;">Splunk + Python ML</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-ir.html" style="color:#00a67d;font-weight:600;">L08 IR Automation</a></td><td style="padding:12px 16px;">Volatility + custom IR scripts</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-cloud.html" style="color:#00a67d;font-weight:600;">L09 Cloud (CloudTrail)</a></td><td style="padding:12px 16px;">AWS Free Tier + CloudTrail</td><td style="padding:12px 16px;">Browser (AWS console) — no VM needed</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-deepfake.html" style="color:#00a67d;font-weight:600;">L10 Deepfake Detection</a></td><td style="padding:12px 16px;">FaceForensics++, Python</td><td style="padding:12px 16px;"><strong>SIFT</strong> or local Python</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-nessus.html" style="color:#00a67d;font-weight:600;">L11 Nessus Vuln Triage</a></td><td style="padding:12px 16px;">Nessus Essentials</td><td style="padding:12px 16px;"><strong>Kali</strong> or host</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-active-directory.html" style="color:#00a67d;font-weight:600;">L12 AD Attack</a></td><td style="padding:12px 16px;">Domain Controller + BloodHound</td><td style="padding:12px 16px;">Win Server VM (built in lab) + <strong>Kali</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-memory-forensics.html" style="color:#00a67d;font-weight:600;">L13 Memory Forensics</a></td><td style="padding:12px 16px;">Volatility 3</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-disk-forensics.html" style="color:#00a67d;font-weight:600;">L14 Disk Forensics</a></td><td style="padding:12px 16px;">Autopsy + plaso</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-ghidra.html" style="color:#00a67d;font-weight:600;">L15 Ghidra RE</a></td><td style="padding:12px 16px;">Ghidra</td><td style="padding:12px 16px;"><strong>REMnux</strong> or Flare-VM</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-threat-intel.html" style="color:#00a67d;font-weight:600;">L16 Threat Intel</a></td><td style="padding:12px 16px;">MISP, OpenCTI, VT API</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-log-analysis.html" style="color:#00a67d;font-weight:600;">L17 Log Analysis</a></td><td style="padding:12px 16px;">python-evtx + pandas</td><td style="padding:12px 16px;"><strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-yara.html" style="color:#00a67d;font-weight:600;">L18 YARA Rules</a></td><td style="padding:12px 16px;">YARA + yarGen + signature-base</td><td style="padding:12px 16px;"><strong>REMnux</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-devsecops.html" style="color:#00a67d;font-weight:600;">L19 DevSecOps</a></td><td style="padding:12px 16px;">Trivy, Semgrep, GitHub Actions</td><td style="padding:12px 16px;"><strong>Kali</strong> or local Docker host</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-soc-simulation.html" style="color:#00a67d;font-weight:600;">L20 SOC Capstone</a></td><td style="padding:12px 16px;">All tools from L01–L19</td><td style="padding:12px 16px;">All VMs (capstone)</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-wazuh-elk.html" style="color:#00a67d;font-weight:600;">L21 Wazuh + ELK</a></td><td style="padding:12px 16px;">Wazuh manager + Sysmon agent</td><td style="padding:12px 16px;">Ubuntu VM (Wazuh) + Win VM (Sysmon)</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-sentinel-kql.html" style="color:#00a67d;font-weight:600;">L22 Sentinel + Splunk</a></td><td style="padding:12px 16px;">Azure Sentinel + Splunk</td><td style="padding:12px 16px;">Browser (Azure) + <strong>SIFT</strong> (Splunk)</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-phishing-investigation.html" style="color:#00a67d;font-weight:600;">L23 Phishing Investigation</a></td><td style="padding:12px 16px;">Header tools, sandbox, IOC enrichment</td><td style="padding:12px 16px;">Browser + <strong>SIFT</strong></td></tr>
-          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px 16px;"><a href="/labs/lab-crowdstrike-edr.html" style="color:#00a67d;font-weight:600;">L24 CrowdStrike EDR</a></td><td style="padding:12px 16px;">Falcon Go (free trial) + MDE</td><td style="padding:12px 16px;">Windows target VM (sensor) + browser</td></tr>
-          <tr style="border-top:1px solid #e2e8f0;background:#f8fafc;"><td style="padding:12px 16px;"><a href="/labs/lab-thehive-soar.html" style="color:#00a67d;font-weight:600;">L25 TheHive + Cortex</a></td><td style="padding:12px 16px;">TheHive 5 + Cortex (Docker)</td><td style="padding:12px 16px;"><strong>SIFT</strong> (runs Docker stack)</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="alert alert-info" style="margin-top:18px;">
-      <span class="alert-icon">💡</span>
-      <div><strong>Day-1 minimum:</strong> Kali + SIFT. Add REMnux before Week 5 (malware analysis). Add Flare-VM only when you reach L04 Dynamic Malware.</div>
-    </div>
-  </div>
 
   <!-- PHASE 1: SYSTEM REQUIREMENTS -->
   <div class="section-gap" id="phase1">
